@@ -1,0 +1,20 @@
+[package]
+name = "dropbox_files"
+version = "0.1.0"
+authors = ["Luciano Bestia <LucianoBestia@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+env_logger = "0.7"
+chrono = "0.4"
+unwrap="1.2.1"
+lexical-sort = "0.3.1"
+# colorful output to screen
+ansi_term = "0.12.1"
+
+[dependencies.dropbox-sdk]
+version = "0.5.0"
+default_features = false
+features = ["dbx_files", "hyper_client"]
