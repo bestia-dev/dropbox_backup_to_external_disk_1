@@ -133,15 +133,28 @@ pub fn list_remote() {
     }
 }
 
-pub fn download(download_path: String) {
+pub fn download(download_path: &str) {
     let token = get_token();
     let client = HyperClient::new(token);
     eprintln!("downloading file {}", download_path);
-    eprintln!();
     let mut bytes_out = 0u64;
-    let download_arg = files::DownloadArg::new(download_path);
-    let stdout = io::stdout();
-    let mut stdout_lock = stdout.lock();
+    let download_arg = files::DownloadArg::new(download_path.to_string());
+    use std::fs::OpenOptions;
+    let base_local_path=std::fs::read_to_string("data/base_local_path.csv").unwrap();
+    let local_path = format!("{}{}",base_local_path,download_path);
+    eprintln!("to local path: {}", local_path);
+    // create folder if it does not exist
+    use std::path::PathBuf;
+    let path = PathBuf::from(&local_path);
+    let parent = path.parent().unwrap();
+    std::fs::create_dir_all(parent).unwrap();
+    let mut file = OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(true)
+        .open(local_path)
+        .unwrap();
+
     'download: loop {
         let result = files::download(&client, &download_arg, Some(bytes_out), None);
         match result {
@@ -150,7 +163,7 @@ pub fn download(download_path: String) {
                 loop {
                     // limit read to 1 MiB per loop iteration so we can output progress
                     let mut input_chunk = (&mut body).take(1024 * 1024);
-                    match io::copy(&mut input_chunk, &mut stdout_lock) {
+                    match io::copy(&mut input_chunk, &mut file) {
                         Ok(0) => {
                             eprint!("\r");
                             break 'download;
@@ -178,6 +191,21 @@ pub fn download(download_path: String) {
             }
         }
         break 'download;
+    }
+}
+
+pub fn download_from_list(){
+    // TODO: open the authorization once
+    // and then download multiple files
+    let base_local_path=std::fs::read_to_string("data/base_local_path.csv").unwrap();
+    let list_for_download = std::fs::read_to_string("data/list_for_download.csv").unwrap();
+    for download_path in list_for_download.lines(){
+        // TODO: add datetime and size in list
+        let local_path = format!("{}{}",base_local_path,download_path);
+        //TODO: if datetime and size is not the same then overwrite
+        if !std::path::Path::new(&local_path).exists(){
+            download(download_path);
+        }
     }
 }
 

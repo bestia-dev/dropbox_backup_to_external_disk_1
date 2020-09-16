@@ -13,33 +13,41 @@ use unwrap::unwrap;
 
 pub fn sort_lists(){
 
-}
-
-pub fn compare_for_dn() {
-    // if the files are already sorted, then re-sorting is much faster.
-    let file_web = "my-file3.csv";
-    let file_local = "my-local3.csv";
+    let list_remote_files = "data/list_remote_files.csv";
+    let list_local_files = "data/list_local_files.csv";
     // the files are NOT sorted
     // some folders have different case. Use case insensitive sort - lexical sort.
     eprintln!("before lexical sort{}", "");
-    //use lexical_sort::{lexical_cmp, StringSort};
-    let content_web = unwrap!(fs::read_to_string(file_web));
-    let sorted_web: Vec<&str> = content_web.lines().collect();
-    //eprintln!("read and collect{}", "");
-    //sorted_web.string_sort_unstable(lexical_cmp);
-    //eprintln!("sorted web len(): {}", sorted_web.len());
-    //let joined = sorted_web.join("\n");
-    //unwrap!(fs::write("my-file3.csv", joined));
+    use lexical_sort::{lexical_cmp, StringSort};
 
-    let content_local = unwrap!(fs::read_to_string(file_local));
+    let content_remote = unwrap!(fs::read_to_string(list_remote_files));
+    let mut sorted_remote: Vec<&str> = content_remote.lines().collect();
+    eprintln!("read and collect remote{}", "");
+    sorted_remote.string_sort_unstable(lexical_cmp);
+    eprintln!("sorted remote len(): {}", sorted_remote.len());
+    let joined = sorted_remote.join("\n");
+    unwrap!(fs::write(list_remote_files, joined));
+
+    let content_local = unwrap!(fs::read_to_string(list_local_files));
+    let mut sorted_local: Vec<&str> = content_local.lines().collect();
+    eprintln!("read and collect local {}", "");
+    sorted_local.string_sort_unstable(lexical_cmp);
+    eprintln!("sorted local len(): {}", sorted_local.len());
+    let joined = sorted_local.join("\n");
+    unwrap!(fs::write(list_local_files, joined));
+}
+
+// the list must be already sorted for this to work correctly
+pub fn compare_sorted_lists() {
+    
+    let list_remote_files = "data/list_remote_files.csv";
+    let list_local_files = "data/list_local_files.csv";
+    let content_remote = unwrap!(fs::read_to_string(list_remote_files));
+    let sorted_remote: Vec<&str> = content_remote.lines().collect();
+    let content_local = unwrap!(fs::read_to_string(list_local_files));
     let sorted_local: Vec<&str> = content_local.lines().collect();
-    //eprintln!("read and collect{}", "");
-    //sorted_local.string_sort_unstable(lexical_cmp);
-    //eprintln!("sorted local len(): {}", sorted_local.len());
-    //let joined = sorted_local.join("\n");
-    //unwrap!(fs::write("my-local3.csv", joined));
-
-    let mut for_dn: Vec<String> = vec![];
+    
+    let mut for_download: Vec<String> = vec![];
     let mut for_delete: Vec<String> = vec![];
     let mut cursor_web = 0;
     let mut cursor_local = 0;
@@ -52,22 +60,22 @@ pub fn compare_for_dn() {
         line_web.truncate(3);
         //if i > 3 {break;}
         //i += 1;
-        if cursor_web >= sorted_web.len() && cursor_local >= sorted_local.len() {
+        if cursor_web >= sorted_remote.len() && cursor_local >= sorted_local.len() {
             break;
-        } else if cursor_web >= sorted_web.len() {
+        } else if cursor_web >= sorted_remote.len() {
             line_local = sorted_local[cursor_local].split("\t").collect();
             for_delete.push(line_local[0].to_string());
             cursor_local += 1;
         } else if cursor_local >= sorted_local.len() {
-            line_web = sorted_web[cursor_web].split("\t").collect();
-            for_dn.push(line_web[0].to_string());
+            line_web = sorted_remote[cursor_web].split("\t").collect();
+            for_download.push(line_web[0].to_string());
             cursor_web += 1;
         } else {
-            line_web = sorted_web[cursor_web].split("\t").collect();
+            line_web = sorted_remote[cursor_web].split("\t").collect();
             line_local = sorted_local[cursor_local].split("\t").collect();
             if line_web[0].to_lowercase().lt(&line_local[0].to_lowercase()) {
                 println!("Ordering Less: {}   {}", line_web[0], line_local[0]);
-                for_dn.push(line_web[0].to_string());
+                for_download.push(line_web[0].to_string());
                 cursor_web += 1;
             } else if line_web[0].to_lowercase().gt(&line_local[0].to_lowercase()) {
                 println!("Ordering Greater: {}   {}", line_web[0], line_local[0]);
@@ -82,15 +90,15 @@ pub fn compare_for_dn() {
                         "Different date or size {} {} {} {}",
                         line_web[1], line_local[1], line_web[2], line_local[2]
                     );
-                    for_dn.push(line_web[0].to_string());
+                    for_download.push(line_web[0].to_string());
                 }
                 cursor_local += 1;
                 cursor_web += 1;
             }
         }
     }
-    let joined = for_dn.join("\n");
-    unwrap!(fs::write("compare_for_dn.csv", joined));
+    let joined = for_download.join("\n");
+    unwrap!(fs::write("data/list_for_download.csv", joined));
     let joined = for_delete.join("\n");
-    unwrap!(fs::write("compare_for_delete.csv", joined));
+    unwrap!(fs::write("data/list_for_delete.csv", joined));
 }

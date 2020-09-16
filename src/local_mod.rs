@@ -8,6 +8,7 @@ use unwrap::unwrap;
 
 pub fn list_local(base_path: &str) {
     use std::fs::OpenOptions;
+    std::fs::write("data/base_local_path.csv", base_path).unwrap();
     let mut file = OpenOptions::new()
     .create(true)
     .write(true)
@@ -29,7 +30,7 @@ pub fn traverse_dir(dir: &Path, output_file: &mut File, base_path:&str) -> io::R
                 unwrap!(traverse_dir(&path, output_file,base_path));
             } else {
                 // write csv tab delimited
-                let metadata = fs::metadata(&path)?;
+                if let Ok(metadata) = entry.metadata() {
                 use chrono::offset::Utc;
                 use chrono::DateTime;
                 let datetime: DateTime<Utc> = unwrap!(metadata.modified()).into();
@@ -43,6 +44,7 @@ pub fn traverse_dir(dir: &Path, output_file: &mut File, base_path:&str) -> io::R
                 ) {
                     eprintln!("Couldn't write to file: {}", e);
                 }
+            }
             }
         }
     }

@@ -23,12 +23,26 @@ fn main() {
             }
             _ => eprintln!("Unrecognized arguments. Try {} --help", &bin_name),
         },
-        Some("sort_lists") => sort_lists(),
-        Some("compare-for-dn") => compare_for_dn(),
+        Some("sort_lists") => {
+            let ns_started = ns_start("sort lists");
+            sort_lists();
+            ns_print("sort_lists", ns_started);
+        }
+        Some("compare_sorted_lists") => {
+            let ns_started = ns_start("compare sorted lists");
+            compare_sorted_lists();
+            ns_print("sort_lists", ns_started);
+        }
         Some("download") => match std::env::args().nth(2).as_deref() {
-            Some(path) => download(path.to_owned()),
+            Some(path) => download(path),
             _ => eprintln!("Unrecognized arguments. Try {} --help", &bin_name),
         },
+        Some("download_from_list") => {
+            let ns_started = ns_start("download from data/list_for_download.csv");
+            download_from_list();
+            ns_print("download_from_list", ns_started);
+        },
+        
         _ => eprintln!("Unrecognized arguments. Try {} --help", &bin_name),
     }
 }
@@ -36,25 +50,36 @@ fn main() {
 fn print_help(bin_name: &str) {
     eprintln!("usage: $ {} <command> [options] [<args>]", bin_name);
     eprintln!("  ");
+
     eprintln!("View Help, usage:");
     eprintln!("  $ {} --help", bin_name);
     eprintln!("  $ {} -h", bin_name);
     eprintln!("  ");
+
     eprintln!("Test connection and authorization:");
     eprintln!("  $ {} test", bin_name);
     eprintln!("  ");
+
     eprintln!("List all files in your remote Dropbox to data/list_remote_files.csv:");
     eprintln!("  $ {} list_remote", bin_name);
     eprintln!("  ");
+    
     eprintln!("List local files to data/list_local_files.csv:");
     eprintln!("  $ {} list_local /mnt/d/DropBoxBackup2", bin_name);
     eprintln!("  ");
-    eprintln!("Compare and create lists of diff files:");
-    eprintln!("  $ {} compare-for-dn", bin_name);
+
+    eprintln!("Sort lists lexical (case insensitive):");
+    eprintln!("  $ {} sort_lists", bin_name);
     eprintln!("  ");
+
+    eprintln!("Compare lists and create data/list_for_download.csv and data/list_for_delete.csv:");
+    eprintln!("  $ {} compare_sorted_lists", bin_name);
+    eprintln!("  ");
+
     eprintln!("Download a file:");
     eprintln!("  $ {} download <path>", bin_name);
     eprintln!();
+
     eprintln!("If a Dropbox OAuth token is given in the environment variable:");
     eprintln!("    $ export DBX_OAUTH_TOKEN=xx.xxxxx ");
     eprintln!("it will be used, otherwise you will be prompted for");

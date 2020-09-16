@@ -10,7 +10,7 @@
 
 [comment]: # (lmake_lines_of_code end)
 
-On my Dropbox "remote drive" I have more than 1 Terabyte of data.  
+On my Dropbox "remote drive" I have more than 1 Terabyte of data in 200 000 files.  
 I own now 4 notebooks and 2 android phones and 1 tablet and not a single one has an internal drive with more than 1 Terabyte. I use `Selective Sync` to sync only the bare minimum I temporarily need on the local device. But I want to have a backup of all of my data. I must have a backup. Better, I want to have 2 backups of all the data on external hard disks. So if Dropbox go bankrupt, I still have all my data.  
 The original Dropbox Sync app works great for the internal HD, but is "not recommended" for external drives. I also need only one way sync: from remote to local. There exist apps for that:
 - rclone
