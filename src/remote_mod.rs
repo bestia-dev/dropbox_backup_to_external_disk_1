@@ -147,11 +147,13 @@ pub fn download(download_path: &str) {
     use std::path::PathBuf;
     let path = PathBuf::from(&local_path);
     let parent = path.parent().unwrap();
-    std::fs::create_dir_all(parent).unwrap();
+    eprintln!("parent folder: {}",parent.to_str().unwrap());
+    if !std::path::Path::new(&parent).exists(){
+        std::fs::create_dir_all(parent).unwrap();
+    }
     let mut file = OpenOptions::new()
         .create(true)
         .write(true)
-        .truncate(true)
         .open(local_path)
         .unwrap();
 
