@@ -8,13 +8,7 @@ use unwrap::unwrap;
 // $ clear; cargo run --bin dbx_download -- list_local /mnt/d/DropBoxBackup2
 
 pub fn list_local(base_path: &str) {
-    // remember the base local path for later commands
-    if !std::path::Path::new(base_path).exists() {
-        eprintln!("error: base_path not exists {}", base_path);
-        std::process::exit(1);
-    }
-    std::fs::write("data/base_local_path.csv", base_path).unwrap();
-
+    save_base_path(base_path);
     // write data to a big string in memory
     let mut output_string = String::with_capacity(1024 * 1024);
 
@@ -62,13 +56,11 @@ n=2 clears entire line
             print!("\x1b[2K");
             println!("Folder: {}", str_path.trim_start_matches(base_path));
             
-            
             // Set Position 1,2
             print!("\x1b[2;1H");
             // clear entire line
             print!("\x1b[2K");
             println!("Folder_count: {}", folder_count);
-            
             
             folder_count += 1;
         } else {
@@ -87,18 +79,28 @@ n=2 clears entire line
                     datetime.format("%Y-%m-%dT%TZ"),
                     metadata.len()
                 ));
-                
             }
         }
         //ns_print("WalkDir entry end", ns_started);
     }
-
-    // sort
-    eprintln!("\nstart sorting {}", "");
+//#region: sort
+    eprintln!("local list lexical sort{}", "");
     let mut sorted_local: Vec<&str> = output_string.lines().collect();
     sorted_local.string_sort_unstable(lexical_cmp);
     let joined = sorted_local.join("\n");
-    eprintln!("sorted local len(): {}", sorted_local.len());
+    eprintln!("local list sorted local len(): {}", sorted_local.len());
+//#end region: sort
+
     // join to string and write to file
-    unwrap!(fs::write("data/list_local_files.csv", joined));
+    unwrap!(fs::write("temp_data/list_local_files.csv", joined));
 }
+
+/// remember the base local path for later commands
+pub fn save_base_path(base_path: &str) {
+        
+        if !std::path::Path::new(base_path).exists() {
+            eprintln!("error: base_path not exists {}", base_path);
+            std::process::exit(1);
+        }
+        std::fs::write("temp_data/base_local_path.csv", base_path).unwrap();
+    }    

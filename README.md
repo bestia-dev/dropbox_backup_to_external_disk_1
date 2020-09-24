@@ -70,7 +70,7 @@ Clone the repository:
 
 ## dbx_download list_remote
 
-List all the files from the remote Dropbox and saves to the file data/list_remote_files.csv.
+List all the files from the remote Dropbox and saves to the file temp_data/list_remote_files.csv.
 Tab delimited with metadata: path (with name), datetime modified, size.
 The path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random.
 For big dropbox remotes it can take a while to complete.

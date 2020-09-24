@@ -5,11 +5,14 @@ use dropbox_sdk::{files, HyperClient, Oauth2AuthorizeUrlBuilder, Oauth2Type};
 
 use std::collections::VecDeque;
 use std::env;
+#[allow(unused_imports)]
+use ansi_term::Colour::{Blue, Green, Red, Yellow};
 use std::io::{self, Read, Write};
-// use unwrap::unwrap;
+use unwrap::unwrap;
+use std::fs;
 
 fn prompt(msg: &str) -> String {
-    eprint!("{}: ", msg);
+    eprint!("{}: ", Yellow.paint(msg));
     io::stderr().flush().unwrap();
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
@@ -20,7 +23,7 @@ pub fn test_connection() {
     let token = get_token();
     let client = HyperClient::new(token);
     match files::list_folder(&client, &files::ListFolderArg::new("".to_string())) {
-        Ok(Ok(_result)) => eprintln!("test connection and authorization: ok"),
+        Ok(Ok(_result)) => eprintln!("{}\n\n",Green.paint("test connection and authorization: ok")),
         Ok(Err(e)) => eprintln!("error: {}", e),
         Err(e) => eprintln!("error: {}", e),
     }
@@ -56,7 +59,7 @@ fn get_token() -> String {
                     eprintln!("You can store this token into a env variable for temporary use.");
                     eprintln!("So you don't need to do this dance again.");
                     eprintln!(
-                        "You are logged into Linux and this is mostly not shared with others."
+                        "You are logged into Linux and this is (mostly) not shared with others."
                     );
                     eprintln!("$ export DBX_OAUTH_TOKEN={}", token);
 
@@ -86,7 +89,7 @@ pub fn list_remote() {
         .create(true)
         .write(true)
         .truncate(true)
-        .open("data/list_remote_files.csv")
+        .open("temp_data/list_remote_files.csv")
         .unwrap();
     match list_directory(&client, "/", true) {
         Ok(Ok(iterator)) => {
@@ -131,8 +134,26 @@ pub fn list_remote() {
             eprintln!("API request error: {}", e);
         }
     }
+    sort_list();
 }
 
+fn sort_list(){
+    let list_remote_files = "temp_data/list_remote_files.csv";
+    // the files are NOT sorted
+    // some folders have different case. Use case insensitive sort - lexical sort.
+    eprintln!("remote list lexical sort{}", "");
+    use lexical_sort::{lexical_cmp, StringSort};
+
+    let content_remote = unwrap!(fs::read_to_string(list_remote_files));
+    let mut sorted_remote: Vec<&str> = content_remote.lines().collect();
+    eprintln!("read and collect remote{}", "");
+    sorted_remote.string_sort_unstable(lexical_cmp);
+    eprintln!("sorted remote len(): {}", sorted_remote.len());
+    let joined = sorted_remote.join("\n");
+    unwrap!(fs::write(list_remote_files, joined));
+}
+
+/// download one file
 pub fn download(download_path: &str) {
     let token = get_token();
     let client = HyperClient::new(token);
@@ -140,7 +161,7 @@ pub fn download(download_path: &str) {
     let mut bytes_out = 0u64;
     let download_arg = files::DownloadArg::new(download_path.to_string());
     use std::fs::OpenOptions;
-    let base_local_path = std::fs::read_to_string("data/base_local_path.csv").unwrap();
+    let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let local_path = format!("{}{}", base_local_path, download_path);
     eprintln!("to local path: {}", local_path);
     // create folder if it does not exist
@@ -199,8 +220,8 @@ pub fn download(download_path: &str) {
 pub fn download_from_list() {
     // TODO: open the authorization once
     // and then download multiple files
-    let base_local_path = std::fs::read_to_string("data/base_local_path.csv").unwrap();
-    let list_for_download = std::fs::read_to_string("data/list_for_download.csv").unwrap();
+    let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+    let list_for_download = std::fs::read_to_string("temp_data/list_for_download.csv").unwrap();
     for download_path in list_for_download.lines() {
         // TODO: add datetime and size in list
         let local_path = format!("{}{}", base_local_path, download_path);

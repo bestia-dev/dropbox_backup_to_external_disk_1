@@ -11,26 +11,11 @@ pub use utils_mod::*;
 use std::fs;
 use unwrap::unwrap;
 
-pub fn sort_lists() {
-    let list_remote_files = "data/list_remote_files.csv";
-    // the files are NOT sorted
-    // some folders have different case. Use case insensitive sort - lexical sort.
-    eprintln!("before lexical sort{}", "");
-    use lexical_sort::{lexical_cmp, StringSort};
-
-    let content_remote = unwrap!(fs::read_to_string(list_remote_files));
-    let mut sorted_remote: Vec<&str> = content_remote.lines().collect();
-    eprintln!("read and collect remote{}", "");
-    sorted_remote.string_sort_unstable(lexical_cmp);
-    eprintln!("sorted remote len(): {}", sorted_remote.len());
-    let joined = sorted_remote.join("\n");
-    unwrap!(fs::write(list_remote_files, joined));
-}
 
 // the list must be already sorted for this to work correctly
 pub fn compare_sorted_lists() {
-    let list_remote_files = "data/list_remote_files.csv";
-    let list_local_files = "data/list_local_files.csv";
+    let list_remote_files = "temp_data/list_remote_files.csv";
+    let list_local_files = "temp_data/list_local_files.csv";
     let content_remote = unwrap!(fs::read_to_string(list_remote_files));
     let sorted_remote: Vec<&str> = content_remote.lines().collect();
     let content_local = unwrap!(fs::read_to_string(list_local_files));
@@ -87,7 +72,7 @@ pub fn compare_sorted_lists() {
         }
     }
     let joined = for_download.join("\n");
-    unwrap!(fs::write("data/list_for_download.csv", joined));
+    unwrap!(fs::write("temp_data/list_for_download.csv", joined));
     let joined = for_delete.join("\n");
-    unwrap!(fs::write("data/list_for_delete.csv", joined));
+    unwrap!(fs::write("temp_data/list_for_delete.csv", joined));
 }
