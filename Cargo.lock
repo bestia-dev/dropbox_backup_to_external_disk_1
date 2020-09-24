@@ -109,6 +109,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3a71ab494c0b5b860bdc8407ae08978052417070c2ced38573a9157ad75b8ac"
 
 [[package]]
+name = "dbx_download"
+version = "0.1.0"
+dependencies = [
+ "ansi_term",
+ "chrono",
+ "dropbox-sdk",
+ "env_logger",
+ "lexical-sort",
+ "unwrap",
+ "walkdir",
+]
+
+[[package]]
 name = "dropbox-sdk"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -121,18 +134,6 @@ dependencies = [
  "serde_json",
  "thiserror",
  "url 2.1.1",
-]
-
-[[package]]
-name = "dropbox_files"
-version = "0.1.0"
-dependencies = [
- "ansi_term",
- "chrono",
- "dropbox-sdk",
- "env_logger",
- "lexical-sort",
- "unwrap",
 ]
 
 [[package]]
@@ -537,6 +538,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ef703b7cb59335eae2eb93ceb664c0eb7ea6bf567079d843e09420219668e072"
 
 [[package]]
+name = "same-file"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
+dependencies = [
+ "winapi-util",
+]
+
+[[package]]
 name = "schannel"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -750,6 +760,17 @@ name = "version_check"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "914b1a6776c4c929a602fafd8bc742e06365d4bcbe48c30f9cca5824f70dc9dd"
+
+[[package]]
+name = "walkdir"
+version = "2.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "777182bc735b6424e1a57516d35ed72cb8019d85c8c9bf536dccb3445c1a2f7d"
+dependencies = [
+ "same-file",
+ "winapi",
+ "winapi-util",
+]
 
 [[package]]
 name = "wasi"

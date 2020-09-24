@@ -140,15 +140,15 @@ pub fn download(download_path: &str) {
     let mut bytes_out = 0u64;
     let download_arg = files::DownloadArg::new(download_path.to_string());
     use std::fs::OpenOptions;
-    let base_local_path=std::fs::read_to_string("data/base_local_path.csv").unwrap();
-    let local_path = format!("{}{}",base_local_path,download_path);
+    let base_local_path = std::fs::read_to_string("data/base_local_path.csv").unwrap();
+    let local_path = format!("{}{}", base_local_path, download_path);
     eprintln!("to local path: {}", local_path);
     // create folder if it does not exist
     use std::path::PathBuf;
     let path = PathBuf::from(&local_path);
     let parent = path.parent().unwrap();
-    eprintln!("parent folder: {}",parent.to_str().unwrap());
-    if !std::path::Path::new(&parent).exists(){
+    eprintln!("parent folder: {}", parent.to_str().unwrap());
+    if !std::path::Path::new(&parent).exists() {
         std::fs::create_dir_all(parent).unwrap();
     }
     let mut file = OpenOptions::new()
@@ -196,16 +196,16 @@ pub fn download(download_path: &str) {
     }
 }
 
-pub fn download_from_list(){
+pub fn download_from_list() {
     // TODO: open the authorization once
     // and then download multiple files
-    let base_local_path=std::fs::read_to_string("data/base_local_path.csv").unwrap();
+    let base_local_path = std::fs::read_to_string("data/base_local_path.csv").unwrap();
     let list_for_download = std::fs::read_to_string("data/list_for_download.csv").unwrap();
-    for download_path in list_for_download.lines(){
+    for download_path in list_for_download.lines() {
         // TODO: add datetime and size in list
-        let local_path = format!("{}{}",base_local_path,download_path);
+        let local_path = format!("{}{}", base_local_path, download_path);
         //TODO: if datetime and size is not the same then overwrite
-        if !std::path::Path::new(&local_path).exists(){
+        if !std::path::Path::new(&local_path).exists() {
             download(download_path);
         }
     }

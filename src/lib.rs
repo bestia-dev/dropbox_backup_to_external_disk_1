@@ -1,4 +1,4 @@
-//! dropbox_files lib.rs
+//! dbx_download lib.rs
 
 mod local_mod;
 mod remote_mod;
@@ -11,10 +11,8 @@ pub use utils_mod::*;
 use std::fs;
 use unwrap::unwrap;
 
-pub fn sort_lists(){
-
+pub fn sort_lists() {
     let list_remote_files = "data/list_remote_files.csv";
-    let list_local_files = "data/list_local_files.csv";
     // the files are NOT sorted
     // some folders have different case. Use case insensitive sort - lexical sort.
     eprintln!("before lexical sort{}", "");
@@ -27,26 +25,17 @@ pub fn sort_lists(){
     eprintln!("sorted remote len(): {}", sorted_remote.len());
     let joined = sorted_remote.join("\n");
     unwrap!(fs::write(list_remote_files, joined));
-
-    let content_local = unwrap!(fs::read_to_string(list_local_files));
-    let mut sorted_local: Vec<&str> = content_local.lines().collect();
-    eprintln!("read and collect local {}", "");
-    sorted_local.string_sort_unstable(lexical_cmp);
-    eprintln!("sorted local len(): {}", sorted_local.len());
-    let joined = sorted_local.join("\n");
-    unwrap!(fs::write(list_local_files, joined));
 }
 
 // the list must be already sorted for this to work correctly
 pub fn compare_sorted_lists() {
-    
     let list_remote_files = "data/list_remote_files.csv";
     let list_local_files = "data/list_local_files.csv";
     let content_remote = unwrap!(fs::read_to_string(list_remote_files));
     let sorted_remote: Vec<&str> = content_remote.lines().collect();
     let content_local = unwrap!(fs::read_to_string(list_local_files));
     let sorted_local: Vec<&str> = content_local.lines().collect();
-    
+
     let mut for_download: Vec<String> = vec![];
     let mut for_delete: Vec<String> = vec![];
     let mut cursor_web = 0;
