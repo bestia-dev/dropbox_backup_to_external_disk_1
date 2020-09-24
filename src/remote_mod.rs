@@ -1,18 +1,21 @@
 //! remote_mod.rs
 
+use crate::terminal_ansi_mod::*;
+
 use dropbox_sdk::client_trait::HttpClient;
 use dropbox_sdk::{files, HyperClient, Oauth2AuthorizeUrlBuilder, Oauth2Type};
 
-use std::collections::VecDeque;
-use std::env;
 #[allow(unused_imports)]
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
+use std::collections::VecDeque;
+use std::env;
+use std::fs;
 use std::io::{self, Read, Write};
 use unwrap::unwrap;
-use std::fs;
+use lexical_sort::{lexical_cmp, StringSort};
 
-fn prompt(msg: &str) -> String {
-    eprint!("{}: ", Yellow.paint(msg));
+fn prompt(row:u32,msg: &str) -> String {
+    eprint!("{}{}: ", ansi_set_row(row), Yellow.paint(msg));
     io::stderr().flush().unwrap();
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
@@ -23,7 +26,10 @@ pub fn test_connection() {
     let token = get_token();
     let client = HyperClient::new(token);
     match files::list_folder(&client, &files::ListFolderArg::new("".to_string())) {
-        Ok(Ok(_result)) => eprintln!("{}\n\n",Green.paint("test connection and authorization: ok")),
+        Ok(Ok(_result)) => eprintln!(
+            "{}\n\n",
+            Green.paint("test connection and authorization: ok")
+        ),
         Ok(Err(e)) => eprintln!("error: {}", e),
         Err(e) => eprintln!("error: {}", e),
     }
@@ -33,19 +39,19 @@ fn get_token() -> String {
     // Let the user pass the token in an environment variable, or prompt them if that's not found.
     let token = match env::var("DBX_OAUTH_TOKEN") {
         Ok(token) => {
-            eprintln!("Token read from env var.");
+            eprintln!("{}Token read from env var.",ansi_set_row(10));
             token
         }
         Err(_err) => {
-            let client_id = prompt("Give me a Dropbox API app key");
-            let client_secret = prompt("Give me a Dropbox API app secret");
+            let client_id = prompt(10,"Give me a Dropbox API app key");
+            let client_secret = prompt(11,"Give me a Dropbox API app secret");
 
             let url =
                 Oauth2AuthorizeUrlBuilder::new(&client_id, Oauth2Type::AuthorizationCode).build();
             eprintln!("Open this URL in your browser:");
             eprintln!("{}", url);
             eprintln!();
-            let auth_code = prompt("Then paste the code here");
+            let auth_code = prompt(14,"Then paste the code here");
 
             eprintln!("requesting OAuth2 token");
             match HyperClient::oauth2_token_from_authorization_code(
@@ -61,7 +67,11 @@ fn get_token() -> String {
                     eprintln!(
                         "You are logged into Linux and this is (mostly) not shared with others."
                     );
-                    eprintln!("$ export DBX_OAUTH_TOKEN={}", token);
+                    eprintln!(
+                        "$ {}{}",
+                        Green.paint("export DBX_OAUTH_TOKEN="),
+                        Green.paint(&token)
+                    );
 
                     // This is where you'd save the token somewhere so you don't need to do this dance
                     // again.
@@ -83,45 +93,41 @@ pub fn list_remote() {
     let token = get_token();
     let client = HyperClient::new(token);
 
-    use std::fs::OpenOptions;
-    use std::io::prelude::*;
-    let mut file = OpenOptions::new()
-        .create(true)
-        .write(true)
-        .truncate(true)
-        .open("temp_data/list_remote_files.csv")
-        .unwrap();
+    // write data to a big string in memory
+    let mut output_string = String::with_capacity(1024 * 1024);
+
     match list_directory(&client, "/", true) {
         Ok(Ok(iterator)) => {
+            let mut folder_count = 0;
             for entry_result in iterator {
                 match entry_result {
                     Ok(Ok(files::Metadata::Folder(entry))) => {
                         // path_display is not 100% case accurate. Dropbox is case-insensitive and preserves the casing only for the metadata_name, not path.
-                        println!("Folder: {}", entry.path_display.unwrap_or(entry.name));
+                        
+                        println!("{}Folder: {}", ansi_set_row(10),entry.path_display.unwrap_or(entry.name));
+                        
+                        println!("{}Folder_count: {}",ansi_set_row(11), folder_count);
+                        folder_count += 1;
                     }
                     Ok(Ok(files::Metadata::File(entry))) => {
                         // write csv tab delimited
-                        if let Err(e) = writeln!(
-                            file,
+                        output_string.push_str(&format!(
                             "{}\t{}\t{}",
                             // path_display is not 100% case accurate. Dropbox is case-insensitive and preserves the casing only for the metadata_name, not path.
                             entry.path_display.unwrap_or(entry.name),
                             entry.client_modified,
                             entry.size
-                        ) {
-                            eprintln!("Couldn't write to file: {}", e);
-                        }
-                        //println!("{}\t{}\t{}", entry.path_display.unwrap_or(entry.name), entry.client_modified, entry.size);
+                        ));
                     }
                     Ok(Ok(files::Metadata::Deleted(entry))) => {
-                        panic!("unexpected deleted entry: {:?}", entry);
+                        panic!("{}unexpected deleted entry: {:?}",ansi_set_row(10), entry);
                     }
                     Ok(Err(e)) => {
-                        eprintln!("Error from files/list_folder_continue: {}", e);
+                        println!("{}Error from files/list_folder_continue: {}",ansi_set_row(10), e);
                         break;
                     }
                     Err(e) => {
-                        eprintln!("API request error: {}", e);
+                        println!("{}API request error: {}",ansi_set_row(10), e);
                         break;
                     }
                 }
@@ -134,23 +140,16 @@ pub fn list_remote() {
             eprintln!("API request error: {}", e);
         }
     }
-    sort_list();
-}
-
-fn sort_list(){
-    let list_remote_files = "temp_data/list_remote_files.csv";
-    // the files are NOT sorted
-    // some folders have different case. Use case insensitive sort - lexical sort.
+    //#region: sort
     eprintln!("remote list lexical sort{}", "");
-    use lexical_sort::{lexical_cmp, StringSort};
+    let mut sorted_local: Vec<&str> = output_string.lines().collect();
+    sorted_local.string_sort_unstable(lexical_cmp);
+    let joined = sorted_local.join("\n");
+    eprintln!("remote list sorted local len(): {}", sorted_local.len());
+    //#end region: sort
 
-    let content_remote = unwrap!(fs::read_to_string(list_remote_files));
-    let mut sorted_remote: Vec<&str> = content_remote.lines().collect();
-    eprintln!("read and collect remote{}", "");
-    sorted_remote.string_sort_unstable(lexical_cmp);
-    eprintln!("sorted remote len(): {}", sorted_remote.len());
-    let joined = sorted_remote.join("\n");
-    unwrap!(fs::write(list_remote_files, joined));
+        // join to string and write to file
+        unwrap!(fs::write("temp_data/list_remote_files.csv", joined));
 }
 
 /// download one file

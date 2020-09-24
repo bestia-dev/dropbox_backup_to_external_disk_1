@@ -8,7 +8,7 @@ use chrono::prelude::*;
 pub fn ns_start(text: &str) -> i64 {
     let now = Utc::now();
     if !text.is_empty() {
-        eprintln!(
+        println!(
             "{}: {}",
             Green.paint(&Local::now().format("%Y-%m-%d %H:%M:%S").to_string()),
             Green.paint(text)
@@ -82,7 +82,7 @@ pub fn ns_print(name: &str, ns_start: i64) -> i64 {
         } else {
             duration_ns
         };
-        eprintln!("{} ns : {}", duration_ns, name);
+        println!("{} ns : {}", duration_ns, name);
     }
     // return new now_ns
     Utc::now().timestamp_nanos()

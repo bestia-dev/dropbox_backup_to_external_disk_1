@@ -10,6 +10,14 @@ fn main() {
     match std::env::args().nth(1).as_deref() {
         None | Some("--help") | Some("-h") => print_help(&bin_name),
         Some("test") => test_connection(),
+        Some("one_way_sync") => match std::env::args().nth(2).as_deref() {
+            Some(path) => {
+                let ns_started = ns_start("one_way_syncv");
+                one_way_sync(path);
+                ns_print("one_way_sync", ns_started);
+            }
+            _ => eprintln!("Unrecognized arguments. Try {} --help", &bin_name),
+        },
         Some("list_remote") => {
             let ns_started = ns_start("list_remote into temp_data/list_remote_files.csv");
             list_remote();
@@ -18,6 +26,7 @@ fn main() {
         Some("list_local") => match std::env::args().nth(2).as_deref() {
             Some(path) => {
                 let ns_started = ns_start("list_local into temp_data/list_local_files.csv");
+                ansi_clear_screen();
                 list_local(path);
                 ns_print("list_local", ns_started);
             }
@@ -104,4 +113,4 @@ fn print_help(bin_name: &str) {
     eprintln!("it will be used, otherwise you will be prompted for dropbox ");
     eprintln!("app key and app secret authentication interactively.");
     eprintln!();
- }
+}

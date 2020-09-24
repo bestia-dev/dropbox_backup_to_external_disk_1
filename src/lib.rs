@@ -2,16 +2,42 @@
 
 mod local_mod;
 mod remote_mod;
+mod terminal_ansi_mod;
 mod utils_mod;
 
 pub use local_mod::*;
 pub use remote_mod::*;
+pub use terminal_ansi_mod::*;
 pub use utils_mod::*;
 
 use std::fs;
 use unwrap::unwrap;
+#[allow(unused_imports)]
+use ansi_term::Colour::{Blue, Green, Red, Yellow};
 
-
+pub fn one_way_sync(base_path: &str) {
+    ansi_clear_screen();
+    println!("{}{}",ansi_set_row(1),"dbx_download one_way_sync");
+    ns_start("");
+    // start 2 threads, first for remote list and second for local list
+    // how they write to the screen?
+    use std::thread;
+    let base_path = base_path.to_string();
+    println!("before thread::spawn move");
+    let handle_2 = thread::spawn(move || {
+        print!("{}{}",ansi_set_row(9),Green.paint("second thread:"));
+        // prints at rows 10,11,12
+        list_remote();
+    });
+    let handle_1 = thread::spawn(move || {
+        print!("{}{}",ansi_set_row(4),Green.paint("first thread:"));
+        // prints at rows 5, 6, 7
+        list_local(&base_path);
+    });
+    handle_1.join().unwrap();
+    handle_2.join().unwrap();
+    println!("after handle.join()");
+}
 // the list must be already sorted for this to work correctly
 pub fn compare_sorted_lists() {
     let list_remote_files = "temp_data/list_remote_files.csv";
