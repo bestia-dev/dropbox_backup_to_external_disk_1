@@ -19,13 +19,25 @@ fn main() {
             _ => eprintln!("Unrecognized arguments. Try {} --help", &bin_name),
         },
         Some("list_remote") => {
-            let ns_started = ns_start("list_remote into temp_data/list_remote_files.csv");
+            ansi_clear_screen();
+            println!(
+                "{}{}",
+                ansi_set_row(1),
+                "list_remote into temp_data/list_remote_files.csv"
+            );
+            let ns_started = ns_start("");
             list_remote();
             ns_print("list_remote", ns_started);
         }
         Some("list_local") => match std::env::args().nth(2).as_deref() {
             Some(path) => {
-                let ns_started = ns_start("list_local into temp_data/list_local_files.csv");
+                ansi_clear_screen();
+                println!(
+                    "{}{}",
+                    ansi_set_row(1),
+                    "list_local into temp_data/list_local_files.csv"
+                );
+                let ns_started = ns_start("");
                 ansi_clear_screen();
                 list_local(path);
                 ns_print("list_local", ns_started);
@@ -61,7 +73,8 @@ fn print_help(bin_name: &str) {
     eprintln!("  $ {} -h", bin_name);
     eprintln!("  ");
 
-    eprintln!("Before first use, you will need to create your private Dropbox app. See down.");
+    eprintln!("Before first use, you will need to create your private Dropbox app and access token.");
+    eprintln!("Follow the instruction below.");
     eprintln!("  ");
 
     eprintln!("One-way sync download:");
@@ -95,9 +108,10 @@ fn print_help(bin_name: &str) {
     eprintln!();
 
     eprintln!("Before first use, you will need to create your private Dropbox app:");
+    eprintln!("- open your browser");
     eprintln!("- login to dropbox.com");
     eprintln!("- open App console <https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps>");
-    eprintln!("- Create app");
+    eprintln!("- click Create app");
     eprintln!("- choose Scoped access");
     eprintln!("- choose Full dropbox");
     eprintln!("- choose a unique app name (it does not matter) ex. `dbx_files_20200916_181100`, write it somewhere safe");
@@ -106,11 +120,7 @@ fn print_help(bin_name: &str) {
     eprintln!("- on the top return to the Settings tab");
     eprintln!("- App secret click Show, copy App key and App secret somewhere safe. This secret is like a password for your files. Be extra careful.");
     eprintln!("- Generated access token click Generate, copy somewhere safe.");
-    eprintln!();
-
-    eprintln!("If a Dropbox OAuth token is given in the environment variable:");
+    eprintln!("Set the private/secret environment variable for you Linux terminal session:");
     eprintln!("    $ export DBX_OAUTH_TOKEN=xx.xxxxx ");
-    eprintln!("it will be used, otherwise you will be prompted for dropbox ");
-    eprintln!("app key and app secret authentication interactively.");
     eprintln!();
 }

@@ -29,6 +29,6 @@ pub fn ansi_clear_screen() {
 }
 
 /// set row and clear line
-pub fn ansi_set_row(row:u32)->String{
+pub fn ansi_set_row(row: u32) -> String {
     format!("\x1b[{};{}H\x1b[2K", row, 1)
 }

@@ -10,33 +10,35 @@ pub use remote_mod::*;
 pub use terminal_ansi_mod::*;
 pub use utils_mod::*;
 
-use std::fs;
-use unwrap::unwrap;
 #[allow(unused_imports)]
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
+use std::fs;
+use unwrap::unwrap;
 
 pub fn one_way_sync(base_path: &str) {
     ansi_clear_screen();
-    println!("{}{}",ansi_set_row(1),"dbx_download one_way_sync");
+    println!("{}{}", ansi_set_row(1), "dbx_download one_way_sync");
     ns_start("");
     // start 2 threads, first for remote list and second for local list
-    // how they write to the screen?
     use std::thread;
     let base_path = base_path.to_string();
-    println!("before thread::spawn move");
-    let handle_2 = thread::spawn(move || {
-        print!("{}{}",ansi_set_row(9),Green.paint("second thread:"));
-        // prints at rows 10,11,12
-        list_remote();
-    });
     let handle_1 = thread::spawn(move || {
-        print!("{}{}",ansi_set_row(4),Green.paint("first thread:"));
+        print!("{}{}", ansi_set_row(4), Green.paint("first thread:"));
         // prints at rows 5, 6, 7
         list_local(&base_path);
     });
+    let handle_2 = thread::spawn(move || {
+        print!("{}{}", ansi_set_row(9), Green.paint("second thread:"));
+        // prints at rows 10,11,12
+        list_remote();
+    });
+    // wait for both threads to finish
     handle_1.join().unwrap();
     handle_2.join().unwrap();
-    println!("after handle.join()");
+    println!("{}{}", ansi_set_row(13), Yellow.paint("compare lists"));
+    compare_sorted_lists();
+    println!("{}", Yellow.paint("download from list"));
+    download_from_list();
 }
 // the list must be already sorted for this to work correctly
 pub fn compare_sorted_lists() {
@@ -74,22 +76,22 @@ pub fn compare_sorted_lists() {
             line_web = sorted_remote[cursor_web].split("\t").collect();
             line_local = sorted_local[cursor_local].split("\t").collect();
             if line_web[0].to_lowercase().lt(&line_local[0].to_lowercase()) {
-                println!("Ordering Less: {}   {}", line_web[0], line_local[0]);
+                //println!("Ordering Less: {}   {}", line_web[0], line_local[0]);
                 for_download.push(line_web[0].to_string());
                 cursor_web += 1;
             } else if line_web[0].to_lowercase().gt(&line_local[0].to_lowercase()) {
-                println!("Ordering Greater: {}   {}", line_web[0], line_local[0]);
+                //println!("Ordering Greater: {}   {}", line_web[0], line_local[0]);
                 for_delete.push(line_local[0].to_string());
                 cursor_local += 1;
             } else {
                 // equal names. check date and size
                 //println!("Equal names: {}   {}",line_web[0],line_local[0]);
                 if line_web[1] != line_local[1] || line_web[2] != line_local[2] {
-                    println!("Equal names: {}   {}", line_web[0], line_local[0]);
-                    println!(
-                        "Different date or size {} {} {} {}",
-                        line_web[1], line_local[1], line_web[2], line_local[2]
-                    );
+                    //println!("Equal names: {}   {}", line_web[0], line_local[0]);
+                    //println!(
+                    //"Different date or size {} {} {} {}",
+                    //line_web[1], line_local[1], line_web[2], line_local[2]
+                    //);
                     for_download.push(line_web[0].to_string());
                 }
                 cursor_local += 1;

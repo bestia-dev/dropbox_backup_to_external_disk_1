@@ -2,11 +2,11 @@
 
 use crate::terminal_ansi_mod::*;
 
+#[allow(unused_imports)]
+use ansi_term::Colour::{Blue, Green, Red, Yellow};
 use lexical_sort::{lexical_cmp, StringSort};
 use std::fs;
 use unwrap::unwrap;
-#[allow(unused_imports)]
-use ansi_term::Colour::{Blue, Green, Red, Yellow};
 
 // $ dbx_download list_local /mnt/d/DropBoxBackup2
 // $ clear; cargo run --bin dbx_download -- list_local /mnt/d/DropBoxBackup2
@@ -27,10 +27,13 @@ pub fn list_local(base_path: &str) {
         let str_path = unwrap!(path.to_str());
         // path.is_dir() is slow. entry.file-type().is_dir() is fast
         if entry.file_type().is_dir() {
-            
-            println!("{}Folder: {}",ansi_set_row(5), str_path.trim_start_matches(base_path));
-            
-            println!("{}Folder_count: {}",ansi_set_row(6), folder_count);
+            println!(
+                "{}Folder: {}",
+                ansi_set_row(5),
+                str_path.trim_start_matches(base_path)
+            );
+
+            println!("{}Folder_count: {}", ansi_set_row(6), folder_count);
 
             folder_count += 1;
         } else {
