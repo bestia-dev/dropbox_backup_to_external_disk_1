@@ -12,7 +12,7 @@ fn main() {
         Some("test") => test_connection(),
         Some("one_way_sync") => match std::env::args().nth(2).as_deref() {
             Some(path) => {
-                let ns_started = ns_start("one_way_syncv");
+                let ns_started = ns_start("one_way_sync");
                 one_way_sync(path);
                 ns_print("one_way_sync", ns_started);
             }
@@ -57,6 +57,11 @@ fn main() {
             let ns_started = ns_start("download from temp_data/list_for_download.csv");
             download_from_list();
             ns_print("download_from_list", ns_started);
+        },
+        Some("trash_from_list") => {
+            let ns_started = ns_start("trash from temp_data/list_for_trash.csv");
+            trash_from_list();
+            ns_print("trash_from_list", ns_started);
         }
 
         _ => eprintln!("Unrecognized arguments. Try {} --help", &bin_name),
@@ -95,7 +100,7 @@ fn print_help(bin_name: &str) {
     eprintln!("  $ {} list_local /mnt/d/DropBoxBackup2", bin_name);
     eprintln!("  ");
 
-    eprintln!("Compare lists and create temp_data/list_for_download.csv and temp_data/list_for_delete.csv:");
+    eprintln!("Compare lists and create temp_data/list_for_download.csv and temp_data/list_for_trash.csv:");
     eprintln!("  $ {} compare_sorted_lists", bin_name);
     eprintln!("  ");
 
@@ -105,6 +110,10 @@ fn print_help(bin_name: &str) {
 
     eprintln!("Download files from temp_data/list_for_download.csv:");
     eprintln!("  $ {} download_from_list", bin_name);
+    eprintln!();
+
+    eprintln!("Trash files from temp_data/list_for_trash.csv:");
+    eprintln!("  $ {} trash_from_list", bin_name);
     eprintln!();
 
     eprintln!("Before first use, you will need to create your private Dropbox app:");

@@ -159,16 +159,18 @@ pub fn list_remote() {
     // join to string and write to file
     unwrap!(fs::write("temp_data/list_remote_files.csv", joined));
 }
-
 /// download one file
 pub fn download(download_path: &str) {
     let token = get_token();
     let client = HyperClient::new(token);
+    let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+    download_with_client(download_path, &client,&base_local_path);
+}
+/// download one file with client
+pub fn download_with_client(download_path: &str, client: &HyperClient,base_local_path:&str) {
     eprintln!("downloading file {}", download_path);
     let mut bytes_out = 0u64;
     let download_arg = files::DownloadArg::new(download_path.to_string());
-    use std::fs::OpenOptions;
-    let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let local_path = format!("{}{}", base_local_path, download_path);
     eprintln!("to local path: {}", local_path);
     // create folder if it does not exist
@@ -179,17 +181,22 @@ pub fn download(download_path: &str) {
     if !std::path::Path::new(&parent).exists() {
         std::fs::create_dir_all(parent).unwrap();
     }
-    let mut file = OpenOptions::new()
+    let mut file = fs::OpenOptions::new()
         .create(true)
         .write(true)
-        .open(local_path)
+        .open(&local_path)
         .unwrap();
 
+    let mut modified:Option<filetime::FileTime>=None;
     'download: loop {
-        let result = files::download(&client, &download_arg, Some(bytes_out), None);
+        let result = files::download(client, &download_arg, Some(bytes_out), None);
         match result {
             Ok(Ok(download_result)) => {
                 let mut body = download_result.body.expect("no body received!");
+                if modified.is_none(){
+                    modified = Some( filetime::FileTime::from_system_time(
+                    unwrap!(humantime::parse_rfc3339(&download_result.result.client_modified))));
+                };
                 loop {
                     // limit read to 1 MiB per loop iteration so we can output progress
                     let mut input_chunk = (&mut body).take(1024 * 1024);
@@ -220,22 +227,19 @@ pub fn download(download_path: &str) {
                 eprintln!("Error: {}", request_error);
             }
         }
+
         break 'download;
     }
+        unwrap!(filetime::set_file_mtime(&local_path, unwrap!(modified))); 
 }
 
 pub fn download_from_list() {
-    // TODO: open the authorization once
-    // and then download multiple files
     let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let list_for_download = std::fs::read_to_string("temp_data/list_for_download.csv").unwrap();
+    let token = get_token();
+    let client = HyperClient::new(token);
     for download_path in list_for_download.lines() {
-        // TODO: add datetime and size in list
-        let local_path = format!("{}{}", base_local_path, download_path);
-        //TODO: if datetime and size is not the same then overwrite
-        if !std::path::Path::new(&local_path).exists() {
-            download(download_path);
-        }
+        download_with_client (download_path,&client,&base_local_path);
     }
 }
 

@@ -21,6 +21,8 @@ lexical-sort = "0.3.1"
 # colorful output to screen
 ansi_term = "0.12.1"
 walkdir = "2.3.1"
+filetime = "0.2"
+humantime="2.1.0"
 
 [dependencies.dropbox-sdk]
 version = "0.5.0"

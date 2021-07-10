@@ -18,7 +18,7 @@ The original Dropbox Sync app works great for the internal HD, but is "not recom
 - dropbox_uploader
 
 But I wanted to write something mine for fun, learning Rust and using my own apps.
-I have a lot of files, so I wanted to list them first, then compare with the local files and finally download them. The delete part at the end will be "move to trash folder". So I can inspect what and how to delete it manually.  
+I have a lot of files, so I wanted to list them first, then compare with the local files and finally download them. The trash part at the end will be "move to trash folder". So I can inspect what and how to remove it manually.  
 
 ## DropBox api2 - Stone sdk
 
@@ -56,7 +56,7 @@ List all files in your remote Dropbox to `temp_data/list_remote_files.csv`:
 `$ dbx_download list_remote`  
 List local files to `temp_data/list_local_files.csv`:  
 `$ dbx_download list_local /mnt/d/DropBoxBackup2`  
-Compare lists and create `temp_data/list_for_download.csv` and `temp_data/list_for_delete.csv`:  
+Compare lists and create `temp_data/list_for_download.csv` and `temp_data/list_for_trash.csv`:  
 `$ dbx_download compare_sorted_lists`  
 Download one file:  
 `$ dbx_download download <path>`  

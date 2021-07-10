@@ -76,3 +76,25 @@ pub fn save_base_path(base_path: &str) {
     }
     std::fs::write("temp_data/base_local_path.csv", base_path).unwrap();
 }
+
+// the files from list_for_trash move to trash folder
+pub fn trash_from_list(){
+    let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+    let now_string = chrono::Local::now().format("trash_%Y-%m-%d_%H-%M-%S").to_string();
+    let base_trash_path = format!("{}_{}", &base_local_path, &now_string);
+    if !std::path::Path::new(&base_trash_path).exists() {
+        std::fs::create_dir_all(&base_trash_path).unwrap();
+    }
+    //move the files in the same directory structure
+    let list_for_trash = std::fs::read_to_string("temp_data/list_for_trash.csv").unwrap();
+    for path_to_trash in list_for_trash.lines() {
+        let move_from = format!("{}{}", base_local_path,path_to_trash);
+        let move_to = format!("{}{}", base_trash_path,path_to_trash);
+        println!("{}  ->  {}", move_from, move_to);
+        let parent = unwrap!(std::path::Path::parent(std::path::Path::new(&move_to)));
+        if !parent.exists() {
+            std::fs::create_dir_all(&parent).unwrap();
+        }
+        unwrap!( std::fs::rename(&move_from,&move_to ));
+    }
+}

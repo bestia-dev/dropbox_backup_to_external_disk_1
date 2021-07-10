@@ -50,7 +50,7 @@ pub fn compare_sorted_lists() {
     let sorted_local: Vec<&str> = content_local.lines().collect();
 
     let mut for_download: Vec<String> = vec![];
-    let mut for_delete: Vec<String> = vec![];
+    let mut for_trash: Vec<String> = vec![];
     let mut cursor_web = 0;
     let mut cursor_local = 0;
     //avoid making new allocations or shadowing inside a loop
@@ -66,7 +66,7 @@ pub fn compare_sorted_lists() {
             break;
         } else if cursor_web >= sorted_remote.len() {
             line_local = sorted_local[cursor_local].split("\t").collect();
-            for_delete.push(line_local[0].to_string());
+            for_trash.push(line_local[0].to_string());
             cursor_local += 1;
         } else if cursor_local >= sorted_local.len() {
             line_web = sorted_remote[cursor_web].split("\t").collect();
@@ -81,7 +81,7 @@ pub fn compare_sorted_lists() {
                 cursor_web += 1;
             } else if line_web[0].to_lowercase().gt(&line_local[0].to_lowercase()) {
                 //println!("Ordering Greater: {}   {}", line_web[0], line_local[0]);
-                for_delete.push(line_local[0].to_string());
+                for_trash.push(line_local[0].to_string());
                 cursor_local += 1;
             } else {
                 // equal names. check date and size
@@ -101,6 +101,6 @@ pub fn compare_sorted_lists() {
     }
     let joined = for_download.join("\n");
     unwrap!(fs::write("temp_data/list_for_download.csv", joined));
-    let joined = for_delete.join("\n");
-    unwrap!(fs::write("temp_data/list_for_delete.csv", joined));
+    let joined = for_trash.join("\n");
+    unwrap!(fs::write("temp_data/list_for_trash.csv", joined));
 }
