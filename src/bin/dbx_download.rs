@@ -57,13 +57,17 @@ fn main() {
             let ns_started = ns_start("download from temp_data/list_for_download.csv");
             download_from_list();
             ns_print("download_from_list", ns_started);
-        },
+        }
         Some("trash_from_list") => {
             let ns_started = ns_start("trash from temp_data/list_for_trash.csv");
             trash_from_list();
             ns_print("trash_from_list", ns_started);
         }
-
+        Some("correct_time_from_list") => {
+            let ns_started = ns_start("correct time of files from temp_data/list_for_correct_time.csv");
+            correct_time_from_list();
+            ns_print("correct_time_from_list", ns_started);
+        }
         _ => eprintln!("Unrecognized arguments. Try {} --help", &bin_name),
     }
 }
@@ -78,7 +82,9 @@ fn print_help(bin_name: &str) {
     eprintln!("  $ {} -h", bin_name);
     eprintln!("  ");
 
-    eprintln!("Before first use, you will need to create your private Dropbox app and access token.");
+    eprintln!(
+        "Before first use, you will need to create your private Dropbox app and access token."
+    );
     eprintln!("Follow the instruction below.");
     eprintln!("  ");
 
@@ -106,6 +112,10 @@ fn print_help(bin_name: &str) {
 
     eprintln!("Download one file:");
     eprintln!("  $ {} download <path>", bin_name);
+    eprintln!();
+
+    eprintln!("Correct time of files from temp_data/list_for_correct_time.csv:");
+    eprintln!("  $ {} correct_time_from_list", bin_name);
     eprintln!();
 
     eprintln!("Download files from temp_data/list_for_download.csv:");

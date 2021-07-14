@@ -1,0 +1,54 @@
+# dbx_download/Makefile.toml
+# https://github.com/sagiegurari/cargo-make/blob/master/src/lib/Makefile.stable.toml
+
+[config]
+skip_core_tasks = true
+
+[tasks.default]
+description = "help for prepared make tasks"
+clear = true
+script= [
+"clear",
+"echo ",
+"echo HELP FOR MAKE TASKS:",
+"echo ",
+"echo $ clear - clear the screen",
+"echo $ cargo make - this list",
+"echo $ cargo make debug - build debug version, increment semver patch in Cargo.toml",
+"echo $ dbx_download --help - instructions especially for first use because of authentication",
+"echo "
+]
+
+# end of help
+# end of help
+# end of help
+
+[tasks.debug]
+description = "cargo build debug"
+clear = true
+script = [
+    # Binaries version is date
+    #"echo $ lmake_version_from_date",
+    #"lmake_version_from_date",
+    # Library version is semver
+    "echo $ lmake_semver --increment=patch",
+    "lmake_semver --increment=patch",
+    "echo $ cargo build",
+    "cargo build",
+    "echo $ alias dbx_download=target/debug/dbx_download",
+    "alias dbx_download=target/debug/dbx_download",
+    "echo $ $ dbx_download --help",
+    "dbx_download --help"
+]
+
+# end of run scripts
+# end of run scripts
+# end of run scripts
+
+# end of publish script
+# end of publish script
+# end of publish script
+
+# end of crates.io publish script
+# end of crates.io publish script
+# end of crates.io publish script

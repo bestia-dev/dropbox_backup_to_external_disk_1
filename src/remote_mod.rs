@@ -164,20 +164,19 @@ pub fn download(download_path: &str) {
     let token = get_token();
     let client = HyperClient::new(token);
     let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-    download_with_client(download_path, &client,&base_local_path);
+    download_with_client(download_path, &client, &base_local_path);
 }
 /// download one file with client
-pub fn download_with_client(download_path: &str, client: &HyperClient,base_local_path:&str) {
+pub fn download_with_client(download_path: &str, client: &HyperClient, base_local_path: &str) {
     eprintln!("downloading file {}", download_path);
     let mut bytes_out = 0u64;
     let download_arg = files::DownloadArg::new(download_path.to_string());
     let local_path = format!("{}{}", base_local_path, download_path);
-    eprintln!("to local path: {}", local_path);
+    // eprintln!("to local path: {}", local_path);
     // create folder if it does not exist
     use std::path::PathBuf;
     let path = PathBuf::from(&local_path);
     let parent = path.parent().unwrap();
-    eprintln!("parent folder: {}", parent.to_str().unwrap());
     if !std::path::Path::new(&parent).exists() {
         std::fs::create_dir_all(parent).unwrap();
     }
@@ -187,30 +186,31 @@ pub fn download_with_client(download_path: &str, client: &HyperClient,base_local
         .open(&local_path)
         .unwrap();
 
-    let mut modified:Option<filetime::FileTime>=None;
+    let mut modified: Option<filetime::FileTime> = None;
     'download: loop {
         let result = files::download(client, &download_arg, Some(bytes_out), None);
         match result {
             Ok(Ok(download_result)) => {
                 let mut body = download_result.body.expect("no body received!");
-                if modified.is_none(){
-                    modified = Some( filetime::FileTime::from_system_time(
-                    unwrap!(humantime::parse_rfc3339(&download_result.result.client_modified))));
+                if modified.is_none() {
+                    modified = Some(filetime::FileTime::from_system_time(unwrap!(
+                        humantime::parse_rfc3339(&download_result.result.client_modified)
+                    )));
                 };
                 loop {
                     // limit read to 1 MiB per loop iteration so we can output progress
                     let mut input_chunk = (&mut body).take(1024 * 1024);
                     match io::copy(&mut input_chunk, &mut file) {
                         Ok(0) => {
-                            eprint!("\r");
+                            //eprint!("\n");
                             break 'download;
                         }
                         Ok(len) => {
                             bytes_out += len as u64;
                             if let Some(total) = download_result.content_length {
-                                eprint!("\r{:.01}%", bytes_out as f64 / total as f64 * 100.);
+                                //eprint!("\n{:.01}% of {:.02} Mb", bytes_out as f64 / total as f64 * 100.,total as f64 / 1000000.);
                             } else {
-                                eprint!("\r{} bytes", bytes_out);
+                                //eprint!("\n{} bytes", bytes_out);
                             }
                         }
                         Err(e) => {
@@ -230,17 +230,23 @@ pub fn download_with_client(download_path: &str, client: &HyperClient,base_local
 
         break 'download;
     }
-        unwrap!(filetime::set_file_mtime(&local_path, unwrap!(modified))); 
+    unwrap!(filetime::set_file_mtime(&local_path, unwrap!(modified)));
 }
 
 pub fn download_from_list() {
     let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let list_for_download = std::fs::read_to_string("temp_data/list_for_download.csv").unwrap();
     let token = get_token();
-    let client = HyperClient::new(token);
-    for download_path in list_for_download.lines() {
-        download_with_client (download_path,&client,&base_local_path);
-    }
+    // parallel rayon
+    use rayon::prelude::*;
+    list_for_download.par_lines()
+        .for_each_with(
+            token,
+            |token, path| {
+                let client = HyperClient::new(token.to_owned());
+                download_with_client(&path, &client, &base_local_path);
+            }
+        );
 }
 
 fn list_directory<'a>(

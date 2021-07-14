@@ -1,28 +1,27 @@
 [package]
 name = "dbx_download"
-version = "0.1.0"
+version = "0.1.16"
+description = "one way sync from dropbox to an external disc"
 authors = ["Luciano Bestia <LucianoBestia@gmail.com>"]
 edition = "2018"
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/lucianobestia/dbx_download/"
+categories = ["programming"]
+keywords = ["dropbox"]
 publish = false
 
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-#[profile.release]
-#lto = "thin"
-#panic = "abort"
-#opt-level = "s"
-
 [dependencies]
-env_logger = "0.7.1"
+env_logger = "0.8.4"
 chrono = "0.4.15"
-unwrap="1.2.1"
+unwrap = "1.2.1"
 lexical-sort = "0.3.1"
 # colorful output to screen
 ansi_term = "0.12.1"
 walkdir = "2.3.1"
 filetime = "0.2"
-humantime="2.1.0"
+humantime = "2.1.0"
+rayon = "1.5.1"
 
 [dependencies.dropbox-sdk]
 version = "0.5.0"

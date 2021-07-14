@@ -37,12 +37,10 @@ For commercial programs they probably embed them into the binary code somehow. B
 You should be logged in Linux terminal with your account. So things you do are not visible to others.  
 You will set some local environment variables that are private/secret to your linux Session.  
 After you logout from you Linux session the local environment variables will be deleted.  
+YOu have to be in the project folder where cargo.toml is.  
 Build the CLI:
-`$ cd rustprojects/dbx_download`  
-`$ clear; cargo build`  
-`$ alias dbx_download=target/debug/dbx_download`  
+`$ cargo make debug`  
 Follow carefully the instructions to create your Dropbox app and generate your `access token`.  
-`$ dbx_download --help`  
 In Linux bash write the `access token` into the environment variable like this:
 `$ export DBX_OAUTH_TOKEN=xx.xxxxx`
 Test the connection and permission:  

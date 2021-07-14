@@ -78,9 +78,11 @@ pub fn save_base_path(base_path: &str) {
 }
 
 // the files from list_for_trash move to trash folder
-pub fn trash_from_list(){
+pub fn trash_from_list() {
     let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-    let now_string = chrono::Local::now().format("trash_%Y-%m-%d_%H-%M-%S").to_string();
+    let now_string = chrono::Local::now()
+        .format("trash_%Y-%m-%d_%H-%M-%S")
+        .to_string();
     let base_trash_path = format!("{}_{}", &base_local_path, &now_string);
     if !std::path::Path::new(&base_trash_path).exists() {
         std::fs::create_dir_all(&base_trash_path).unwrap();
@@ -88,13 +90,28 @@ pub fn trash_from_list(){
     //move the files in the same directory structure
     let list_for_trash = std::fs::read_to_string("temp_data/list_for_trash.csv").unwrap();
     for path_to_trash in list_for_trash.lines() {
-        let move_from = format!("{}{}", base_local_path,path_to_trash);
-        let move_to = format!("{}{}", base_trash_path,path_to_trash);
+        let move_from = format!("{}{}", base_local_path, path_to_trash);
+        let move_to = format!("{}{}", base_trash_path, path_to_trash);
         println!("{}  ->  {}", move_from, move_to);
         let parent = unwrap!(std::path::Path::parent(std::path::Path::new(&move_to)));
         if !parent.exists() {
             std::fs::create_dir_all(&parent).unwrap();
         }
-        unwrap!( std::fs::rename(&move_from,&move_to ));
+        unwrap!(std::fs::rename(&move_from, &move_to));
+    }
+}
+
+// the files from list_for_correct_time
+pub fn correct_time_from_list() {
+    let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+    let list_for_correct_time = std::fs::read_to_string("temp_data/list_for_correct_time.csv").unwrap();
+    for path_to_correct_time in list_for_correct_time.lines() {
+        let line: Vec<&str> = path_to_correct_time.split("\t").collect();
+        println!("{} {}", line[0], line[1]);
+        let local_path = format!("{}{}", base_local_path, line[0]);
+        let modified = filetime::FileTime::from_system_time(unwrap!(
+                humantime::parse_rfc3339(line[1])
+            ));
+        unwrap!(filetime::set_file_mtime(local_path, modified));
     }
 }

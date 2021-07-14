@@ -51,6 +51,7 @@ pub fn compare_sorted_lists() {
 
     let mut for_download: Vec<String> = vec![];
     let mut for_trash: Vec<String> = vec![];
+    let mut for_correct_time: Vec<String> = vec![];
     let mut cursor_web = 0;
     let mut cursor_local = 0;
     //avoid making new allocations or shadowing inside a loop
@@ -85,8 +86,11 @@ pub fn compare_sorted_lists() {
                 cursor_local += 1;
             } else {
                 // equal names. check date and size
-                //println!("Equal names: {}   {}",line_web[0],line_local[0]);
-                if line_web[1] != line_local[1] || line_web[2] != line_local[2] {
+                // println!("Equal names: {}   {}",line_web[0],line_local[0]);
+                // if equal size and time difference only in seconds, then correct local time
+                if line_web[2] == line_local[2] && line_web[1] != line_local[1] && line_web[1][0..17] == line_local[1][0..17]{
+                    for_correct_time.push(format!("{}\t{}",line_local[0],line_web[1] ));
+                } else if line_web[1] != line_local[1] || line_web[2] != line_local[2] {
                     //println!("Equal names: {}   {}", line_web[0], line_local[0]);
                     //println!(
                     //"Different date or size {} {} {} {}",
@@ -94,6 +98,7 @@ pub fn compare_sorted_lists() {
                     //);
                     for_download.push(line_web[0].to_string());
                 }
+                // else the metadata is the same, no action
                 cursor_local += 1;
                 cursor_web += 1;
             }
@@ -103,4 +108,6 @@ pub fn compare_sorted_lists() {
     unwrap!(fs::write("temp_data/list_for_download.csv", joined));
     let joined = for_trash.join("\n");
     unwrap!(fs::write("temp_data/list_for_trash.csv", joined));
+    let correct_time = for_correct_time.join("\n");
+    unwrap!(fs::write("temp_data/list_for_correct_time.csv", correct_time));
 }
