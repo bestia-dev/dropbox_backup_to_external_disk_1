@@ -159,22 +159,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "dbx_download"
-version = "0.1.16"
-dependencies = [
- "ansi_term",
- "chrono",
- "dropbox-sdk",
- "env_logger",
- "filetime",
- "humantime",
- "lexical-sort",
- "rayon",
- "unwrap",
- "walkdir",
-]
-
-[[package]]
 name = "dropbox-sdk"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -187,6 +171,22 @@ dependencies = [
  "serde_json",
  "thiserror",
  "url 2.1.1",
+]
+
+[[package]]
+name = "dropbox_backup_to_external_disk"
+version = "0.1.35"
+dependencies = [
+ "ansi_term",
+ "chrono",
+ "dropbox-sdk",
+ "env_logger",
+ "filetime",
+ "humantime",
+ "lexical-sort",
+ "rayon",
+ "unwrap",
+ "walkdir",
 ]
 
 [[package]]

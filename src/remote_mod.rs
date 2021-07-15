@@ -3,7 +3,7 @@
 use crate::terminal_ansi_mod::*;
 
 use dropbox_sdk::client_trait::HttpClient;
-use dropbox_sdk::{files, HyperClient, Oauth2AuthorizeUrlBuilder, Oauth2Type};
+use dropbox_sdk::{files, HyperClient};
 
 #[allow(unused_imports)]
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
@@ -11,78 +11,31 @@ use lexical_sort::{lexical_cmp, StringSort};
 use std::collections::VecDeque;
 use std::env;
 use std::fs;
-use std::io::{self, Read, Write};
+use std::io::{self, Read};
 use unwrap::unwrap;
-
-fn prompt(row: u32, msg: &str) -> String {
-    eprint!("{}{}: ", ansi_set_row(row), Yellow.paint(msg));
-    io::stderr().flush().unwrap();
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).unwrap();
-    input.trim().to_owned()
-}
 
 pub fn test_connection() {
     let token = get_token();
     let client = HyperClient::new(token);
     match files::list_folder(&client, &files::ListFolderArg::new("".to_string())) {
-        Ok(Ok(_result)) => eprintln!(
-            "{}\n\n",
+        Ok(Ok(_result)) => println!(
+            "{}",
             Green.paint("test connection and authorization: ok")
         ),
-        Ok(Err(e)) => eprintln!("error: {}", e),
-        Err(e) => eprintln!("error: {}", e),
+        Ok(Err(e)) => println!("error: {}", e),
+        Err(e) => println!("error: {}", e),
     }
 }
 
 fn get_token() -> String {
-    // Let the user pass the token in an environment variable, or prompt them if that's not found.
+    // The user must prepare the access token in the environment variable
     let token = match env::var("DBX_OAUTH_TOKEN") {
         Ok(token) => {
-            eprintln!("{}Token read from env var.", ansi_set_row(10));
+            println!("Token read from env var DBX_OAUTH_TOKEN.");
             token
         }
         Err(_err) => {
-            let client_id = prompt(10, "Give me a Dropbox API app key");
-            let client_secret = prompt(11, "Give me a Dropbox API app secret");
-
-            let url =
-                Oauth2AuthorizeUrlBuilder::new(&client_id, Oauth2Type::AuthorizationCode).build();
-            eprintln!("Open this URL in your browser:");
-            eprintln!("{}", url);
-            eprintln!();
-            let auth_code = prompt(14, "Then paste the code here");
-
-            eprintln!("requesting OAuth2 token");
-            match HyperClient::oauth2_token_from_authorization_code(
-                &client_id,
-                &client_secret,
-                auth_code.trim(),
-                None,
-            ) {
-                Ok(token) => {
-                    eprintln!("got token: {}", token);
-                    eprintln!("You can store this token into a env variable for temporary use.");
-                    eprintln!("So you don't need to do this dance again.");
-                    eprintln!(
-                        "You are logged into Linux and this is (mostly) not shared with others."
-                    );
-                    eprintln!(
-                        "$ {}{}",
-                        Green.paint("export DBX_OAUTH_TOKEN="),
-                        Green.paint(&token)
-                    );
-
-                    // This is where you'd save the token somewhere so you don't need to do this dance
-                    // again.
-
-                    token
-                }
-                Err(e) => {
-                    eprintln!("Error getting OAuth2 token: {}", e);
-                    std::process::exit(1);
-                }
-            }
+            panic!("Error: The access token is not found in the env variable DBX_OAUTH_TOKEN.");
         }
     };
     // return
@@ -142,18 +95,18 @@ pub fn list_remote() {
             }
         }
         Ok(Err(e)) => {
-            eprintln!("Error from files/list_folder: {}", e);
+            println!("Error from files/list_folder: {}", e);
         }
         Err(e) => {
-            eprintln!("API request error: {}", e);
+            println!("API request error: {}", e);
         }
     }
     //#region: sort
-    eprintln!("remote list lexical sort{}", "");
+    println!("remote list lexical sort{}", "");
     let mut sorted_local: Vec<&str> = output_string.lines().collect();
     sorted_local.string_sort_unstable(lexical_cmp);
     let joined = sorted_local.join("\n");
-    eprintln!("remote list sorted local len(): {}", sorted_local.len());
+    println!("remote list sorted local len(): {}", sorted_local.len());
     //#end region: sort
 
     // join to string and write to file
@@ -168,11 +121,11 @@ pub fn download(download_path: &str) {
 }
 /// download one file with client
 pub fn download_with_client(download_path: &str, client: &HyperClient, base_local_path: &str) {
-    eprintln!("downloading file {}", download_path);
+    println!("downloading file {}", download_path);
     let mut bytes_out = 0u64;
     let download_arg = files::DownloadArg::new(download_path.to_string());
     let local_path = format!("{}{}", base_local_path, download_path);
-    // eprintln!("to local path: {}", local_path);
+    // println!("to local path: {}", local_path);
     // create folder if it does not exist
     use std::path::PathBuf;
     let path = PathBuf::from(&local_path);
@@ -202,29 +155,29 @@ pub fn download_with_client(download_path: &str, client: &HyperClient, base_loca
                     let mut input_chunk = (&mut body).take(1024 * 1024);
                     match io::copy(&mut input_chunk, &mut file) {
                         Ok(0) => {
-                            //eprint!("\n");
+                            //println!("\n");
                             break 'download;
                         }
                         Ok(len) => {
                             bytes_out += len as u64;
-                            if let Some(total) = download_result.content_length {
-                                //eprint!("\n{:.01}% of {:.02} Mb", bytes_out as f64 / total as f64 * 100.,total as f64 / 1000000.);
-                            } else {
-                                //eprint!("\n{} bytes", bytes_out);
-                            }
+                            //if let Some(total) = download_result.content_length {
+                                //println!("\n{:.01}% of {:.02} Mb", bytes_out as f64 / total as f64 * 100.,total as f64 / 1000000.);
+                            //} else {
+                                //println!("\n{} bytes", bytes_out);
+                            //}
                         }
                         Err(e) => {
-                            eprintln!("Read error: {}", e);
+                            println!("Read error: {}", e);
                             continue 'download; // do another request and resume
                         }
                     }
                 }
             }
             Ok(Err(download_error)) => {
-                eprintln!("Download error: {}", download_error);
+                println!("Download error: {}", download_error);
             }
             Err(request_error) => {
-                eprintln!("Error: {}", request_error);
+                println!("Error: {}", request_error);
             }
         }
 

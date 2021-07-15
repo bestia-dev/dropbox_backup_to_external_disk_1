@@ -25,7 +25,7 @@ n=2 clears entire line
             */
 
 pub fn ansi_clear_screen() {
-    print!("\x1B[2J");
+    println!("\x1B[2J");
 }
 
 /// set row and clear line

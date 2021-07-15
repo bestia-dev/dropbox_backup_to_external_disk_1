@@ -1,4 +1,4 @@
-//! dbx_download lib.rs
+//! dropbox_backup_to_external_disk lib.rs
 
 mod local_mod;
 mod remote_mod;
@@ -17,18 +17,18 @@ use unwrap::unwrap;
 
 pub fn one_way_sync(base_path: &str) {
     ansi_clear_screen();
-    println!("{}{}", ansi_set_row(1), "dbx_download one_way_sync");
+    println!("{}{}", ansi_set_row(1), "dropbox_backup_to_external_disk one_way_sync");
     ns_start("");
     // start 2 threads, first for remote list and second for local list
     use std::thread;
     let base_path = base_path.to_string();
     let handle_1 = thread::spawn(move || {
-        print!("{}{}", ansi_set_row(4), Green.paint("first thread:"));
+        println!("{}{}", ansi_set_row(4), Green.paint("first thread:"));
         // prints at rows 5, 6, 7
         list_local(&base_path);
     });
     let handle_2 = thread::spawn(move || {
-        print!("{}{}", ansi_set_row(9), Green.paint("second thread:"));
+        println!("{}{}", ansi_set_row(9), Green.paint("second thread:"));
         // prints at rows 10,11,12
         list_remote();
     });
@@ -37,8 +37,12 @@ pub fn one_way_sync(base_path: &str) {
     handle_2.join().unwrap();
     println!("{}{}", ansi_set_row(13), Yellow.paint("compare lists"));
     compare_sorted_lists();
+    println!("{}", Yellow.paint("move to trash from list"));
+    trash_from_list();
+    println!("{}", Yellow.paint("correct time from list"));
+    correct_time_from_list();
     println!("{}", Yellow.paint("download from list"));
-    download_from_list();
+    download_from_list();    
 }
 // the list must be already sorted for this to work correctly
 pub fn compare_sorted_lists() {

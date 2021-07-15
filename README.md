@@ -1,6 +1,6 @@
 [comment]: # (lmake_md_to_doc_comments segment start A)
 
-# dbx_download
+# dropbox_backup_to_external_disk
 
 [comment]: # (lmake_cargo_toml_to_md start)
 
@@ -30,45 +30,45 @@ For Rust there is this quasi official project:
 
 Authorization on the internet is a mess. Dropbox api uses OAuth2.
 Every app must have its own `app key` and `app secret`.  
-For commercial programs they probably embed them into the binary code somehow. But for OpenSource projects it is not possible to keep a secret. So the workaround is: every user must create a new `dropbox app` exclusive only to him. Creating a new app is medium simple. This app will stay forever in `development status` in dropbox, to be more private and secure. The `$ dbx_download --help` has the detailed instructions.  
+For commercial programs they probably embed them into the binary code somehow. But for OpenSource projects it is not possible to keep a secret. So the workaround is: every user must create a new `dropbox app` exclusive only to him. Creating a new app is medium simple. This app will stay forever in `development status` in dropbox, to be more private and secure. The `$ dropbox_backup_to_external_disk --help` has the detailed instructions.  
 
 ## Try it
 
 You should be logged in Linux terminal with your account. So things you do are not visible to others.  
 You will set some local environment variables that are private/secret to your linux Session.  
 After you logout from you Linux session the local environment variables will be deleted.  
-YOu have to be in the project folder where cargo.toml is.  
+You have to be in the project folder where cargo.toml is.  
 Build the CLI:
 `$ cargo make debug`  
 Follow carefully the instructions to create your Dropbox app and generate your `access token`.  
 In Linux bash write the `access token` into the environment variable like this:
 `$ export DBX_OAUTH_TOKEN=xx.xxxxx`
 Test the connection and permission:  
-`$ dbx_download test`
+`$ dropbox_backup_to_external_disk test`
 If the environment variable is not present, the CLI will ask for key and secret and finally for the access token.  
 The list of commands is:  
 One-way sync download (complete with all the steps):  
-`$ dbx_download one_way_sync /mnt/d/DropBoxBackup2`  
+`$ dropbox_backup_to_external_disk one_way_sync /mnt/d/DropBoxBackup2`  
 For debugging purpose, you can run every step separately.  
 List all files in your remote Dropbox to `temp_data/list_remote_files.csv`:  
-`$ dbx_download list_remote`  
+`$ dropbox_backup_to_external_disk list_remote`  
 List local files to `temp_data/list_local_files.csv`:  
-`$ dbx_download list_local /mnt/d/DropBoxBackup2`  
+`$ dropbox_backup_to_external_disk list_local /mnt/d/DropBoxBackup2`  
 Compare lists and create `temp_data/list_for_download.csv` and `temp_data/list_for_trash.csv`:  
-`$ dbx_download compare_sorted_lists`  
+`$ dropbox_backup_to_external_disk compare_sorted_lists`  
 Download one file:  
-`$ dbx_download download <path>`  
+`$ dropbox_backup_to_external_disk download <path>`  
 Download files from `temp_data/list_for_download.csv`:  
-`$ dbx_download download_from_list`  
+`$ dropbox_backup_to_external_disk download_from_list`  
 
 [comment]: # (lmake_md_to_doc_comments segment end A)
 
 ## Development
 
 Clone the repository:
-<https://github.com/LucianoBestia/dbx_download>  
+<https://github.com/LucianoBestia/dropbox_backup_to_external_disk>  
 
-## dbx_download list_remote
+## dropbox_backup_to_external_disk list_remote
 
 List all the files from the remote Dropbox and saves to the file `temp_data/list_remote_files.csv`.
 Tab delimited with metadata: path (with name), datetime modified, size.

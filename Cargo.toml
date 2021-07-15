@@ -1,12 +1,12 @@
 [package]
-name = "dbx_download"
-version = "0.1.16"
+name = "dropbox_backup_to_external_disk"
+version = "0.1.35"
 description = "one way sync from dropbox to an external disc"
 authors = ["Luciano Bestia <LucianoBestia@gmail.com>"]
 edition = "2018"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/lucianobestia/dbx_download/"
+repository = "https://github.com/lucianobestia/dropbox_backup_to_external_disk/"
 categories = ["programming"]
 keywords = ["dropbox"]
 publish = false

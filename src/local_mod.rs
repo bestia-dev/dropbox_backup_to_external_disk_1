@@ -8,11 +8,11 @@ use lexical_sort::{lexical_cmp, StringSort};
 use std::fs;
 use unwrap::unwrap;
 
-// $ dbx_download list_local /mnt/d/DropBoxBackup2
-// $ clear; cargo run --bin dbx_download -- list_local /mnt/d/DropBoxBackup2
+// $ dropbox_backup_to_external_disk list_local /mnt/d/DropBoxBackup2
+// $ clear; cargo run --bin dropbox_backup_to_external_disk -- list_local /mnt/d/DropBoxBackup2
 
 pub fn list_local(base_path: &str) {
-    eprintln!("start list_local");
+    println!("start list_local");
     save_base_path(base_path);
     // write data to a big string in memory
     let mut output_string = String::with_capacity(1024 * 1024);
@@ -57,11 +57,11 @@ pub fn list_local(base_path: &str) {
         //ns_print("WalkDir entry end", ns_started);
     }
     //#region: sort
-    eprintln!("local list lexical sort{}", "");
+    println!("local list lexical sort{}", "");
     let mut sorted_local: Vec<&str> = output_string.lines().collect();
     sorted_local.string_sort_unstable(lexical_cmp);
     let joined = sorted_local.join("\n");
-    eprintln!("local list sorted local len(): {}", sorted_local.len());
+    println!("local list sorted local len(): {}", sorted_local.len());
     //#end region: sort
 
     // join to string and write to file
@@ -71,7 +71,7 @@ pub fn list_local(base_path: &str) {
 /// remember the base local path for later commands
 pub fn save_base_path(base_path: &str) {
     if !std::path::Path::new(base_path).exists() {
-        eprintln!("error: base_path not exists {}", base_path);
+        println!("error: base_path not exists {}", base_path);
         std::process::exit(1);
     }
     std::fs::write("temp_data/base_local_path.csv", base_path).unwrap();
