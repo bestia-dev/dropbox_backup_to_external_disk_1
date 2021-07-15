@@ -40,12 +40,15 @@ After you logout from you Linux session the local environment variables will be 
 You have to be in the project folder where cargo.toml is.  
 Build the CLI:
 `$ cargo make debug`  
+
 Follow carefully the instructions to create your Dropbox app and generate your `access token`.  
 In Linux bash write the `access token` into the environment variable like this:
-`$ export DBX_OAUTH_TOKEN=xx.xxxxx`
+`$ export DBX_OAUTH_TOKEN=xx.xxxxx`  
+Make an alias for easy of use:  
+`$ alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk`  
 Test the connection and permission:  
-`$ dropbox_backup_to_external_disk test`
-If the environment variable is not present, the CLI will ask for key and secret and finally for the access token.  
+`$ dropbox_backup_to_external_disk test`  
+  
 The list of commands is:  
 One-way sync download (complete with all the steps):  
 `$ dropbox_backup_to_external_disk one_way_sync /mnt/d/DropBoxBackup2`  
