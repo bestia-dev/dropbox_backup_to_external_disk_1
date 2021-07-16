@@ -5,6 +5,8 @@ mod remote_mod;
 mod terminal_ansi_mod;
 mod utils_mod;
 
+use std::fs;
+
 pub use local_mod::*;
 pub use remote_mod::*;
 pub use terminal_ansi_mod::*;
@@ -12,7 +14,6 @@ pub use utils_mod::*;
 
 #[allow(unused_imports)]
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
-use std::fs;
 use unwrap::unwrap;
 
 pub fn one_way_sync(base_path: &str) {
@@ -46,6 +47,7 @@ pub fn one_way_sync(base_path: &str) {
 }
 // the list must be already sorted for this to work correctly
 pub fn compare_sorted_lists() {
+    use uncased::UncasedStr;
     let list_remote_files = "temp_data/list_remote_files.csv";
     let list_local_files = "temp_data/list_local_files.csv";
     let content_remote = unwrap!(fs::read_to_string(list_remote_files));
@@ -56,55 +58,63 @@ pub fn compare_sorted_lists() {
     let mut for_download: Vec<String> = vec![];
     let mut for_trash: Vec<String> = vec![];
     let mut for_correct_time: Vec<String> = vec![];
-    let mut cursor_web = 0;
+    let mut cursor_remote = 0;
     let mut cursor_local = 0;
     //avoid making new allocations or shadowing inside a loop
     let mut line_local: Vec<&str> = vec![];
-    let mut line_web: Vec<&str> = vec![];
+    let mut line_remote: Vec<&str> = vec![];
     //let mut i = 0;
     loop {
         line_local.truncate(3);
-        line_web.truncate(3);
-        //if i > 3 {break;}
-        //i += 1;
-        if cursor_web >= sorted_remote.len() && cursor_local >= sorted_local.len() {
+        line_remote.truncate(3);
+
+        if cursor_remote >= sorted_remote.len() && cursor_local >= sorted_local.len() {
             break;
-        } else if cursor_web >= sorted_remote.len() {
+        } else if cursor_remote >= sorted_remote.len() {
+            // final lines
             line_local = sorted_local[cursor_local].split("\t").collect();
             for_trash.push(line_local[0].to_string());
             cursor_local += 1;
         } else if cursor_local >= sorted_local.len() {
-            line_web = sorted_remote[cursor_web].split("\t").collect();
-            for_download.push(line_web[0].to_string());
-            cursor_web += 1;
+            // final lines
+            line_remote = sorted_remote[cursor_remote].split("\t").collect();
+            for_download.push(line_remote[0].to_string());
+            cursor_remote += 1;
         } else {
-            line_web = sorted_remote[cursor_web].split("\t").collect();
+            line_remote = sorted_remote[cursor_remote].split("\t").collect();
             line_local = sorted_local[cursor_local].split("\t").collect();
-            if line_web[0].to_lowercase().lt(&line_local[0].to_lowercase()) {
-                //println!("Ordering Less: {}   {}", line_web[0], line_local[0]);
-                for_download.push(line_web[0].to_string());
-                cursor_web += 1;
-            } else if line_web[0].to_lowercase().gt(&line_local[0].to_lowercase()) {
-                //println!("Ordering Greater: {}   {}", line_web[0], line_local[0]);
-                for_trash.push(line_local[0].to_string());
+            // UncasedStr preserves the case in the string, but comparison is done case insensitive
+            let path_remote: &UncasedStr = line_remote[0].into();
+            let path_local: &UncasedStr = line_local[0].into();
+
+            //println!("{}",path_remote);
+            //println!("{}",path_local);
+            if path_remote.lt(path_local) {
+                //println!("lt");
+                for_download.push(path_remote.to_string());
+                cursor_remote += 1;
+            } else if path_remote.gt(path_local) { 
+                //println!("gt" );
+                for_trash.push(path_local.to_string());
                 cursor_local += 1;
             } else {
+                //println!("eq");
                 // equal names. check date and size
-                // println!("Equal names: {}   {}",line_web[0],line_local[0]);
+                // println!("Equal names: {}   {}",path_remote,path_local);
                 // if equal size and time difference only in seconds, then correct local time
-                if line_web[2] == line_local[2] && line_web[1] != line_local[1] && line_web[1][0..17] == line_local[1][0..17]{
-                    for_correct_time.push(format!("{}\t{}",line_local[0],line_web[1] ));
-                } else if line_web[1] != line_local[1] || line_web[2] != line_local[2] {
-                    //println!("Equal names: {}   {}", line_web[0], line_local[0]);
+                if line_remote[2] == line_local[2] && line_remote[1] != line_local[1] && line_remote[1][0..17] == line_local[1][0..17]{
+                    for_correct_time.push(format!("{}\t{}",path_local,line_remote[1] ));
+                } else if line_remote[1] != line_local[1] || line_remote[2] != line_local[2] {
+                    //println!("Equal names: {}   {}", path_remote, path_local);
                     //println!(
                     //"Different date or size {} {} {} {}",
-                    //line_web[1], line_local[1], line_web[2], line_local[2]
+                    //line_remote[1], line_local[1], line_remote[2], line_local[2]
                     //);
-                    for_download.push(line_web[0].to_string());
+                    for_download.push(path_remote.to_string());
                 }
                 // else the metadata is the same, no action
                 cursor_local += 1;
-                cursor_web += 1;
+                cursor_remote += 1;
             }
         }
     }

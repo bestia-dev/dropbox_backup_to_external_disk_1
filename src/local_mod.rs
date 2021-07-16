@@ -4,9 +4,9 @@ use crate::terminal_ansi_mod::*;
 
 #[allow(unused_imports)]
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
-use lexical_sort::{lexical_cmp, StringSort};
 use std::fs;
 use unwrap::unwrap;
+use uncased::UncasedStr;
 
 // $ dropbox_backup_to_external_disk list_local /mnt/d/DropBoxBackup2
 // $ clear; cargo run --bin dropbox_backup_to_external_disk -- list_local /mnt/d/DropBoxBackup2
@@ -57,9 +57,15 @@ pub fn list_local(base_path: &str) {
         //ns_print("WalkDir entry end", ns_started);
     }
     //#region: sort
-    println!("local list lexical sort{}", "");
+    println!("local list sort{}", "");
     let mut sorted_local: Vec<&str> = output_string.lines().collect();
-    sorted_local.string_sort_unstable(lexical_cmp);
+
+    sorted_local.sort_by(|a,b|{
+        let aa: &UncasedStr = (*a).into();
+        let bb: &UncasedStr = (*b).into();
+        aa.cmp(bb)
+    } );
+
     let joined = sorted_local.join("\n");
     println!("local list sorted local len(): {}", sorted_local.len());
     //#end region: sort
@@ -114,4 +120,28 @@ pub fn correct_time_from_list() {
             ));
         unwrap!(filetime::set_file_mtime(local_path, modified));
     }
+}
+
+// add lines from 
+pub fn list_local_add_downloaded() {
+    println!("list_local_add_downloaded");
+    let list_just_downloaded = std::fs::read_to_string("temp_data/list_just_downloaded.csv").unwrap();
+
+    let path_list_local_files = "temp_data/list_local_files.csv";
+    let mut list_local_files = std::fs::read_to_string(path_list_local_files).unwrap();
+    list_local_files.push_str(&list_just_downloaded);
+    let mut sorted_local: Vec<&str> = list_local_files.lines().collect();
+    sorted_local.sort_by(|a,b|{
+        let aa: &UncasedStr = (*a).into();
+        let bb: &UncasedStr = (*b).into();
+        aa.cmp(bb)
+    } );
+    let joined = sorted_local.join("\n");
+    let mut list_local = fs::OpenOptions::new()
+        .write(true)
+        .open(path_list_local_files)
+        .unwrap();
+    use std::io::Write;
+    unwrap!(list_local.write (joined.as_bytes()));
+    println!("end");
 }

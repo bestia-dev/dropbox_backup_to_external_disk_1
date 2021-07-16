@@ -1,0 +1,26 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'dropbox_backup_to_external_disk'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=dropbox_backup_to_external_disk",
+                    "--package=dropbox_backup_to_external_disk"
+                ],
+                "filter": {
+                    "name": "dropbox_backup_to_external_disk",
+                    "kind": "bin"
+                }
+            },
+            "args": ["compare_sorted_lists"],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

@@ -67,6 +67,16 @@ fn main() {
             correct_time_from_list();
             ns_print("correct_time_from_list", ns_started);
         }
+        Some("list_local_add_downloaded") => {
+            let ns_started = ns_start("add downloaded files to temp_data/list_local.csv");
+            list_local_add_downloaded();
+            ns_print("list_local_add_downloaded", ns_started);
+        }
+        Some("read_and_sort_remote_list") => {
+            let ns_started = ns_start("read_and_sort_remote_list");
+            read_and_sort_remote_list();
+            ns_print("read_and_sort_remote_list", ns_started);
+        }
         _ => println!("Unrecognized arguments. Try {} --help", &bin_name),
     }
 }
@@ -138,6 +148,10 @@ fn print_help(bin_name: &str) {
 
     println!("Download one single file:");
     println!("  $ {} download <path>", bin_name);
+    println!();
+
+    println!("Add downloaded files to list_local:");
+    println!("  $ {} list_local_add_downloaded", bin_name);
     println!();
 
 }

@@ -7,12 +7,12 @@ use dropbox_sdk::{files, HyperClient};
 
 #[allow(unused_imports)]
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
-use lexical_sort::{lexical_cmp, StringSort};
 use std::collections::VecDeque;
 use std::env;
 use std::fs;
-use std::io::{self, Read};
+use std::io::{self, Read, Write};
 use unwrap::unwrap;
+use uncased::UncasedStr;
 
 pub fn test_connection() {
     let token = get_token();
@@ -101,17 +101,31 @@ pub fn list_remote() {
             println!("API request error: {}", e);
         }
     }
-    //#region: sort
-    println!("remote list lexical sort{}", "");
-    let mut sorted_local: Vec<&str> = output_string.lines().collect();
-    sorted_local.string_sort_unstable(lexical_cmp);
-    let joined = sorted_local.join("\n");
-    println!("remote list sorted local len(): {}", sorted_local.len());
-    //#end region: sort
+    sort_remote_list(output_string);
+}
 
-    // join to string and write to file
+pub fn read_and_sort_remote_list(){
+    let output_string = std::fs::read_to_string("temp_data/list_remote_files.csv").unwrap();
+    sort_remote_list(output_string);
+}
+
+pub fn sort_remote_list(output_string:String){
+        //#region: sort
+        println!("remote list sort{}", "");
+        let mut sorted_local: Vec<&str> = output_string.lines().collect();
+    
+        sorted_local.sort_by(|a,b|{
+            let aa: &UncasedStr = (*a).into();
+            let bb: &UncasedStr = (*b).into();
+            aa.cmp(bb)
+        } );
+        let joined = sorted_local.join("\n");
+        println!("remote list sorted local len(): {}", sorted_local.len());
+        //#end region: sort
+            // join to string and write to file
     unwrap!(fs::write("temp_data/list_remote_files.csv", joined));
 }
+
 /// download one file
 pub fn download(download_path: &str) {
     let token = get_token();
@@ -121,33 +135,49 @@ pub fn download(download_path: &str) {
 }
 /// download one file with client
 pub fn download_with_client(download_path: &str, client: &HyperClient, base_local_path: &str) {
-    println!("downloading file {}", download_path);
+    println!("start download: {}", download_path);
     let mut bytes_out = 0u64;
     let download_arg = files::DownloadArg::new(download_path.to_string());
     let local_path = format!("{}{}", base_local_path, download_path);
     // println!("to local path: {}", local_path);
     // create folder if it does not exist
-    use std::path::PathBuf;
-    let path = PathBuf::from(&local_path);
+    let path = std::path::PathBuf::from(&local_path);
     let parent = path.parent().unwrap();
     if !std::path::Path::new(&parent).exists() {
         std::fs::create_dir_all(parent).unwrap();
     }
+    let base_temp_download_path = format!("{}_temp_download", &base_local_path);
+    if !std::path::Path::new(&base_temp_download_path).exists() {
+        std::fs::create_dir_all(&base_temp_download_path).unwrap();
+    }
+    let temp_local_path = format!("{}{}", base_temp_download_path, download_path);
+    // create temp folder if it does not exist
+    let temp_path = std::path::PathBuf::from(&temp_local_path);
+    let temp_parent = temp_path.parent().unwrap();
+    if !std::path::Path::new(&temp_parent).exists() {
+        std::fs::create_dir_all(temp_parent).unwrap();
+    }
+
     let mut file = fs::OpenOptions::new()
         .create(true)
         .write(true)
-        .open(&local_path)
+        .open(&temp_local_path)
         .unwrap();
 
     let mut modified: Option<filetime::FileTime> = None;
+    let mut s_modified="".to_string();
+    // TODO: if the program exits, then some files are incomplete on the disk! That is no good.
+    // I will download to a temp folder and then move the file to the right folder only when the download is complete
+
     'download: loop {
         let result = files::download(client, &download_arg, Some(bytes_out), None);
         match result {
             Ok(Ok(download_result)) => {
                 let mut body = download_result.body.expect("no body received!");
                 if modified.is_none() {
+                    s_modified = download_result.result.client_modified.clone();
                     modified = Some(filetime::FileTime::from_system_time(unwrap!(
-                        humantime::parse_rfc3339(&download_result.result.client_modified)
+                        humantime::parse_rfc3339(&s_modified)
                     )));
                 };
                 loop {
@@ -183,7 +213,24 @@ pub fn download_with_client(download_path: &str, client: &HyperClient, base_loca
 
         break 'download;
     }
-    unwrap!(filetime::set_file_mtime(&local_path, unwrap!(modified)));
+    let atime = unwrap!(modified);
+    let mtime = unwrap!(modified);
+    unwrap!(filetime::set_file_times(&temp_local_path, atime, mtime));
+    // move-rename the completed download file o his final folder
+    unwrap!( std::fs::rename(&temp_local_path, &local_path));
+    // TODO: write to file list_just_downloaded. Use this file next time to add files to list_local,
+    // so to avoid making the local_list one more time from scratch. It takes a lot of time.
+    // But we are multi-thread now! it can be strange to write to a file.
+    // append is atomic on most OS <https://doc.rust-lang.org/std/fs/struct.OpenOptions.html#method.create>
+    let list_just_downloaded = "temp_data/list_just_downloaded.csv";
+    let mut just_downloaded = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(list_just_downloaded)
+        .unwrap();
+    let line_to_append = format!("{}\t{}\t{}\n", download_path, s_modified, bytes_out);
+    print!("{}",&line_to_append);
+    unwrap!(just_downloaded.write (line_to_append.as_bytes()));
 }
 
 pub fn download_from_list() {
