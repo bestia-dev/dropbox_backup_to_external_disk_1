@@ -10,14 +10,19 @@ fn main() {
     match std::env::args().nth(1).as_deref() {
         None | Some("--help") | Some("-h") => print_help(&bin_name),
         Some("test") => test_connection(),
-        Some("one_way_sync") => match std::env::args().nth(2).as_deref() {
+        Some("list_and_sync") => match std::env::args().nth(2).as_deref() {
             Some(path) => {
-                let ns_started = ns_start("one_way_sync");
-                one_way_sync(path);
-                ns_print("one_way_sync", ns_started);
+                let ns_started = ns_start("list_and_sync");
+                list_and_sync(path);
+                ns_print("list_and_sync", ns_started);
             }
             _ => println!("Unrecognized arguments. Try {} --help", &bin_name),
         },
+        Some("sync_only") => {
+            let ns_started = ns_start("sync_only");
+            sync_only();
+            ns_print("sync_only", ns_started);
+        }
         Some("list_remote") => {
             ansi_clear_screen();
             println!(
@@ -72,11 +77,6 @@ fn main() {
             list_local_add_downloaded();
             ns_print("list_local_add_downloaded", ns_started);
         }
-        Some("read_and_sort_remote_list") => {
-            let ns_started = ns_start("read_and_sort_remote_list");
-            read_and_sort_remote_list();
-            ns_print("read_and_sort_remote_list", ns_started);
-        }
         _ => println!("Unrecognized arguments. Try {} --help", &bin_name),
     }
 }
@@ -99,11 +99,11 @@ fn print_help(bin_name: &str) {
 
     println!("2. Before every use, create a temporary access token:");
     println!("- open browser on <https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps>");
-    println!(". choose your private Dropbox app `backup_20210715_125500`");
+    println!(". choose your private Dropbox app like `backup_20210715_125500`");
     println!("- click button Generate to generated temporary access token and copy it");
     println!("- close browser");
     println!("- In you Linux terminal session set a temporary private/secret environment variable:");
-    println!("$ export DBX_OAUTH_TOKEN= here paste the access token ");
+    println!("$ export DBX_OAUTH_TOKEN=here paste the access token");
     println!("- create an alias for easy of use:"); 
     println!("$ alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk");
     println!("- test if the authentication works: ");
@@ -112,8 +112,15 @@ fn print_help(bin_name: &str) {
     println!("  ");
     println!("  ");
 
-    println!("One-way sync download:");
-    println!("  $ {} one_way_sync /mnt/d/DropBoxBackup2", bin_name);
+    println!("Full list and sync - from dropbox to external disk.");
+    println!("It lists remote and local files (that takes a lot of time) and then starts the sync.");
+    println!("  $ {} list_and_sync /mnt/d/DropBoxBackup2", bin_name);
+    println!("  ");
+
+    println!("Sync only - from dropbox to external disk.");
+    println!("It starts the sync only. Does NOT list again the remote and local files, because it takes a lot of time.");
+    println!("It continues where the previous sync has finished.");
+    println!("  $ {} sync_only", bin_name);
     println!("  ");
 
     println!("For debugging purpose, you can run every step separately.");

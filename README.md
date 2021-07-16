@@ -54,7 +54,7 @@ Test the connection and permission:
   
 The list of commands is:  
 One-way sync download (complete with all the steps):  
-`$ dropbox_backup_to_external_disk one_way_sync /mnt/d/DropBoxBackup2`  
+`$ dropbox_backup_to_external_disk list_and_sync /mnt/d/DropBoxBackup2`  
   
 For debugging purpose, you can run every step separately.  
 Test connection and authorization:  

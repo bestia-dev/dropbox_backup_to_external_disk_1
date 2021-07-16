@@ -16,9 +16,9 @@ pub use utils_mod::*;
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
 use unwrap::unwrap;
 
-pub fn one_way_sync(base_path: &str) {
+pub fn list_and_sync(base_path: &str) {
     ansi_clear_screen();
-    println!("{}{}", ansi_set_row(1), "dropbox_backup_to_external_disk one_way_sync");
+    println!("{}{}", ansi_set_row(1), "dropbox_backup_to_external_disk list_and_sync");
     ns_start("");
     // start 2 threads, first for remote list and second for local list
     use std::thread;
@@ -36,15 +36,23 @@ pub fn one_way_sync(base_path: &str) {
     // wait for both threads to finish
     handle_1.join().unwrap();
     handle_2.join().unwrap();
-    println!("{}{}", ansi_set_row(13), Yellow.paint("compare lists"));
+    sync_only();
+  
+}
+
+pub fn sync_only(){
+    println!("{}", Yellow.paint("add downloaded files to list_local"));
+    list_local_add_downloaded();
+    println!("{}", Yellow.paint("compare remote and local lists"));
     compare_sorted_lists();
     println!("{}", Yellow.paint("move to trash from list"));
     trash_from_list();
     println!("{}", Yellow.paint("correct time from list"));
     correct_time_from_list();
     println!("{}", Yellow.paint("download from list"));
-    download_from_list();    
+    download_from_list();  
 }
+
 // the list must be already sorted for this to work correctly
 pub fn compare_sorted_lists() {
     use uncased::UncasedStr;

@@ -104,17 +104,12 @@ pub fn list_remote() {
     sort_remote_list(output_string);
 }
 
-pub fn read_and_sort_remote_list(){
-    let output_string = std::fs::read_to_string("temp_data/list_remote_files.csv").unwrap();
-    sort_remote_list(output_string);
-}
-
 pub fn sort_remote_list(output_string:String){
         //#region: sort
-        println!("remote list sort{}", "");
+        println!("remote list sort {}", "");
         let mut sorted_local: Vec<&str> = output_string.lines().collect();
-    
-        sorted_local.sort_by(|a,b|{
+        use rayon::prelude::*;
+        sorted_local.par_sort_unstable_by(|a,b|{
             let aa: &UncasedStr = (*a).into();
             let bb: &UncasedStr = (*b).into();
             aa.cmp(bb)
@@ -135,7 +130,7 @@ pub fn download(download_path: &str) {
 }
 /// download one file with client
 pub fn download_with_client(download_path: &str, client: &HyperClient, base_local_path: &str) {
-    println!("start download: {}", download_path);
+    //println!("start download: {}", download_path);
     let mut bytes_out = 0u64;
     let download_arg = files::DownloadArg::new(download_path.to_string());
     let local_path = format!("{}{}", base_local_path, download_path);
@@ -223,17 +218,18 @@ pub fn download_with_client(download_path: &str, client: &HyperClient, base_loca
     // But we are multi-thread now! it can be strange to write to a file.
     // append is atomic on most OS <https://doc.rust-lang.org/std/fs/struct.OpenOptions.html#method.create>
     let list_just_downloaded = "temp_data/list_just_downloaded.csv";
+    let line_to_append = format!("{}\t{}\t{}\n", download_path, s_modified, bytes_out);
+    print!("{}",&line_to_append);
     let mut just_downloaded = fs::OpenOptions::new()
         .create(true)
         .append(true)
         .open(list_just_downloaded)
         .unwrap();
-    let line_to_append = format!("{}\t{}\t{}\n", download_path, s_modified, bytes_out);
-    print!("{}",&line_to_append);
     unwrap!(just_downloaded.write (line_to_append.as_bytes()));
 }
 
 pub fn download_from_list() {
+    println!("download_from_list");
     let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let list_for_download = std::fs::read_to_string("temp_data/list_for_download.csv").unwrap();
     let token = get_token();
