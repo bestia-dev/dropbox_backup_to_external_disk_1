@@ -1,7 +1,5 @@
 //! remote_mod.rs
 
-use crate::terminal_ansi_mod::*;
-
 use dropbox_sdk::client_trait::HttpClient;
 use dropbox_sdk::{files, HyperClient};
 
@@ -59,11 +57,11 @@ pub fn list_remote() {
 
                         println!(
                             "{}Folder: {}",
-                            ansi_set_row(10),
+                            term_cursor::Goto(0,10),
                             entry.path_display.unwrap_or(entry.name)
                         );
 
-                        println!("{}Folder_count: {}", ansi_set_row(11), folder_count);
+                        println!("{}Folder_count: {}", term_cursor::Goto(0,11), folder_count);
                         folder_count += 1;
                     }
                     Ok(Ok(files::Metadata::File(entry))) => {
@@ -77,18 +75,18 @@ pub fn list_remote() {
                         ));
                     }
                     Ok(Ok(files::Metadata::Deleted(entry))) => {
-                        panic!("{}unexpected deleted entry: {:?}", ansi_set_row(10), entry);
+                        panic!("{}unexpected deleted entry: {:?}", term_cursor::Goto(0,10), entry);
                     }
                     Ok(Err(e)) => {
                         println!(
                             "{}Error from files/list_folder_continue: {}",
-                            ansi_set_row(10),
+                            term_cursor::Goto(0,10),
                             e
                         );
                         break;
                     }
                     Err(e) => {
-                        println!("{}API request error: {}", ansi_set_row(10), e);
+                        println!("{}API request error: {}", term_cursor::Goto(0,10), e);
                         break;
                     }
                 }
@@ -185,11 +183,17 @@ pub fn download_with_client(download_path: &str, client: &HyperClient, base_loca
                         }
                         Ok(len) => {
                             bytes_out += len as u64;
-                            //if let Some(total) = download_result.content_length {
-                                //println!("\n{:.01}% of {:.02} Mb", bytes_out as f64 / total as f64 * 100.,total as f64 / 1000000.);
-                            //} else {
-                                //println!("\n{} bytes", bytes_out);
-                            //}
+                            // print at the first row. But multiple threads can write in multiple rows.
+                            // the thread index is not ordered. It can be 1, 3, 5,..
+                            if let Some(total) = download_result.content_length {      
+                                let (x, y) = unwrap!(term_cursor::get_pos());
+                                println!("{}{:.01}% of {:.02} Mb downloading {}", term_cursor::Goto(0,rayon::current_thread_index().unwrap_or(0) as i32+1), bytes_out as f64 / total as f64 * 100.,total as f64 / 1000000.,download_path);
+                                unwrap!(term_cursor::set_pos(x, y));
+                            } else {
+                                let (x, y) = unwrap!(term_cursor::get_pos()); 
+                                println!("{}{} Mb downloaded {}",term_cursor::Goto(0,rayon::current_thread_index().unwrap_or(0) as i32+1), bytes_out as f64 / 1000000.,download_path);
+                                unwrap!(term_cursor::set_pos(x, y));
+                            }
                         }
                         Err(e) => {
                             println!("Read error: {}", e);

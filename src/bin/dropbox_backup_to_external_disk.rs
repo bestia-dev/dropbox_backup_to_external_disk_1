@@ -24,10 +24,10 @@ fn main() {
             ns_print("sync_only", ns_started);
         }
         Some("list_remote") => {
-            ansi_clear_screen();
+            print!("{}", term_cursor::Clear);
             println!(
                 "{}{}",
-                ansi_set_row(1),
+                term_cursor::Goto(0,1),
                 "list_remote into temp_data/list_remote_files.csv"
             );
             let ns_started = ns_start("");
@@ -36,10 +36,10 @@ fn main() {
         }
         Some("list_local") => match std::env::args().nth(2).as_deref() {
             Some(path) => {
-                ansi_clear_screen();
+                print!("{}", term_cursor::Clear);
                 println!(
                     "{}{}",
-                    ansi_set_row(1),
+                    term_cursor::Goto(0,1),
                     "list_local into temp_data/list_local_files.csv"
                 );
                 let ns_started = ns_start("");
@@ -72,10 +72,10 @@ fn main() {
             correct_time_from_list();
             ns_print("correct_time_from_list", ns_started);
         }
-        Some("list_local_add_downloaded") => {
+        Some("add_downloaded_to_list_local") => {
             let ns_started = ns_start("add downloaded files to temp_data/list_local.csv");
-            list_local_add_downloaded();
-            ns_print("list_local_add_downloaded", ns_started);
+            add_downloaded_to_list_local();
+            ns_print("add_downloaded_to_list_local", ns_started);
         }
         _ => println!("Unrecognized arguments. Try {} --help", &bin_name),
     }
@@ -158,7 +158,7 @@ fn print_help(bin_name: &str) {
     println!();
 
     println!("Add downloaded files to list_local:");
-    println!("  $ {} list_local_add_downloaded", bin_name);
+    println!("  $ {} add_downloaded_to_list_local", bin_name);
     println!();
 
 }

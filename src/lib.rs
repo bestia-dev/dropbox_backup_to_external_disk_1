@@ -2,14 +2,12 @@
 
 mod local_mod;
 mod remote_mod;
-mod terminal_ansi_mod;
 mod utils_mod;
 
 use std::fs;
 
 pub use local_mod::*;
 pub use remote_mod::*;
-pub use terminal_ansi_mod::*;
 pub use utils_mod::*;
 
 #[allow(unused_imports)]
@@ -17,19 +15,19 @@ use ansi_term::Colour::{Blue, Green, Red, Yellow};
 use unwrap::unwrap;
 
 pub fn list_and_sync(base_path: &str) {
-    ansi_clear_screen();
-    println!("{}{}", ansi_set_row(1), "dropbox_backup_to_external_disk list_and_sync");
+    print!("{}", term_cursor::Clear);
+    println!("{}{}", term_cursor::Goto(0,1), "dropbox_backup_to_external_disk list_and_sync");
     ns_start("");
     // start 2 threads, first for remote list and second for local list
     use std::thread;
     let base_path = base_path.to_string();
     let handle_1 = thread::spawn(move || {
-        println!("{}{}", ansi_set_row(4), Green.paint("first thread:"));
+        println!("{}{}", term_cursor::Goto(0,4), Green.paint("first thread:"));
         // prints at rows 5, 6, 7
         list_local(&base_path);
     });
     let handle_2 = thread::spawn(move || {
-        println!("{}{}", ansi_set_row(9), Green.paint("second thread:"));
+        println!("{}{}", term_cursor::Goto(0,9), Green.paint("second thread:"));
         // prints at rows 10,11,12
         list_remote();
     });
@@ -42,7 +40,7 @@ pub fn list_and_sync(base_path: &str) {
 
 pub fn sync_only(){
     println!("{}", Yellow.paint("add downloaded files to list_local"));
-    list_local_add_downloaded();
+    add_downloaded_to_list_local();
     println!("{}", Yellow.paint("compare remote and local lists"));
     compare_sorted_lists();
     println!("{}", Yellow.paint("move to trash from list"));

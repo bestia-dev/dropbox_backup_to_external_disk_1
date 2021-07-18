@@ -1,7 +1,5 @@
 //! local_mod.rs
 
-use crate::terminal_ansi_mod::*;
-
 #[allow(unused_imports)]
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
 use std::fs;
@@ -30,11 +28,11 @@ pub fn list_local(base_path: &str) {
         if entry.file_type().is_dir() {
             println!(
                 "{}Folder: {}",
-                ansi_set_row(5),
+                term_cursor::Goto(0,5),
                 str_path.trim_start_matches(base_path)
             );
 
-            println!("{}Folder_count: {}", ansi_set_row(6), folder_count);
+            println!("{}Folder_count: {}", term_cursor::Goto(0,6), folder_count);
 
             folder_count += 1;
         } else {
@@ -132,9 +130,9 @@ pub fn correct_time_from_list() {
 }
 
 // add lines from 
-pub fn list_local_add_downloaded() {
+pub fn add_downloaded_to_list_local() {
 
-    println!("list_local_add_downloaded");
+    println!("add_downloaded_to_list_local");
     let path_list_just_downloaded="temp_data/list_just_downloaded.csv";
     let list_just_downloaded = std::fs::read_to_string(path_list_just_downloaded).unwrap();
     // it must be sorted, because downloads are multi-thread and not in sort order

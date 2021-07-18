@@ -171,7 +171,7 @@ dependencies = [
 
 [[package]]
 name = "dropbox_backup_to_external_disk"
-version = "0.1.69"
+version = "0.1.80"
 dependencies = [
  "ansi_term",
  "chrono",
@@ -180,6 +180,7 @@ dependencies = [
  "filetime",
  "humantime",
  "rayon",
+ "term_cursor",
  "uncased",
  "unwrap",
  "walkdir",
@@ -719,12 +720,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "term_cursor"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e225e1afb8bf56aa077366fced39df360db6ec09af1d9fb0b0591843e8482629"
+dependencies = [
+ "termios",
+ "winapi",
+]
+
+[[package]]
 name = "termcolor"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bb6bfa289a4d7c5766392812c0a1f4c1ba45afa1ad47803c11e1f407d846d75f"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "termios"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "411c5bf740737c7918b8b1fe232dca4dc9f8e754b8ad5e20966814001ed0ac6b"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
