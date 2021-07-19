@@ -26,8 +26,9 @@ fn main() {
         Some("list_remote") => {
             print!("{}", term_cursor::Clear);
             println!(
-                "{}{}",
+                "{}{}{}",
                 term_cursor::Goto(0,1),
+                clear_line(),
                 "list_remote into temp_data/list_remote_files.csv"
             );
             let ns_started = ns_start("");
@@ -38,8 +39,9 @@ fn main() {
             Some(path) => {
                 print!("{}", term_cursor::Clear);
                 println!(
-                    "{}{}",
+                    "{}{}{}",
                     term_cursor::Goto(0,1),
+                    clear_line(),
                     "list_local into temp_data/list_local_files.csv"
                 );
                 let ns_started = ns_start("");

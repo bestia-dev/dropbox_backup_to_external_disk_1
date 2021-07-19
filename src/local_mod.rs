@@ -6,6 +6,8 @@ use std::fs;
 use unwrap::unwrap;
 use uncased::UncasedStr;
 
+use crate::clear_line;
+
 // $ dropbox_backup_to_external_disk list_local /mnt/d/DropBoxBackup2
 // $ clear; cargo run --bin dropbox_backup_to_external_disk -- list_local /mnt/d/DropBoxBackup2
 
@@ -27,12 +29,12 @@ pub fn list_local(base_path: &str) {
         // path.is_dir() is slow. entry.file-type().is_dir() is fast
         if entry.file_type().is_dir() {
             println!(
-                "{}Folder: {}",
+                "{}{}Folder: {}",
                 term_cursor::Goto(0,5),
+                clear_line(),
                 str_path.trim_start_matches(base_path)
             );
-
-            println!("{}Folder_count: {}", term_cursor::Goto(0,6), folder_count);
+            println!("{}{}Folder_count: {}", term_cursor::Goto(0,6),clear_line(), folder_count);
 
             folder_count += 1;
         } else {

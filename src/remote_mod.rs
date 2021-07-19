@@ -1,7 +1,6 @@
 //! remote_mod.rs
-
-use dropbox_sdk::client_trait::HttpClient;
-use dropbox_sdk::{files, HyperClient};
+use dropbox_sdk::default_client::UserAuthDefaultClient;
+use dropbox_sdk::files;
 
 #[allow(unused_imports)]
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
@@ -12,9 +11,11 @@ use std::io::{self, Read, Write};
 use unwrap::unwrap;
 use uncased::UncasedStr;
 
+use crate::clear_line;
+
 pub fn test_connection() {
     let token = get_token();
-    let client = HyperClient::new(token);
+    let client = UserAuthDefaultClient::new(token);
     match files::list_folder(&client, &files::ListFolderArg::new("".to_string())) {
         Ok(Ok(_result)) => println!(
             "{}",
@@ -41,8 +42,9 @@ fn get_token() -> String {
 }
 
 pub fn list_remote() {
+    // TODO: rayon for parallelism
     let token = get_token();
-    let client = HyperClient::new(token);
+    let client = UserAuthDefaultClient::new(token);
 
     // write data to a big string in memory
     let mut output_string = String::with_capacity(1024 * 1024);
@@ -56,12 +58,13 @@ pub fn list_remote() {
                         // path_display is not 100% case accurate. Dropbox is case-insensitive and preserves the casing only for the metadata_name, not path.
 
                         println!(
-                            "{}Folder: {}",
+                            "{}{}Folder: {}",
                             term_cursor::Goto(0,10),
+                            clear_line(),
                             entry.path_display.unwrap_or(entry.name)
                         );
 
-                        println!("{}Folder_count: {}", term_cursor::Goto(0,11), folder_count);
+                        println!("{}{}Folder_count: {}", term_cursor::Goto(0,11),clear_line(), folder_count);
                         folder_count += 1;
                     }
                     Ok(Ok(files::Metadata::File(entry))) => {
@@ -75,18 +78,19 @@ pub fn list_remote() {
                         ));
                     }
                     Ok(Ok(files::Metadata::Deleted(entry))) => {
-                        panic!("{}unexpected deleted entry: {:?}", term_cursor::Goto(0,10), entry);
+                        panic!("{}{}unexpected deleted entry: {:?}", term_cursor::Goto(0,10),clear_line(), entry);
                     }
                     Ok(Err(e)) => {
                         println!(
-                            "{}Error from files/list_folder_continue: {}",
+                            "{}{}Error from files/list_folder_continue: {}",
                             term_cursor::Goto(0,10),
+                            clear_line(),
                             e
                         );
                         break;
                     }
                     Err(e) => {
-                        println!("{}API request error: {}", term_cursor::Goto(0,10), e);
+                        println!("{}{}API request error: {}", term_cursor::Goto(0,10),clear_line(), e);
                         break;
                     }
                 }
@@ -122,12 +126,12 @@ pub fn sort_remote_list(output_string:String){
 /// download one file
 pub fn download(download_path: &str) {
     let token = get_token();
-    let client = HyperClient::new(token);
+    let client = UserAuthDefaultClient::new(token);
     let base_local_path = std::fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     download_with_client(download_path, &client, &base_local_path);
 }
 /// download one file with client
-pub fn download_with_client(download_path: &str, client: &HyperClient, base_local_path: &str) {
+pub fn download_with_client(download_path: &str, client: &UserAuthDefaultClient, base_local_path: &str) {
     //println!("start download: {}", download_path);
     let mut bytes_out = 0u64;
     let download_arg = files::DownloadArg::new(download_path.to_string());
@@ -187,11 +191,11 @@ pub fn download_with_client(download_path: &str, client: &HyperClient, base_loca
                             // the thread index is not ordered. It can be 1, 3, 5,..
                             if let Some(total) = download_result.content_length {      
                                 let (x, y) = unwrap!(term_cursor::get_pos());
-                                println!("{}{:.01}% of {:.02} Mb downloading {}", term_cursor::Goto(0,rayon::current_thread_index().unwrap_or(0) as i32+1), bytes_out as f64 / total as f64 * 100.,total as f64 / 1000000.,download_path);
+                                println!("{}{}{:.01}% of {:.02} Mb downloading {}", term_cursor::Goto(0,rayon::current_thread_index().unwrap_or(0) as i32+1),clear_line(), bytes_out as f64 / total as f64 * 100.,total as f64 / 1000000.,download_path);
                                 unwrap!(term_cursor::set_pos(x, y));
                             } else {
                                 let (x, y) = unwrap!(term_cursor::get_pos()); 
-                                println!("{}{} Mb downloaded {}",term_cursor::Goto(0,rayon::current_thread_index().unwrap_or(0) as i32+1), bytes_out as f64 / 1000000.,download_path);
+                                println!("{}{}{} Mb downloaded {}",term_cursor::Goto(0,rayon::current_thread_index().unwrap_or(0) as i32+1),clear_line(), bytes_out as f64 / 1000000.,download_path);
                                 unwrap!(term_cursor::set_pos(x, y));
                             }
                         }
@@ -243,14 +247,14 @@ pub fn download_from_list() {
         .for_each_with(
             token,
             |token, path| {
-                let client = HyperClient::new(token.to_owned());
+                let client = UserAuthDefaultClient::new(token.to_owned());
                 download_with_client(&path, &client, &base_local_path);
             }
         );
 }
 
 fn list_directory<'a>(
-    client: &'a dyn HttpClient,
+    client: &'a UserAuthDefaultClient,
     path: &str,
     recursive: bool,
 ) -> dropbox_sdk::Result<Result<DirectoryIterator<'a>, files::ListFolderError>> {
@@ -287,7 +291,7 @@ fn list_directory<'a>(
 }
 
 struct DirectoryIterator<'a> {
-    client: &'a dyn HttpClient,
+    client: &'a UserAuthDefaultClient,
     buffer: VecDeque<files::Metadata>,
     cursor: Option<String>,
 }

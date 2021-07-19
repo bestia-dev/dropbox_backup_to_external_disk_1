@@ -16,18 +16,18 @@ use unwrap::unwrap;
 
 pub fn list_and_sync(base_path: &str) {
     print!("{}", term_cursor::Clear);
-    println!("{}{}", term_cursor::Goto(0,1), "dropbox_backup_to_external_disk list_and_sync");
+    println!("{}{}{}", term_cursor::Goto(0,1),clear_line(), "dropbox_backup_to_external_disk list_and_sync");
     ns_start("");
     // start 2 threads, first for remote list and second for local list
     use std::thread;
     let base_path = base_path.to_string();
     let handle_1 = thread::spawn(move || {
-        println!("{}{}", term_cursor::Goto(0,4), Green.paint("first thread:"));
+        println!("{}{}{}", term_cursor::Goto(0,4),clear_line(), Green.paint("first thread:"));
         // prints at rows 5, 6, 7
         list_local(&base_path);
     });
     let handle_2 = thread::spawn(move || {
-        println!("{}{}", term_cursor::Goto(0,9), Green.paint("second thread:"));
+        println!("{}{}{}", term_cursor::Goto(0,9),clear_line(), Green.paint("second thread:"));
         // prints at rows 10,11,12
         list_remote();
     });
@@ -130,4 +130,9 @@ pub fn compare_sorted_lists() {
     unwrap!(fs::write("temp_data/list_for_trash.csv", joined));
     let correct_time = for_correct_time.join("\n");
     unwrap!(fs::write("temp_data/list_for_correct_time.csv", correct_time));
+}
+
+// clears the line on the terminal \x1b[0K  clears from cursor to end of line
+pub fn clear_line()->&'static str{
+    "\x1b[0K"
 }
