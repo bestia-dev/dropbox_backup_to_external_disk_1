@@ -30,11 +30,11 @@ pub fn list_local(base_path: &str) {
         if entry.file_type().is_dir() {
             println!(
                 "{}{}Folder: {}",
-                term_cursor::Goto(0,5),
+                term_cursor::Goto(0,16),
                 clear_line(),
                 str_path.trim_start_matches(base_path)
             );
-            println!("{}{}Folder_count: {}", term_cursor::Goto(0,6),clear_line(), folder_count);
+            println!("{}{}Folder_count: {}", term_cursor::Goto(0,17),clear_line(), folder_count);
 
             folder_count += 1;
         } else {
@@ -58,7 +58,7 @@ pub fn list_local(base_path: &str) {
         //ns_print("WalkDir entry end", ns_started);
     }
     //#region: sort
-    println!("local list sort {}", "");
+    println!("{}local list sort", term_cursor::Goto(0,18));
     let mut sorted_local: Vec<&str> = output_string.lines().collect();
     use rayon::prelude::*;
     sorted_local.par_sort_unstable_by(|a,b|{
@@ -68,7 +68,7 @@ pub fn list_local(base_path: &str) {
     } );
 
     let joined = sorted_local.join("\n");
-    println!("local list sorted local len(): {}", sorted_local.len());
+    println!("{}local list sorted local len(): {}",term_cursor::Goto(0,18), sorted_local.len());
     //#end region: sort
 
     // join to string and write to file

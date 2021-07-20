@@ -61,22 +61,21 @@ pub fn list_remote(){
     let (tx, rx) = std::sync::mpsc::channel();
     // threadpool with 3 threads
 
-    let mut pool = scoped_threadpool::Pool::new(3);
-    pool.scoped(|scoped| {
-        let mut thread_num = 0;
+    let pool = rayon::ThreadPoolBuilder::new().num_threads(3).build().unwrap();
+    pool.scope(|scoped|{
         for folder_path in &folder_list_all{
             let folder_path = folder_path.clone();
             let tx_clone2 = mpsc::Sender::clone(&tx);
             let token_clone2 = token.to_owned().clone();
             // execute in a separate threads, or waits for a free thread from the pool
-            scoped.execute(move || {                
+            scoped.spawn(move |_s| {                
                 let client = UserAuthDefaultClient::new(token_clone2.to_owned());
                 // recursive walkdir
+                let thread_num =unwrap!(rayon::current_thread_index()) as i32;
                 let (folder_list, file_list) = list_remote_folder(&client,&folder_path,thread_num, true);
                 // folder_list is appended to folder_list_all in every thread
                 unwrap!( tx_clone2.send((folder_list, file_list)));                    
             });
-            thread_num = increment_and_loop(thread_num, 0, 2);
         }          
         drop(tx);
     });
@@ -85,8 +84,8 @@ pub fn list_remote(){
         let (folder_list, file_list) = msg;
         folder_list_all.extend_from_slice  (&folder_list);
         file_list_all.extend_from_slice(&file_list);
-        println!("{}folders {}",term_cursor::Goto(0,14), folder_list_all.len());
-        println!("{}files {}",term_cursor::Goto(0,15),file_list_all.len());
+        println!("{}folders {}",term_cursor::Goto(0,13), folder_list_all.len());
+        println!("{}files {}",term_cursor::Goto(0,14),file_list_all.len());
     }
     sort_remote_list_and_write_to_file(file_list_all);
 }
@@ -115,7 +114,7 @@ pub fn list_remote_folder(client:&UserAuthDefaultClient,path:&str,thread_num:i32
                     Ok(Ok(files::Metadata::File(entry))) => {
                         // write csv tab delimited
                         file_list.push(format!(
-                            "{}\t{}\t{}\n",
+                            "{}\t{}\t{}",
                             // path_display is not 100% case accurate. Dropbox is case-insensitive and preserves the casing only for the metadata_name, not path.
                             entry.path_display.unwrap_or(entry.name),
                             entry.client_modified,
@@ -128,14 +127,14 @@ pub fn list_remote_folder(client:&UserAuthDefaultClient,path:&str,thread_num:i32
                     Ok(Err(e)) => {
                         println!(
                             "{}{}Error from files/list_folder_continue: {}",
-                            term_cursor::Goto(0,10),
+                            term_cursor::Goto(0,13),
                             clear_line(),
                             e
                         );
                         break;
                     }
                     Err(e) => {
-                        println!("{}{}API request error: {}", term_cursor::Goto(0,10),clear_line(), e);
+                        println!("{}{}API request error: {}", term_cursor::Goto(0,13),clear_line(), e);
                         break;
                     }
                 }
@@ -153,7 +152,7 @@ pub fn list_remote_folder(client:&UserAuthDefaultClient,path:&str,thread_num:i32
 }
 
 pub fn sort_remote_list_and_write_to_file(mut file_list_all:Vec<String>){
-    println!("remote list sort {}", "");        
+    println!("{}remote list sort",term_cursor::Goto(0,13));
     use rayon::prelude::*;
     file_list_all.par_sort_unstable_by(|a,b|{
         let aa: &UncasedStr = a.as_str().into();
@@ -162,7 +161,7 @@ pub fn sort_remote_list_and_write_to_file(mut file_list_all:Vec<String>){
     } );
     // join to string and write to file
     let string_file_list_all = file_list_all.join("\n");
-    println!("remote list sorted local len(): {}", string_file_list_all.len());            
+    println!("{}remote list sorted local len(): {}",term_cursor::Goto(0,13),  string_file_list_all.len());            
     unwrap!(fs::write("temp_data/list_remote_files.csv", string_file_list_all));
 }
 
@@ -282,15 +281,14 @@ pub fn download_from_list() {
     let client = UserAuthDefaultClient::new(token);
     let client_ref=&client;
     // 3 threads to download in parallel
-    let mut pool = scoped_threadpool::Pool::new(3);
-    pool.scoped(|scoped| {
-        let mut thread_num = 1;
+    let pool = rayon::ThreadPoolBuilder::new().num_threads(3).build().unwrap();
+    pool.scope(|scoped|{
         for path in list_for_download.lines(){    
             // execute in a separate threads, or waits for a free thread from the pool     
-            scoped.execute(move || {                
+            scoped.spawn(move |_s| {     
+                let thread_num =unwrap!(rayon::current_thread_index()) as i32;
                 download_with_client(path, client_ref, base_local_path_ref, thread_num);
-            });
-            thread_num = increment_and_loop(thread_num,1,3);            
+            });         
         }
     });
 }

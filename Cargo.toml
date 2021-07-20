@@ -1,6 +1,6 @@
 [package]
 name = "dropbox_backup_to_external_disk"
-version = "0.1.135"
+version = "0.1.153"
 description = "one way sync from dropbox to an external disc"
 authors = ["Luciano Bestia <LucianoBestia@gmail.com>"]
 edition = "2018"
@@ -23,7 +23,6 @@ humantime = "2.1.0"
 rayon = "1.5.1"
 uncased = "0.9"
 term_cursor = "0.2.1"
-scoped_threadpool = "0.1.0"
 
 [dependencies.dropbox-sdk]
 version = "0.11.3"

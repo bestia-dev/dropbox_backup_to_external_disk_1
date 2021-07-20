@@ -39,6 +39,13 @@ Test the connection and permission:
   
 Later, use `$ dropbox_backup_to_external_disk --help` to get all the instructions and commands.  
 
+## Warning
+
+I don't know why, but WSL2 sometimes does not see all the folders of the external disk.  
+Instead of 12000 folders it sees only 28 ???  
+Be careful !  
+I then restart my Win10 and the problem magically disappears.
+
 [comment]: # (lmake_md_to_doc_comments segment end A)
 
 ## development

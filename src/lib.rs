@@ -21,15 +21,15 @@ pub fn list_and_sync(base_path: &str) {
     // start 2 threads, first for remote list and second for local list
     use std::thread;
     let base_path = base_path.to_string();
-    let handle_1 = thread::spawn(move || {
-        println!("{}{}{}", term_cursor::Goto(0,4),clear_line(), Green.paint("first thread:"));
-        // prints at rows 5, 6, 7
-        list_local(&base_path);
-    });
     let handle_2 = thread::spawn(move || {
-        println!("{}{}{}", term_cursor::Goto(0,9),clear_line(), Green.paint("second thread:"));
+        println!("{}{}{}", term_cursor::Goto(0,3),clear_line(), Green.paint("Threads for remote:"));
         // prints at rows 10,11,12
         list_remote();
+    });
+    let handle_1 = thread::spawn(move || {
+        println!("{}{}{}", term_cursor::Goto(0,15),clear_line(), Green.paint("Thread for local:"));
+        // prints at rows 5, 6, 7
+        list_local(&base_path);
     });
     // wait for both threads to finish
     handle_1.join().unwrap();
