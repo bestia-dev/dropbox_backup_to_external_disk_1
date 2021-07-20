@@ -53,7 +53,7 @@ I then restart my Win10 and the problem magically disappears.
 List all the files from the remote Dropbox and saves to the file `temp_data/list_remote_files.csv`.
 Tab delimited with metadata: path (with name), datetime modified, size.
 The path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random.
-For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.
+For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads in a ThreadPool to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.
 The sorting of lists is also done in parallel with the crate Rayon.
 
 ## DropBox api2 - Stone sdk
