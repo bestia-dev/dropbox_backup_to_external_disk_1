@@ -19,8 +19,11 @@
                     "kind": "bin"
                 }
             },
-            "args": ["compare_sorted_lists"],
-            "cwd": "${workspaceFolder}"
+            "args": ["list_remote"],
+            "cwd": "${workspaceFolder}", 
+            "env":{
+                "DBX_OAUTH_TOKEN":""
+              },
         }
     ]
 }

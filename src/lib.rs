@@ -39,8 +39,6 @@ pub fn list_and_sync(base_path: &str) {
 }
 
 pub fn sync_only(){
-    println!("{}", Yellow.paint("add downloaded files to list_local"));
-    add_downloaded_to_list_local();
     println!("{}", Yellow.paint("compare remote and local lists"));
     compare_sorted_lists();
     println!("{}", Yellow.paint("move to trash from list"));
@@ -53,12 +51,13 @@ pub fn sync_only(){
 
 // the list must be already sorted for this to work correctly
 pub fn compare_sorted_lists() {
+    add_downloaded_to_list_local();
     use uncased::UncasedStr;
-    let list_remote_files = "temp_data/list_remote_files.csv";
-    let list_local_files = "temp_data/list_local_files.csv";
-    let content_remote = unwrap!(fs::read_to_string(list_remote_files));
+    let path_list_remote_files = "temp_data/list_remote_files.csv";
+    let path_list_local_files = "temp_data/list_local_files.csv";
+    let content_remote = unwrap!(fs::read_to_string(path_list_remote_files));
     let sorted_remote: Vec<&str> = content_remote.lines().collect();
-    let content_local = unwrap!(fs::read_to_string(list_local_files));
+    let content_local = unwrap!(fs::read_to_string(path_list_local_files));
     let sorted_local: Vec<&str> = content_local.lines().collect();
 
     let mut for_download: Vec<String> = vec![];
@@ -135,4 +134,13 @@ pub fn compare_sorted_lists() {
 // clears the line on the terminal \x1b[0K  clears from cursor to end of line
 pub fn clear_line()->&'static str{
     "\x1b[0K"
+}
+
+//
+pub fn increment_and_loop(thread_num: i32,start_num:i32,max_num:i32)->i32{
+    if thread_num < max_num{
+        thread_num + 1
+    }else{
+        start_num
+    }
 }
