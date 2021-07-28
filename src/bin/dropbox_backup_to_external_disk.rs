@@ -2,6 +2,7 @@
 
 use dropbox_backup_to_external_disk::*;
 use ansi_term::Colour::{Yellow, Green};
+use std::env;
 
 fn main() {
     pretty_env_logger::init();
@@ -12,14 +13,14 @@ fn main() {
 
     let cargo_pkg_name = env!("CARGO_PKG_NAME");
 
-    match std::env::args().nth(1).as_deref() {
+    match env::args().nth(1).as_deref() {
         None | Some("--help") | Some("-h") => print_help(&cargo_pkg_name),
         Some("test") =>  {
             let ns_started = ns_start("test");
             test_connection();
             ns_print_ms("test", ns_started);
         }
-        Some("list_and_sync") => match std::env::args().nth(2).as_deref() {
+        Some("list_and_sync") => match env::args().nth(2).as_deref() {
             Some(path) => {
                 let ns_started = ns_start("list_and_sync");
                 list_and_sync(path);
@@ -35,16 +36,18 @@ fn main() {
         Some("list_remote") => {
             print!("{}", term_cursor::Clear);
             println!(
-                "{}{}{}",
+                "{}{}{}{}",
                 term_cursor::Goto(0,1),
                 clear_line(),
-                "list_remote into temp_data/list_remote_files.csv"
+                "list_remote into temp_data/list_remote_files.csv",
+                hide_cursor()
             );
             let ns_started = ns_start("");
             list_remote();
+            println!("{}", unhide_cursor());
             ns_print_ms("list_remote", ns_started);
         }
-        Some("list_local") => match std::env::args().nth(2).as_deref() {
+        Some("list_local") => match env::args().nth(2).as_deref() {
             Some(path) => {
                 print!("{}", term_cursor::Clear);
                 println!(
@@ -84,7 +87,7 @@ fn main() {
             download_from_list();
             ns_print_ms("download_from_list", ns_started);
         }
-        Some("download") => match std::env::args().nth(2).as_deref() {
+        Some("download") => match env::args().nth(2).as_deref() {
             Some(path) => download(path),
             _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
         },
@@ -132,15 +135,15 @@ fn print_help(cargo_pkg_name: &str) {
     println!("$ {} {}", Green.paint(cargo_pkg_name),Green.paint("list_local /mnt/d/DropBoxBackup2"));
     println!("Compare lists and create list_for_download.csv, list_for_trash.csv and list_for_correct_time.csv:");
     println!("$ {} {}", Green.paint(cargo_pkg_name),Green.paint("compare_lists"));
-    println!("Correct time of files from list_for_correct_time.csv:");
-    println!("$ {} {}", Green.paint(cargo_pkg_name),Green.paint("correct_time_from_list"));
+    println!("move_or_rename_local_files:");
+    println!("$ {} {}", Green.paint(cargo_pkg_name),Green.paint("move_or_rename_local_files"));
     println!("Move to trash folder from list_for_trash.csv:");
     println!("$ {} {}", Green.paint(cargo_pkg_name),Green.paint("trash_from_list"));
+    println!("Correct time of files from list_for_correct_time.csv:");
+    println!("$ {} {}", Green.paint(cargo_pkg_name),Green.paint("correct_time_from_list"));
     println!("Download files from list_for_download.csv:");
     println!("$ {} {}", Green.paint(cargo_pkg_name),Green.paint("download_from_list"));
     println!("Download one single file:");
     println!("$ {} {}", Green.paint(cargo_pkg_name),Green.paint("download <path>"));
-    println!("move_or_rename_local_files:");
-    println!("$ {} {}", Green.paint(cargo_pkg_name),Green.paint("move_or_rename_local_files"));
 
 }

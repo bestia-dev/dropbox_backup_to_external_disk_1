@@ -17,7 +17,7 @@ use uncased::UncasedStr;
 
 pub fn list_and_sync(base_path: &str) {
     print!("{}", term_cursor::Clear);
-    println!("{}{}{}", term_cursor::Goto(0,1),clear_line(), "dropbox_backup_to_external_disk list_and_sync");
+    println!("{}{}{}{}", term_cursor::Goto(0,1),clear_line(), "dropbox_backup_to_external_disk list_and_sync",hide_cursor());
     ns_start("");
     // start 2 threads, first for remote list and second for local list
     use std::thread;
@@ -35,7 +35,8 @@ pub fn list_and_sync(base_path: &str) {
     // wait for both threads to finish
     handle_1.join().unwrap();
     handle_2.join().unwrap();
-    println!("{}{}{}", term_cursor::Goto(0,20),clear_line(), Green.paint(""));
+    println!("{}{}{}{}", term_cursor::Goto(0,20),clear_line(), Green.paint(""),unhide_cursor());
+
     sync_only();
   
 }
@@ -168,28 +169,4 @@ pub fn sort_string_lines(output_string:&str)->String{
     let joined = sorted_local.join("\n");  
     // return
     joined  
-}
-
-pub fn escape_non_ascii(input:&str)->String{
-    let mut new_string = String::new();
-    for ch in input.chars(){
-        if ch.is_ascii(){
-            new_string.push(ch);
-        }else{
-            // for dropbox <https://www.dropbox.com/developers/reference/json-encoding>
-            // it must look like this: \\u010d            
-            new_string.push_str( &format!("\\u{:04x}", ch as u32)	);
-        }
-    }
-    // return
-    new_string
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn escape_non_ascii_01() {
-        assert_eq!(escape_non_ascii("123 č 456"), "123 \\u010d 456");
-    }
 }
