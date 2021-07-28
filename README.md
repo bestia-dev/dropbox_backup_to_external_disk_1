@@ -32,7 +32,7 @@ Follow carefully the instructions.
 Before the first use, create your Dropbox app.  
 Before every use generate your "short-lived access token" and in Linux bash write the "token" into the environment variable like this:  
 `$ export DBX_OAUTH_TOKEN=here paste the token`  
-Make an temporary alias for easy of use (it lasts only for this session lifetime) :  
+Make a temporary alias for easy of use (it lasts only for this session lifetime) :  
 `$ alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk`  
 Test the connection and permission:  
 `$ dropbox_backup_to_external_disk test`  
@@ -70,3 +70,7 @@ For commercial programs they probably embed them into the binary code somehow. B
 `$ dropbox_backup_to_external_disk --help`  
 has the detailed instructions.  
 Then every time before use we need an "access token" that is short-lived for security reasons.  
+
+## rename or move
+
+Often a file is renamed or moved to another folder. I can try to recognize if there is the same file in list_for_trash and list_for download, but I cannot use the file path or name. Instead the metadata size, date modified and hash must be the same.  

@@ -1,8 +1,11 @@
 {
     "cSpell.words": [
         "Deque",
+        "exitcode",
         "filetime",
+        "hasher",
         "humantime",
-        "rclone"
+        "rclone",
+        "unhide"
     ]
 }
