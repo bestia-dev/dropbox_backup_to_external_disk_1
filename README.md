@@ -4,7 +4,7 @@
 
 [comment]: # (lmake_cargo_toml_to_md start)
 
-**one way sync from dropbox to an external disc**  
+**one way sync (backup) from dropbox to an external disc**  
 ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 0.1.288  date: 2021-07-31 authors: Luciano Bestia***  
 
 [comment]: # (lmake_cargo_toml_to_md end)
@@ -28,7 +28,9 @@ The original Dropbox Sync app works great for the internal HD, but is "not recom
 - dropbox_uploader
 
 But I wanted to write something mine for fun, learning Rust and using my own apps.
-I have a lot of files, so I wanted to list them first, then compare with the local files and finally download them. The trash part at the end will be "move to trash folder". So I can inspect what and how to remove it manually.  
+I have a lot of files, so I wanted to list them first, then compare with the local files and finally download them.  
+Obsolete files will "move to trash folder", so I can inspect what and how to remove manually.  
+The dropbox remote storage will always be read_only, nothing will be modified there, never, no permission for that.  
 
 ## Try it
 
@@ -49,7 +51,7 @@ Test the connection and permission:
   
 Later, use `$ dropbox_backup_to_external_disk --help` to get all the instructions and commands.  
 
-![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png "screenshot_2")  
+![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png "screenshot_2") ![list_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_1.png "list_1")  
 
 ## Warning
 
@@ -75,7 +77,7 @@ With this files the CLI will:
 `move_or_rename_local_files` using the content_hash to be sure they are equal  
 `trash_from_list` will move the obsolete files into a trash folder  
 `correct_time_from_list` sometimes it is needed  
-`download_from_list` - this can take a lot of time and it can be stopped and restarted with the use of the `list_just_downloaded.csv`.  
+`download_from_list` - this can take a lot of time and it can be stopped with ctrl+c
 
 ## DropBox api2 - Stone sdk
 
@@ -102,5 +104,12 @@ Often a file is renamed or moved to another folder. I can try to recognize if th
 We all know space. But there are other non-visible characters that are very similar and sometimes impossible to distinguish. Tab is one of them, but it is not so difficult to spot with a quick try.  
 But nbsp non-breaking space, often used in HTML is a catastrophe. There is no way to tell it apart from the normal space. I used a regex to find a match with some spaces. It worked right for a years. Yesterday it didn't work. If I changed space to `\s` in the regex expression, it worked, but not with space. I tried everything and didn't find the cause. Finally I deleted and inserted the space. It works. But how? After a detailed analysis I discovered it was a non-breakable space. This is unicode 160 or \xa0, instead of normal space unicode 32 \x20. Now I will try to find them all and replace with normal space. What a crazy world.  
 And another REGEX surprise. I try to have all text files delimited with the unix standard LF. But somehow the windows standard got mixed and I didn't recognize it. The regex for `end of line` $ didn't work for CRLF. When I changed it to LF, the good life is back and all works.
+
+## Text files
+
+Simple text files are a terrible way to store data that needs to be changed. It is ok for write once and then read. But there is not a good way to modify only one line inside a big text file. The recommended approach is read all, modify, save all. If the memory is not big enough then use a buffer to read a segment, modify, save a segment, repeat to end.  
+There is another approach called memory map to file, but everybody is trying to avoid it because some other process could modify the file when in use and make it garbage.  
+Sounds like a database is always a better choice for more agile development.  
+In this project I will create additional files that only append lines. Some kind of journal. And later use this to modify the big text files in one go. For example: list_just_downloaded_or_moved.csv is added to list_local_files.csv.  
 
 [comment]: # (lmake_md_to_doc_comments segment end A)

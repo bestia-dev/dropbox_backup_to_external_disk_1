@@ -69,7 +69,7 @@
 //! `move_or_rename_local_files` using the content_hash to be sure they are equal  
 //! `trash_from_list` will move the obsolete files into a trash folder  
 //! `correct_time_from_list` sometimes it is needed  
-//! `download_from_list` - this can take a lot of time and it can be stopped and restarted with the use of the `list_just_downloaded.csv`.  
+//! `download_from_list` - this can take a lot of time and it can be stopped and restarted with the use of the `list_just_downloaded_or_moved.csv`.  
 //!
 //! ## DropBox api2 - Stone sdk
 //!

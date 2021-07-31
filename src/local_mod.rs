@@ -7,6 +7,7 @@ use ansi_term::Colour::{Blue, Green, Red, Yellow};
 use dropbox_content_hasher::DropboxContentHasher;
 use log::error;
 use std::fs;
+use std::io::Write;
 use std::path;
 use uncased::UncasedStr;
 use unwrap::unwrap;
@@ -14,6 +15,10 @@ use unwrap::unwrap;
 /// list all local files and folders. It can take some time.
 pub fn list_local(base_path: &str) {
     println!("start list_local {}", base_path);
+    // empty the file. I want all or nothing result here if the process is terminated prematurely.
+    unwrap!(fs::write("temp_data/list_local_files.csv", ""));
+    // just_loaded is obsolete once I got the fresh local list
+    unwrap!(fs::write("temp_data/list_just_downloaded_or_moved.csv", ""));
     save_base_path(base_path);
     // write data to a big string in memory
     let mut output_string = String::with_capacity(1024 * 1024);
@@ -97,7 +102,7 @@ pub fn save_base_path(base_path: &str) {
 /// After compare, the same file (with different path or name) will be in the list_for_trash and in the list_for_download.
 /// First for every trash line, we search list_for_download for same size and modified.
 /// If found, get the remote_metadata with content_hash and calculate local_content_hash.
-/// If they are equal move or rename, else leave: it will be trashed and downloaded eventually.
+/// If they are equal move or rename, else nothing: it will be trashed and downloaded eventually.
 /// Remove also the lines in files list_for_trash and list_for_download.
 pub fn move_or_rename_local_files() {
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
@@ -107,60 +112,67 @@ pub fn move_or_rename_local_files() {
     let path_list_for_download = "temp_data/list_for_download.csv";
     let list_for_download = fs::read_to_string(path_list_for_download).unwrap();
 
-    // I will replace the path inside the list_local_file.csv
-    let mut string_local_files = fs::read_to_string("temp_data/list_local_files.csv").unwrap();
-
+    let token = crate::remote_mod::get_short_lived_access_token();
+    let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
+    // write the renamed files to list_just_downloaded_or_moved, later they will be added to list_local_files.csv
+    let list_just_downloaded_or_moved = "temp_data/list_just_downloaded_or_moved.csv";
+    let mut just_downloaded = fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(list_just_downloaded_or_moved)
+        .unwrap();
+    let mut count_moved = 0;
     for line_for_trash in list_for_trash.lines() {
         let vec_line_for_trash: Vec<&str> = line_for_trash.split("\t").collect();
-        let path_for_trash = vec_line_for_trash[0];
-        let modified_for_trash = vec_line_for_trash[1];
-        let size_for_trash = vec_line_for_trash[2];
-        // search in list_for_download for possible candidates
-        for line_for_download in list_for_download.lines() {
-            let vec_line_for_download: Vec<&str> = line_for_download.split("\t").collect();
-            let path_for_download = vec_line_for_download[0];
-            let modified_for_download = vec_line_for_download[1];
-            let size_for_download = vec_line_for_download[2];
-            if modified_for_trash == modified_for_download && size_for_trash == size_for_download {
-                // same size and date. Let's check the content_hash to be sure.
-                let local_path = format!("{}{}", base_local_path, path_for_trash);
-                println!("local_path {}", &local_path);
-                let local_content_hash = format!(
-                    "{:x}",
-                    unwrap!(DropboxContentHasher::hash_file(&local_path))
-                );
-                println!("path_for_download {}", path_for_download);
-                let remote_content_hash =
-                    unwrap!(crate::remote_mod::remote_content_hash(path_for_download));
+        let string_path_for_trash = vec_line_for_trash[0];
+        let global_path_to_trash = format!("{}{}", &base_local_path, string_path_for_trash);
+        let path_to_trash = path::Path::new(&global_path_to_trash);
+        // if path does not exist ignore, probably it eas moved or trashed earlier
+        if path_to_trash.exists() {
+            let modified_for_trash = vec_line_for_trash[1];
+            let size_for_trash = vec_line_for_trash[2];
+            // search in list_for_download for possible candidates
+            for line_for_download in list_for_download.lines() {
+                let vec_line_for_download: Vec<&str> = line_for_download.split("\t").collect();
+                let path_for_download = vec_line_for_download[0];
+                let modified_for_download = vec_line_for_download[1];
+                let size_for_download = vec_line_for_download[2];
+                if modified_for_trash == modified_for_download
+                    && size_for_trash == size_for_download
+                {
+                    // same size and date. Let's check the content_hash to be sure.
+                    let local_content_hash = format!(
+                        "{:x}",
+                        unwrap!(DropboxContentHasher::hash_file(path_to_trash))
+                    );
+                    let remote_content_hash = unwrap!(crate::remote_mod::remote_content_hash(
+                        path_for_download,
+                        &client
+                    ));
 
-                if local_content_hash == remote_content_hash {
-                    let move_from = local_path;
-                    let move_to = format!("{}{}", base_local_path, path_for_download);
-                    println!("move {}  ->  {}", move_from, move_to);
-                    let parent = unwrap!(path::Path::parent(path::Path::new(&move_to)));
-                    if !parent.exists() {
-                        fs::create_dir_all(&parent).unwrap();
+                    if local_content_hash == remote_content_hash {
+                        let move_from = path_to_trash;
+                        let move_to = format!("{}{}", base_local_path, path_for_download);
+                        println!("move {}  ->  {}", &move_from.to_string_lossy(), move_to);
+                        let parent = unwrap!(path::Path::parent(path::Path::new(&move_to)));
+                        if !parent.exists() {
+                            fs::create_dir_all(&parent).unwrap();
+                        }
+                        unwrap!(fs::rename(&move_from, &move_to));
+                        // append to just_downloaded
+                        unwrap!(writeln!(just_downloaded, "{}", line_for_download));
+                        count_moved += 1;
+                        break;
                     }
-                    unwrap!(fs::rename(&move_from, &move_to));
-                    // modify also list_local_files (the same string)
-                    string_local_files =
-                        string_local_files.replace(line_for_trash, line_for_download);
-                } else {
-                    // nothing to do
-                    println!("diff: {} {}", remote_content_hash, local_content_hash);
                 }
             }
         }
     }
-
-    let sorted_string = crate::sort_string_lines(&string_local_files);
-    fs::write("temp_data/list_local_files.csv", sorted_string).expect("Can't write");
-    // if there was something in list_just_downloaded.csv, it is now obsolete
-    let path_list_just_downloaded = "temp_data/list_just_downloaded.csv";
-    unwrap!(fs::write(path_list_just_downloaded, ""));
+    println!("moved or renamed: {}", count_moved);
 }
 
 /// move to trash folder the files from list_for_trash
+/// ignore if the file does not exist anymore
 pub fn trash_from_list() {
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let now_string = chrono::Local::now()
@@ -175,18 +187,21 @@ pub fn trash_from_list() {
     let list_for_trash = fs::read_to_string(path_list_for_trash).unwrap();
     for line_path_for_trash in list_for_trash.lines() {
         let line: Vec<&str> = line_path_for_trash.split("\t").collect();
-        let path_for_trash = line[0];
-        let move_from = format!("{}{}", base_local_path, path_for_trash);
-        let move_to = format!("{}{}", base_trash_path, path_for_trash);
-        println!("{}  ->  {}", move_from, move_to);
-        let parent = unwrap!(path::Path::parent(path::Path::new(&move_to)));
-        if !parent.exists() {
-            fs::create_dir_all(&parent).unwrap();
+        let string_path_for_trash = line[0];
+        let path_for_trash = path::Path::new(string_path_for_trash);
+        // move to trash if file exists. Nothing if it does not exist, maybe is deleted when moved or in a move_to_trash before.
+        if path_for_trash.exists() {
+            let move_from = format!("{}{}", base_local_path, string_path_for_trash);
+            let move_to = format!("{}{}", base_trash_path, string_path_for_trash);
+            println!("{}  ->  {}", move_from, move_to);
+            let parent = unwrap!(path::Path::parent(path::Path::new(&move_to)));
+            if !parent.exists() {
+                fs::create_dir_all(&parent).unwrap();
+            }
+            unwrap!(fs::rename(&move_from, &move_to));
         }
-        unwrap!(fs::rename(&move_from, &move_to));
     }
-    // empty the list
-    // println!("list_for_trash emptied");
+    // empty the list if all is successful
     unwrap!(fs::write(path_list_for_trash, ""));
 }
 
@@ -195,11 +210,16 @@ pub fn correct_time_from_list() {
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let path_list_for_correct_time = "temp_data/list_for_correct_time.csv";
     let list_for_correct_time = fs::read_to_string(path_list_for_correct_time).unwrap();
+    let token = crate::remote_mod::get_short_lived_access_token();
+    let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
     for path_to_correct_time in list_for_correct_time.lines() {
         let line: Vec<&str> = path_to_correct_time.split("\t").collect();
         let remote_path = line[0];
         println!("{}", remote_path);
-        let remote_content_hash = unwrap!(crate::remote_mod::remote_content_hash(&remote_path));
+        let remote_content_hash = unwrap!(crate::remote_mod::remote_content_hash(
+            &remote_path,
+            &client
+        ));
         let local_path = format!("{}{}", base_local_path, remote_path);
         let local_content_hash = format!(
             "{:x}",
@@ -217,9 +237,9 @@ pub fn correct_time_from_list() {
     unwrap!(fs::write(path_list_for_correct_time, ""));
 }
 
-/// add lines from just_downloaded to list_local
+/// add lines from just_downloaded to list_local. Only before compare.
 pub fn add_just_downloaded_to_list_local() {
-    let path_list_just_downloaded = "temp_data/list_just_downloaded.csv";
+    let path_list_just_downloaded = "temp_data/list_just_downloaded_or_moved.csv";
     let string_just_downloaded = fs::read_to_string(path_list_just_downloaded).unwrap();
     if !string_just_downloaded.is_empty() {
         // it must be sorted, because downloads are multi-thread and not in sort order
@@ -290,8 +310,8 @@ pub fn add_just_downloaded_to_list_local() {
         let new_local_files = vec_sorted_local.join("\n");
         unwrap!(fs::write(path_list_local_files, &new_local_files));
 
-        // empty the file temp_data/list_just_downloaded.csv
-        // println!("list_just_downloaded emptied");
+        // empty the file temp_data/list_just_downloaded_or_moved.csv
+        // println!("list_just_downloaded_or_moved emptied");
         unwrap!(fs::write(path_list_just_downloaded, ""));
     }
 }

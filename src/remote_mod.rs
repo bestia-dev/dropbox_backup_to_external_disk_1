@@ -30,7 +30,7 @@ pub fn test_connection() {
 }
 
 /// get token from env variable
-fn get_short_lived_access_token() -> dropbox_sdk::oauth2::Authorization {
+pub fn get_short_lived_access_token() -> dropbox_sdk::oauth2::Authorization {
     // The user must prepare the short-lived access token in the environment variable
     let token = match env::var("DBX_OAUTH_TOKEN") {
         Ok(token) => {
@@ -49,6 +49,9 @@ fn get_short_lived_access_token() -> dropbox_sdk::oauth2::Authorization {
 /// first get the first level of folders and then request in parallel sub-folders recursively
 pub fn list_remote() {
     //println!("list_remote()");
+    // empty the file. I want all or nothing result here if the process is terminated prematurely.
+    unwrap!(fs::write("temp_data/list_remote_files.csv", ""));
+
     let token = get_short_lived_access_token();
     let token_clone2 = token.to_owned().clone();
     let client = UserAuthDefaultClient::new(token_clone2.to_owned());
@@ -349,16 +352,16 @@ pub fn download_with_client(
     unwrap!(filetime::set_file_times(&temp_local_path, atime, mtime));
     // move-rename the completed download file o his final folder
     unwrap!(fs::rename(&temp_local_path, &local_path));
-    // write to file list_just_downloaded.
+    // write to file list_just_downloaded_or_moved.
     // multi-thread no problem: append is atomic on most OS <https://doc.rust-lang.org/std/fs/struct.OpenOptions.html#method.create>
-    let list_just_downloaded = "temp_data/list_just_downloaded.csv";
+    let list_just_downloaded_or_moved = "temp_data/list_just_downloaded_or_moved.csv";
     let line_to_append = format!("{}\t{}\t{}", download_path, s_modified, bytes_out);
     let string_to_print = format!("{}", &line_to_append);
     unwrap!(tx_clone.send((string_to_print, -1)));
     let mut just_downloaded = fs::OpenOptions::new()
         .create(true)
         .append(true)
-        .open(list_just_downloaded)
+        .open(list_just_downloaded_or_moved)
         .unwrap();
     unwrap!(writeln!(just_downloaded, "{}", line_to_append));
 }
@@ -530,11 +533,9 @@ impl<'a> Iterator for DirectoryIterator<'a> {
 }
 
 /// get content_hash from remote
-pub fn remote_content_hash(remote_path: &str) -> Option<String> {
-    let token = get_short_lived_access_token();
-    let client = UserAuthDefaultClient::new(token);
+pub fn remote_content_hash(remote_path: &str, client: &UserAuthDefaultClient) -> Option<String> {
     let arg = files::GetMetadataArg::new(remote_path.to_string());
-    let res_res_metadata = dropbox_sdk::files::get_metadata(&client, &arg);
+    let res_res_metadata = dropbox_sdk::files::get_metadata(client, &arg);
 
     match res_res_metadata {
         Ok(Ok(files::Metadata::Folder(_entry))) => {
