@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["dropbox_backup_to_external_disk"] = [{"text":"impl&lt;'a&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/std/panic/trait.UnwindSafe.html\" title=\"trait std::panic::UnwindSafe\">UnwindSafe</a> for <a class=\"struct\" href=\"dropbox_backup_to_external_disk/remote_mod/struct.DirectoryIterator.html\" title=\"struct dropbox_backup_to_external_disk::remote_mod::DirectoryIterator\">DirectoryIterator</a>&lt;'a&gt;","synthetic":true,"types":["dropbox_backup_to_external_disk::remote_mod::DirectoryIterator"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,4 +1,5 @@
 //! local_mod.rs
+//! Module contains all functions for local external disk.
 
 #[allow(unused_imports)]
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
@@ -69,7 +70,7 @@ pub fn list_local(base_path: &str) {
     unwrap!(fs::write("temp_data/list_local_files.csv", sorted_string));
 }
 
-/// remember the base local path for later commands
+/// save the base local path for later commands
 pub fn save_base_path(base_path: &str) {
     if !path::Path::new(base_path).exists() {
         println!("error: base_path not exists {}", base_path);
@@ -141,7 +142,7 @@ pub fn move_or_rename_local_files(){
     unwrap!(fs::write(path_list_just_downloaded, ""));   
 }
 
-// move to trash folder the files from list_for_trash 
+/// move to trash folder the files from list_for_trash 
 pub fn trash_from_list() {
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let now_string = chrono::Local::now()
@@ -171,7 +172,7 @@ pub fn trash_from_list() {
     unwrap!(fs::write(path_list_for_trash,""));
 }
 
-// modify the files from list_for_correct_time
+/// modify the files from list_for_correct_time
 pub fn correct_time_from_list() {
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let path_list_for_correct_time = "temp_data/list_for_correct_time.csv";
@@ -196,7 +197,7 @@ pub fn correct_time_from_list() {
     unwrap!(fs::write(path_list_for_correct_time,""));
 }
 
-// add lines from just_downloaded to list_local
+/// add lines from just_downloaded to list_local
 pub fn add_just_downloaded_to_list_local() {    
     let path_list_just_downloaded="temp_data/list_just_downloaded.csv";
     let string_just_downloaded = fs::read_to_string(path_list_just_downloaded).unwrap();

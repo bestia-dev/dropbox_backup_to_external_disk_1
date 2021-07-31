@@ -1,0 +1,459 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../dropbox_backup_to_external_disk/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
+                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<span id="2">  2</span>
+<span id="3">  3</span>
+<span id="4">  4</span>
+<span id="5">  5</span>
+<span id="6">  6</span>
+<span id="7">  7</span>
+<span id="8">  8</span>
+<span id="9">  9</span>
+<span id="10"> 10</span>
+<span id="11"> 11</span>
+<span id="12"> 12</span>
+<span id="13"> 13</span>
+<span id="14"> 14</span>
+<span id="15"> 15</span>
+<span id="16"> 16</span>
+<span id="17"> 17</span>
+<span id="18"> 18</span>
+<span id="19"> 19</span>
+<span id="20"> 20</span>
+<span id="21"> 21</span>
+<span id="22"> 22</span>
+<span id="23"> 23</span>
+<span id="24"> 24</span>
+<span id="25"> 25</span>
+<span id="26"> 26</span>
+<span id="27"> 27</span>
+<span id="28"> 28</span>
+<span id="29"> 29</span>
+<span id="30"> 30</span>
+<span id="31"> 31</span>
+<span id="32"> 32</span>
+<span id="33"> 33</span>
+<span id="34"> 34</span>
+<span id="35"> 35</span>
+<span id="36"> 36</span>
+<span id="37"> 37</span>
+<span id="38"> 38</span>
+<span id="39"> 39</span>
+<span id="40"> 40</span>
+<span id="41"> 41</span>
+<span id="42"> 42</span>
+<span id="43"> 43</span>
+<span id="44"> 44</span>
+<span id="45"> 45</span>
+<span id="46"> 46</span>
+<span id="47"> 47</span>
+<span id="48"> 48</span>
+<span id="49"> 49</span>
+<span id="50"> 50</span>
+<span id="51"> 51</span>
+<span id="52"> 52</span>
+<span id="53"> 53</span>
+<span id="54"> 54</span>
+<span id="55"> 55</span>
+<span id="56"> 56</span>
+<span id="57"> 57</span>
+<span id="58"> 58</span>
+<span id="59"> 59</span>
+<span id="60"> 60</span>
+<span id="61"> 61</span>
+<span id="62"> 62</span>
+<span id="63"> 63</span>
+<span id="64"> 64</span>
+<span id="65"> 65</span>
+<span id="66"> 66</span>
+<span id="67"> 67</span>
+<span id="68"> 68</span>
+<span id="69"> 69</span>
+<span id="70"> 70</span>
+<span id="71"> 71</span>
+<span id="72"> 72</span>
+<span id="73"> 73</span>
+<span id="74"> 74</span>
+<span id="75"> 75</span>
+<span id="76"> 76</span>
+<span id="77"> 77</span>
+<span id="78"> 78</span>
+<span id="79"> 79</span>
+<span id="80"> 80</span>
+<span id="81"> 81</span>
+<span id="82"> 82</span>
+<span id="83"> 83</span>
+<span id="84"> 84</span>
+<span id="85"> 85</span>
+<span id="86"> 86</span>
+<span id="87"> 87</span>
+<span id="88"> 88</span>
+<span id="89"> 89</span>
+<span id="90"> 90</span>
+<span id="91"> 91</span>
+<span id="92"> 92</span>
+<span id="93"> 93</span>
+<span id="94"> 94</span>
+<span id="95"> 95</span>
+<span id="96"> 96</span>
+<span id="97"> 97</span>
+<span id="98"> 98</span>
+<span id="99"> 99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+</pre><div class="example-wrap"><pre class="rust ">
+<span class="doccomment">//! dropbox_backup_to_external_disk lib.rs</span>
+
+<span class="comment">// region: lmake_md_to_doc_comments include README.md A //!</span>
+<span class="doccomment">//! # dropbox_backup_to_external_disk</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! **one way sync from dropbox to an external disc**  </span>
+<span class="doccomment">//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 0.1.288  date: 2021-07-31 authors: Luciano Bestia***  </span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1009-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-124-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-101-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! [![Licence](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/blob/master/LICENSE) [![Rust](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! On my Dropbox &quot;remote drive&quot; I have more than 1 Terabyte of data in 200 000 files.  </span>
+<span class="doccomment">//! I own now 4 notebooks and 2 android phones and 1 tablet and not a single one has an internal drive with more than 1 Terabyte. I use dropbox `Selective Sync` to sync only the bare minimum I temporarily need on the local device. But I want to have a backup of all of my data. I must have a backup. Better, I want to have 2 backups of all the data on 2 external hard disks in different locations. So if Dropbox go bankrupt, I still have all my data.  </span>
+<span class="doccomment">//! The original Dropbox Sync app works great for the internal HD, but is &quot;not recommended&quot; for external drives. I also need only one way sync: from remote to local. There exist apps for that:</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! - rclone</span>
+<span class="doccomment">//! - dropbox_uploader</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! But I wanted to write something mine for fun, learning Rust and using my own apps.</span>
+<span class="doccomment">//! I have a lot of files, so I wanted to list them first, then compare with the local files and finally download them. The trash part at the end will be &quot;move to trash folder&quot;. So I can inspect what and how to remove it manually.  </span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Try it</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! You should be logged in Linux terminal with your account. So things you do, are not visible to others.  </span>
+<span class="doccomment">//! You will set some local environment variables that are private/secret to your linux Session.  </span>
+<span class="doccomment">//! After you logout from you Linux session the local environment variables will be deleted.  </span>
+<span class="doccomment">//! You have to be in the project folder where cargo.toml is.  </span>
+<span class="doccomment">//! Build the CLI:  </span>
+<span class="doccomment">//! `$ cargo make debug`  </span>
+<span class="doccomment">//! Follow carefully the instructions.  </span>
+<span class="doccomment">//! Before the first use, create your Dropbox app.  </span>
+<span class="doccomment">//! Before every use generate your &quot;short-lived access token&quot; and in Linux bash write the &quot;token&quot; into the environment variable like this:  </span>
+<span class="doccomment">//! `$ export DBX_OAUTH_TOKEN=here paste the token`  </span>
+<span class="doccomment">//! Make a temporary alias for easy of use (it lasts only for this session lifetime) :  </span>
+<span class="doccomment">//! `$ alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk`  </span>
+<span class="doccomment">//! Test the connection and permission:  </span>
+<span class="doccomment">//! `$ dropbox_backup_to_external_disk test`  </span>
+<span class="doccomment">//!   </span>
+<span class="doccomment">//! Later, use `$ dropbox_backup_to_external_disk --help` to get all the instructions and commands.  </span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Warning</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! I don&#39;t know why, but WSL2 sometimes does not see all the folders of the external disk.  </span>
+<span class="doccomment">//! Instead of 12000 folders it sees only 28 ???  </span>
+<span class="doccomment">//! Be careful !  </span>
+<span class="doccomment">//! I then restart my Win10 and the problem magically disappears.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## development</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! List all the files from the remote Dropbox and saves to the file `temp_data/list_remote_files.csv`.</span>
+<span class="doccomment">//! Tab delimited with metadata: path (with name), datetime modified, size.</span>
+<span class="doccomment">//! The path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random.</span>
+<span class="doccomment">//! For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads in a ThreadPool to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.</span>
+<span class="doccomment">//! The sorting of lists is also done in parallel with the crate Rayon.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## DropBox api2 - Stone sdk</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Dropbox has made a `Stone` thing that contains all the API definition. From there is possible to generate code boilerplate for different languages for the api-client.  </span>
+<span class="doccomment">//! For Rust there is this quasi official project:  </span>
+<span class="doccomment">//! &lt;https://crates.io/crates/dropbox-sdk&gt;  </span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Authorization OAuth2</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Authorization on the internet is a mess. Dropbox api uses OAuth2.</span>
+<span class="doccomment">//! Every app must be authorized on Dropbox and have its own `app key` and `app secret`.  </span>
+<span class="doccomment">//! For commercial programs they probably embed them into the binary code somehow. But for OpenSource projects it is not possible to keep a secret. So the workaround is: every user must create a new `dropbox app` exclusive only to him. Creating a new app is simple. This app will stay forever in `development status` in dropbox, to be more private and secure. The  </span>
+<span class="doccomment">//! `$ dropbox_backup_to_external_disk --help`  </span>
+<span class="doccomment">//! has the detailed instructions.  </span>
+<span class="doccomment">//! Then every time before use we need an &quot;access token&quot; that is short-lived for security reasons.  </span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## rename or move</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Often a file is renamed or moved to another folder. I can try to recognize if there is the same file in list_for_trash and list_for download, but I cannot use the file path or name. Instead the metadata size, date modified and hash must be the same.  </span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## REGEX adventure non-breaking space and CRLF</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! We all know space. But there are other non-visible characters that are very similar and sometimes impossible to distinguish. Tab is one of them, but it is not so difficult to spot with a quick try.  </span>
+<span class="doccomment">//! But nbsp non-breaking space, often used in HTML is a catastrophe. There is no way to tell it apart from the normal space. I used a regex to find a match with some spaces. It worked right for a years. Yesterday it didn&#39;t work. If I changed space to `\s` in the regex expression, it worked, but not with space. I tried everything and didn&#39;t find the cause. Finally I deleted and inserted the space. It works. But how? After a detailed analysis I discovered it was a non-breakable space. This is unicode 160 or \xa0, instead of normal space unicode 32 \x20. Now I will try to find them all and replace with normal space. What a crazy world.  </span>
+<span class="doccomment">//! And another REGEX surprise. I try to have all text files delimited with the unix standard LF. But somehow the windows standard got mixed and I didn&#39;t recognize it. The regex for `end of line` $ didn&#39;t work for CRLF. When I changed it to LF, the good life is back and all works.</span>
+<span class="doccomment">//!</span>
+<span class="comment">// endregion: lmake_md_to_doc_comments include README.md A //!</span>
+
+<span class="kw">mod</span> <span class="ident">local_mod</span>;
+<span class="kw">mod</span> <span class="ident">remote_mod</span>;
+<span class="kw">mod</span> <span class="ident">utils_mod</span>;
+
+<span class="kw">use</span> <span class="ident">std::fs</span>;
+
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">local_mod</span>::<span class="kw-2">*</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">remote_mod</span>::<span class="kw-2">*</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">utils_mod</span>::<span class="kw-2">*</span>;
+
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
+<span class="kw">use</span> <span class="ident">ansi_term::Colour</span>::{<span class="ident">Blue</span>, <span class="ident">Green</span>, <span class="ident">Red</span>, <span class="ident">Yellow</span>};
+<span class="kw">use</span> <span class="ident">unwrap::unwrap</span>;
+<span class="kw">use</span> <span class="ident">uncased::UncasedStr</span>;
+
+<span class="doccomment">/// list and sync is the complete process for backup in one command</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list_and_sync</span>(<span class="ident">base_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
+    <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">term_cursor::Clear</span>);
+    <span class="macro">println!</span>(<span class="string">&quot;{}{}{}{}&quot;</span>, <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>,<span class="number">1</span>),<span class="ident">clear_line</span>(), <span class="string">&quot;dropbox_backup_to_external_disk list_and_sync&quot;</span>,<span class="ident">hide_cursor</span>());
+    <span class="ident">ns_start</span>(<span class="string">&quot;&quot;</span>);
+    <span class="comment">// start 2 threads, first for remote list and second for local list</span>
+    <span class="kw">use</span> <span class="ident">std::thread</span>;
+    <span class="kw">let</span> <span class="ident">base_path</span> <span class="op">=</span> <span class="ident">base_path</span>.<span class="ident">to_string</span>();
+    <span class="kw">let</span> <span class="ident">handle_2</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+        <span class="macro">println!</span>(<span class="string">&quot;{}{}{}&quot;</span>, <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>,<span class="number">3</span>),<span class="ident">clear_line</span>(), <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;Threads for remote:&quot;</span>));
+        <span class="comment">// prints at rows 10,11,12</span>
+        <span class="ident">list_remote</span>();
+    });
+    <span class="kw">let</span> <span class="ident">handle_1</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+        <span class="macro">println!</span>(<span class="string">&quot;{}{}{}&quot;</span>, <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>,<span class="number">15</span>),<span class="ident">clear_line</span>(), <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;Thread for local:&quot;</span>));
+        <span class="comment">// prints at rows 5, 6, 7</span>
+        <span class="ident">list_local</span>(<span class="kw-2">&amp;</span><span class="ident">base_path</span>);
+    });
+    <span class="comment">// wait for both threads to finish</span>
+    <span class="ident">handle_1</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
+    <span class="ident">handle_2</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
+    <span class="macro">println!</span>(<span class="string">&quot;{}{}{}{}&quot;</span>, <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>,<span class="number">20</span>),<span class="ident">clear_line</span>(), <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;&quot;</span>),<span class="ident">unhide_cursor</span>());
+
+    <span class="ident">sync_only</span>();
+}
+
+<span class="doccomment">/// sync_only can be stopped and then restarted if downloading takes a lot of time.</span>
+<span class="doccomment">/// no need to repeat the &quot;list&quot; that takes a lot of timeS</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sync_only</span>(){
+    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;compare remote and local lists&quot;</span>));
+    <span class="ident">compare_lists</span>();
+    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;rename or move equal files&quot;</span>));
+    <span class="ident">move_or_rename_local_files</span>();
+    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;move to trash from list&quot;</span>));
+    <span class="ident">trash_from_list</span>();
+    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;correct time from list&quot;</span>));
+    <span class="ident">correct_time_from_list</span>();
+    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;download from list&quot;</span>));
+    <span class="ident">download_from_list</span>();  
+}
+
+<span class="doccomment">/// compare list: the lists must be already sorted for this to work correctly</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">compare_lists</span>() {
+    <span class="ident">add_just_downloaded_to_list_local</span>();
+    <span class="kw">let</span> <span class="ident">path_list_remote_files</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_remote_files.csv&quot;</span>;
+    <span class="kw">let</span> <span class="ident">path_list_local_files</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_local_files.csv&quot;</span>;
+    <span class="kw">let</span> <span class="ident">string_remote</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">fs::read_to_string</span>(<span class="ident">path_list_remote_files</span>));
+    <span class="kw">let</span> <span class="ident">vec_remote_lines</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">string_remote</span>.<span class="ident">lines</span>().<span class="ident">collect</span>();
+    <span class="kw">let</span> <span class="ident">string_local</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">fs::read_to_string</span>(<span class="ident">path_list_local_files</span>));
+    <span class="kw">let</span> <span class="ident">vec_local_lines</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">string_local</span>.<span class="ident">lines</span>().<span class="ident">collect</span>();
+
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec_for_download</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec_for_trash</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec_for_correct_time</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor_remote</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cursor_local</span> <span class="op">=</span> <span class="number">0</span>;
+    <span class="comment">//avoid making new allocations or shadowing inside a loop</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec_line_local</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec_line_remote</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="comment">//let mut i = 0;</span>
+    <span class="kw">loop</span> {
+        <span class="ident">vec_line_local</span>.<span class="ident">truncate</span>(<span class="number">3</span>);
+        <span class="ident">vec_line_remote</span>.<span class="ident">truncate</span>(<span class="number">3</span>);
+
+        <span class="kw">if</span> <span class="ident">cursor_remote</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">vec_remote_lines</span>.<span class="ident">len</span>() <span class="op">&amp;&amp;</span> <span class="ident">cursor_local</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">vec_local_lines</span>.<span class="ident">len</span>() {
+            <span class="kw">break</span>;
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">cursor_remote</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">vec_remote_lines</span>.<span class="ident">len</span>() {
+            <span class="comment">// final lines</span>
+            <span class="ident">vec_for_trash</span>.<span class="ident">push</span>(<span class="ident">vec_local_lines</span>[<span class="ident">cursor_local</span>].<span class="ident">to_string</span>());
+            <span class="ident">cursor_local</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">cursor_local</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">vec_local_lines</span>.<span class="ident">len</span>() {
+            <span class="comment">// final lines</span>
+            <span class="ident">vec_for_download</span>.<span class="ident">push</span>(<span class="ident">vec_remote_lines</span>[<span class="ident">cursor_remote</span>].<span class="ident">to_string</span>());
+            <span class="ident">cursor_remote</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        } <span class="kw">else</span> {
+            <span class="ident">vec_line_remote</span> <span class="op">=</span> <span class="ident">vec_remote_lines</span>[<span class="ident">cursor_remote</span>].<span class="ident">split</span>(<span class="string">&quot;\t&quot;</span>).<span class="ident">collect</span>();
+            <span class="ident">vec_line_local</span> <span class="op">=</span> <span class="ident">vec_local_lines</span>[<span class="ident">cursor_local</span>].<span class="ident">split</span>(<span class="string">&quot;\t&quot;</span>).<span class="ident">collect</span>();
+            <span class="comment">// UncasedStr preserves the case in the string, but comparison is done case insensitive</span>
+            <span class="kw">let</span> <span class="ident">path_remote</span>: <span class="kw-2">&amp;</span><span class="ident">UncasedStr</span> <span class="op">=</span> <span class="ident">vec_line_remote</span>[<span class="number">0</span>].<span class="ident">into</span>();
+            <span class="kw">let</span> <span class="ident">path_local</span>: <span class="kw-2">&amp;</span><span class="ident">UncasedStr</span> <span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">0</span>].<span class="ident">into</span>();
+
+            <span class="comment">//println!(&quot;{}&quot;,path_remote);</span>
+            <span class="comment">//println!(&quot;{}&quot;,path_local);</span>
+            <span class="kw">if</span> <span class="ident">path_remote</span>.<span class="ident">lt</span>(<span class="ident">path_local</span>) {
+                <span class="comment">//println!(&quot;lt&quot;);</span>
+                <span class="ident">vec_for_download</span>.<span class="ident">push</span>(<span class="ident">vec_remote_lines</span>[<span class="ident">cursor_remote</span>].<span class="ident">to_string</span>());
+                <span class="ident">cursor_remote</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">path_remote</span>.<span class="ident">gt</span>(<span class="ident">path_local</span>) { 
+                <span class="comment">//println!(&quot;gt&quot; );</span>
+                <span class="ident">vec_for_trash</span>.<span class="ident">push</span>(<span class="ident">vec_local_lines</span>[<span class="ident">cursor_local</span>].<span class="ident">to_string</span>());
+                <span class="ident">cursor_local</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            } <span class="kw">else</span> {
+                <span class="comment">//println!(&quot;eq&quot;);</span>
+                <span class="comment">// equal names. check date and size</span>
+                <span class="comment">// println!(&quot;Equal names: {}   {}&quot;,path_remote,path_local);</span>
+                <span class="comment">// if equal size and time difference only in seconds, then correct local time</span>
+                <span class="kw">if</span> <span class="ident">vec_line_remote</span>[<span class="number">2</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">2</span>] <span class="op">&amp;&amp;</span> <span class="ident">vec_line_remote</span>[<span class="number">1</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">1</span>] <span class="op">&amp;&amp;</span> <span class="ident">vec_line_remote</span>[<span class="number">1</span>][<span class="number">0</span>..<span class="number">17</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">1</span>][<span class="number">0</span>..<span class="number">17</span>]{
+                    <span class="ident">vec_for_correct_time</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{}\t{}&quot;</span>,<span class="ident">path_local</span>,<span class="ident">vec_line_remote</span>[<span class="number">1</span>] ));
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">vec_line_remote</span>[<span class="number">1</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">1</span>] <span class="op">|</span><span class="op">|</span> <span class="ident">vec_line_remote</span>[<span class="number">2</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">2</span>] {
+                    <span class="comment">//println!(&quot;Equal names: {}   {}&quot;, path_remote, path_local);</span>
+                    <span class="comment">//println!(</span>
+                    <span class="comment">//&quot;Different date or size {} {} {} {}&quot;,</span>
+                    <span class="comment">//line_remote[1], line_local[1], line_remote[2], line_local[2]</span>
+                    <span class="comment">//);</span>
+                    <span class="ident">vec_for_download</span>.<span class="ident">push</span>(<span class="ident">vec_remote_lines</span>[<span class="ident">cursor_remote</span>].<span class="ident">to_string</span>());
+                }
+                <span class="comment">// else the metadata is the same, no action</span>
+                <span class="ident">cursor_local</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                <span class="ident">cursor_remote</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            }
+        }
+    }
+    <span class="macro">println!</span>(<span class="string">&quot;list_for_download: {}&quot;</span>, <span class="ident">vec_for_download</span>.<span class="ident">len</span>());
+    <span class="kw">let</span> <span class="ident">string_for_download</span> <span class="op">=</span> <span class="ident">vec_for_download</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);    
+    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="string">&quot;temp_data/list_for_download.csv&quot;</span>, <span class="ident">string_for_download</span>));
+
+    <span class="macro">println!</span>(<span class="string">&quot;list_for_trash: {}&quot;</span>, <span class="ident">vec_for_trash</span>.<span class="ident">len</span>());
+    <span class="kw">let</span> <span class="ident">string_for_trash</span> <span class="op">=</span> <span class="ident">vec_for_trash</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);
+    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="string">&quot;temp_data/list_for_trash.csv&quot;</span>, <span class="ident">string_for_trash</span>));
+
+    <span class="macro">println!</span>(<span class="string">&quot;list_for_correct_time: {}&quot;</span>, <span class="ident">vec_for_correct_time</span>.<span class="ident">len</span>());
+    <span class="kw">let</span> <span class="ident">string_for_correct_time</span> <span class="op">=</span> <span class="ident">vec_for_correct_time</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);
+    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="string">&quot;temp_data/list_for_correct_time.csv&quot;</span>, <span class="ident">string_for_correct_time</span>));
+}
+</pre></div>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="dropbox_backup_to_external_disk" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>

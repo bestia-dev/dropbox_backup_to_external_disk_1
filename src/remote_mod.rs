@@ -1,4 +1,6 @@
 //! remote_mod.rs
+//! Module contains all the communication with the remote dropbox storage.
+
 use dropbox_sdk::default_client::UserAuthDefaultClient;
 use dropbox_sdk::files;
 
@@ -219,7 +221,7 @@ pub fn download(path_to_download: &str) {
     }
 }
 
-/// download one file with client
+/// download one file with client object UserAuthDefaultClient
 pub fn download_with_client(download_path: &str, client: &UserAuthDefaultClient, base_local_path: &str, thread_num:i32,tx_clone:mpsc::Sender<(String, i32)>) {
     //log::trace!("download_with_client: {}",download_path);
     let mut bytes_out = 0u64;
@@ -402,6 +404,7 @@ pub fn download_from_list() {
     print!("{}",unhide_cursor());
 }
 
+/// list directory
 fn list_directory<'a>(
     client: &'a UserAuthDefaultClient,
     path: &str,
@@ -439,6 +442,7 @@ fn list_directory<'a>(
     }
 }
 
+/// iterator for Directory on remote Dropbox storage
 struct DirectoryIterator<'a> {
     client: &'a UserAuthDefaultClient,
     buffer: VecDeque<files::Metadata>,
@@ -472,6 +476,7 @@ impl<'a> Iterator for DirectoryIterator<'a> {
     }
 }
 
+/// get content_hash from remote
 pub fn remote_content_hash(remote_path: &str)->Option<String> {
     let token = get_short_lived_access_token();
     let client = UserAuthDefaultClient::new(token);
