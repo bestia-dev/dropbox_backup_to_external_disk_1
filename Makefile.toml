@@ -37,6 +37,8 @@ script = [
     # Library version is semver
     "echo $ lmake_semver --increment=patch",
     "lmake_semver --increment=patch",
+    "echo $ cargo fmt",
+    "cargo fmt",
     "echo $ cargo build",
     "cargo build",
     "echo $ alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk",
