@@ -6,9 +6,9 @@
 //! **one way sync from dropbox to an external disc**  
 //! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 0.1.288  date: 2021-07-31 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1009-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-124-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-101-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1224-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-139-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-100-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //!
@@ -111,38 +111,60 @@ pub use utils_mod::*;
 
 #[allow(unused_imports)]
 use ansi_term::Colour::{Blue, Green, Red, Yellow};
-use unwrap::unwrap;
 use uncased::UncasedStr;
+use unwrap::unwrap;
 
 /// list and sync is the complete process for backup in one command
 pub fn list_and_sync(base_path: &str) {
     print!("{}", term_cursor::Clear);
-    println!("{}{}{}{}", term_cursor::Goto(0,1),clear_line(), "dropbox_backup_to_external_disk list_and_sync",hide_cursor());
+    println!(
+        "{}{}{}{}",
+        term_cursor::Goto(0, 1),
+        clear_line(),
+        "dropbox_backup_to_external_disk list_and_sync",
+        hide_cursor()
+    );
     ns_start("");
     // start 2 threads, first for remote list and second for local list
     use std::thread;
     let base_path = base_path.to_string();
     let handle_2 = thread::spawn(move || {
-        println!("{}{}{}", term_cursor::Goto(0,3),clear_line(), Green.paint("Threads for remote:"));
+        println!(
+            "{}{}{}",
+            term_cursor::Goto(0, 3),
+            clear_line(),
+            Green.paint("Threads for remote:")
+        );
         // prints at rows 10,11,12
         list_remote();
     });
     let handle_1 = thread::spawn(move || {
-        println!("{}{}{}", term_cursor::Goto(0,15),clear_line(), Green.paint("Thread for local:"));
+        println!(
+            "{}{}{}",
+            term_cursor::Goto(0, 15),
+            clear_line(),
+            Green.paint("Thread for local:")
+        );
         // prints at rows 5, 6, 7
         list_local(&base_path);
     });
     // wait for both threads to finish
     handle_1.join().unwrap();
     handle_2.join().unwrap();
-    println!("{}{}{}{}", term_cursor::Goto(0,20),clear_line(), Green.paint(""),unhide_cursor());
+    println!(
+        "{}{}{}{}",
+        term_cursor::Goto(0, 20),
+        clear_line(),
+        Green.paint(""),
+        unhide_cursor()
+    );
 
     sync_only();
 }
 
 /// sync_only can be stopped and then restarted if downloading takes a lot of time.
 /// no need to repeat the "list" that takes a lot of timeS
-pub fn sync_only(){
+pub fn sync_only() {
     println!("{}", Yellow.paint("compare remote and local lists"));
     compare_lists();
     println!("{}", Yellow.paint("rename or move equal files"));
@@ -152,7 +174,7 @@ pub fn sync_only(){
     println!("{}", Yellow.paint("correct time from list"));
     correct_time_from_list();
     println!("{}", Yellow.paint("download from list"));
-    download_from_list();  
+    download_from_list();
 }
 
 /// compare list: the lists must be already sorted for this to work correctly
@@ -201,7 +223,7 @@ pub fn compare_lists() {
                 //println!("lt");
                 vec_for_download.push(vec_remote_lines[cursor_remote].to_string());
                 cursor_remote += 1;
-            } else if path_remote.gt(path_local) { 
+            } else if path_remote.gt(path_local) {
                 //println!("gt" );
                 vec_for_trash.push(vec_local_lines[cursor_local].to_string());
                 cursor_local += 1;
@@ -210,9 +232,14 @@ pub fn compare_lists() {
                 // equal names. check date and size
                 // println!("Equal names: {}   {}",path_remote,path_local);
                 // if equal size and time difference only in seconds, then correct local time
-                if vec_line_remote[2] == vec_line_local[2] && vec_line_remote[1] != vec_line_local[1] && vec_line_remote[1][0..17] == vec_line_local[1][0..17]{
-                    vec_for_correct_time.push(format!("{}\t{}",path_local,vec_line_remote[1] ));
-                } else if vec_line_remote[1] != vec_line_local[1] || vec_line_remote[2] != vec_line_local[2] {
+                if vec_line_remote[2] == vec_line_local[2]
+                    && vec_line_remote[1] != vec_line_local[1]
+                    && vec_line_remote[1][0..17] == vec_line_local[1][0..17]
+                {
+                    vec_for_correct_time.push(format!("{}\t{}", path_local, vec_line_remote[1]));
+                } else if vec_line_remote[1] != vec_line_local[1]
+                    || vec_line_remote[2] != vec_line_local[2]
+                {
                     //println!("Equal names: {}   {}", path_remote, path_local);
                     //println!(
                     //"Different date or size {} {} {} {}",
@@ -227,8 +254,11 @@ pub fn compare_lists() {
         }
     }
     println!("list_for_download: {}", vec_for_download.len());
-    let string_for_download = vec_for_download.join("\n");    
-    unwrap!(fs::write("temp_data/list_for_download.csv", string_for_download));
+    let string_for_download = vec_for_download.join("\n");
+    unwrap!(fs::write(
+        "temp_data/list_for_download.csv",
+        string_for_download
+    ));
 
     println!("list_for_trash: {}", vec_for_trash.len());
     let string_for_trash = vec_for_trash.join("\n");
@@ -236,5 +266,8 @@ pub fn compare_lists() {
 
     println!("list_for_correct_time: {}", vec_for_correct_time.len());
     let string_for_correct_time = vec_for_correct_time.join("\n");
-    unwrap!(fs::write("temp_data/list_for_correct_time.csv", string_for_correct_time));
+    unwrap!(fs::write(
+        "temp_data/list_for_correct_time.csv",
+        string_for_correct_time
+    ));
 }

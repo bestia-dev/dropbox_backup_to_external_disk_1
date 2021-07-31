@@ -10,11 +10,11 @@ use std::collections::VecDeque;
 use std::env;
 use std::fs;
 use std::io::{self, Read, Write};
+use std::path;
 use std::sync::mpsc;
 use std::thread;
-use std::path;
-use unwrap::unwrap;
 use uncased::UncasedStr;
+use unwrap::unwrap;
 
 use crate::*;
 
@@ -23,14 +23,10 @@ pub fn test_connection() {
     let token = get_short_lived_access_token();
     let client = UserAuthDefaultClient::new(token);
     match files::list_folder(&client, &files::ListFolderArg::new("".to_string())) {
-        Ok(Ok(_result)) => println!(
-            "{}",
-            Green.paint("test connection and authorization: ok")
-        ),
+        Ok(Ok(_result)) => println!("{}", Green.paint("test connection and authorization: ok")),
         Ok(Err(e)) => println!("error: {}", e),
         Err(e) => println!("error: {}", e),
     }
-    
 }
 
 /// get token from env variable
@@ -51,7 +47,7 @@ fn get_short_lived_access_token() -> dropbox_sdk::oauth2::Authorization {
 
 /// get remote list in parallel
 /// first get the first level of folders and then request in parallel sub-folders recursively
-pub fn list_remote(){   
+pub fn list_remote() {
     //println!("list_remote()");
     let token = get_short_lived_access_token();
     let token_clone2 = token.to_owned().clone();
@@ -62,7 +58,7 @@ pub fn list_remote(){
     let tx_clone3 = mpsc::Sender::clone(&tx);
 
     // walkdir non-recursive for the first level of folders
-    let (folder_list, file_list) = list_remote_folder(&client,"/",0, false,tx_clone3);
+    let (folder_list, file_list) = list_remote_folder(&client, "/", 0, false, tx_clone3);
     let folder_list_root = folder_list.clone();
     let mut folder_list_all = folder_list;
     let mut file_list_all = file_list;
@@ -71,67 +67,82 @@ pub fn list_remote(){
     // loop in a new thread, so the send msg will come immediately
     let _sender_thread = thread::spawn(move || {
         // threadpool with 3 threads
-        let pool = rayon::ThreadPoolBuilder::new().num_threads(3).build().unwrap();
-        pool.scope(|scoped|{
-            for folder_path in &folder_list_root{
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(3)
+            .build()
+            .unwrap();
+        pool.scope(|scoped| {
+            for folder_path in &folder_list_root {
                 let folder_path = folder_path.clone();
                 let tx_clone2 = mpsc::Sender::clone(&tx);
                 let tx_clone4 = mpsc::Sender::clone(&tx);
                 let token_clone2 = token.to_owned().clone();
                 // execute in a separate threads, or waits for a free thread from the pool
-                scoped.spawn(move |_s| {                
+                scoped.spawn(move |_s| {
                     let client = UserAuthDefaultClient::new(token_clone2.to_owned());
                     // recursive walkdir
-                    let thread_num =unwrap!(rayon::current_thread_index()) as i32;
-                    let (folder_list, file_list) = list_remote_folder(&client,&folder_path,thread_num, true,tx_clone2);    
-                    unwrap!( tx_clone4.send((Some( folder_list), Some( file_list),0,0)));        
+                    let thread_num = unwrap!(rayon::current_thread_index()) as i32;
+                    let (folder_list, file_list) =
+                        list_remote_folder(&client, &folder_path, thread_num, true, tx_clone2);
+                    unwrap!(tx_clone4.send((Some(folder_list), Some(file_list), 0, 0)));
                 });
-            
-            }          
-            drop(tx);            
+            }
+            drop(tx);
         });
     });
-    
+
     // the receiver reads all msgs from the queue, until senders exist - drop(tx)
     let mut all_folder_count = 0;
     let mut all_file_count = 0;
     for msg in &rx {
         let (folder_list, file_list, folder_count, file_count) = msg;
-        if let Some(folder_list) = folder_list{
-            folder_list_all.extend_from_slice  (&folder_list);
+        if let Some(folder_list) = folder_list {
+            folder_list_all.extend_from_slice(&folder_list);
         }
-        if let Some(file_list) = file_list{
+        if let Some(file_list) = file_list {
             file_list_all.extend_from_slice(&file_list);
         }
         all_folder_count += folder_count;
         all_file_count += file_count;
-        println!("{}{}\nremote_folder_count: {}\nremote_file_count: {}",term_cursor::Goto(0,7),clear_line(), all_folder_count,all_file_count);
+        println!(
+            "{}{}\nremote_folder_count: {}\nremote_file_count: {}",
+            term_cursor::Goto(0, 7),
+            clear_line(),
+            all_folder_count,
+            all_file_count
+        );
     }
 
     sort_remote_list_and_write_to_file(file_list_all);
 }
 
 /// list remote folder
-pub fn list_remote_folder(client:&UserAuthDefaultClient,path:&str,thread_num:i32, recursive:bool,tx_clone:mpsc::Sender<(Option<Vec<String>>, Option<Vec<String>>, i32, i32)>)->(Vec<String>,Vec<String>){
-    let mut folder_list:Vec<String> = vec![];
-    let mut file_list:Vec<String> = vec![];
+pub fn list_remote_folder(
+    client: &UserAuthDefaultClient,
+    path: &str,
+    thread_num: i32,
+    recursive: bool,
+    tx_clone: mpsc::Sender<(Option<Vec<String>>, Option<Vec<String>>, i32, i32)>,
+) -> (Vec<String>, Vec<String>) {
+    let mut folder_list: Vec<String> = vec![];
+    let mut file_list: Vec<String> = vec![];
     match list_directory(&client, path, recursive) {
         Ok(Ok(iterator)) => {
             for entry_result in iterator {
                 match entry_result {
                     Ok(Ok(files::Metadata::Folder(entry))) => {
                         // path_display is not 100% case accurate. Dropbox is case-insensitive and preserves the casing only for the metadata_name, not path.
-                        let folder_path = entry.path_display.unwrap_or(entry.name);        
+                        let folder_path = entry.path_display.unwrap_or(entry.name);
                         // for 3 threads this is lines: 4,5, 6,7, 8,9, so summary can be on 10,11 and list_local on 16,17
                         println!(
-                            "{}{}{}. Folder: {}",     
-                            term_cursor::Goto(0,4+thread_num),                    
+                            "{}{}{}. Folder: {}",
+                            term_cursor::Goto(0, 4 + thread_num),
                             clear_line(),
                             thread_num,
                             &folder_path
-                        );                        
+                        );
                         folder_list.push(folder_path);
-                        unwrap!( tx_clone.send((None, None,1,0)));                        
+                        unwrap!(tx_clone.send((None, None, 1, 0)));
                     }
                     Ok(Ok(files::Metadata::File(entry))) => {
                         // write csv tab delimited
@@ -142,24 +153,24 @@ pub fn list_remote_folder(client:&UserAuthDefaultClient,path:&str,thread_num:i32
                             entry.client_modified,
                             entry.size
                         ));
-                        unwrap!( tx_clone.send((None, None,0,1))); 
+                        unwrap!(tx_clone.send((None, None, 0, 1)));
                     }
                     Ok(Ok(files::Metadata::Deleted(entry))) => {
-                        print!("{}",term_cursor::Goto(0,10));
-                        panic!("{}unexpected deleted entry: {:?}",clear_line(), entry);
+                        print!("{}", term_cursor::Goto(0, 10));
+                        panic!("{}unexpected deleted entry: {:?}", clear_line(), entry);
                     }
                     Ok(Err(e)) => {
-                        print!("{}",term_cursor::Goto(0,13));
+                        print!("{}", term_cursor::Goto(0, 13));
                         println!(
-                            "{}Error from files/list_folder_continue: {}",                            
+                            "{}Error from files/list_folder_continue: {}",
                             clear_line(),
                             e
                         );
                         break;
                     }
                     Err(e) => {
-                        print!("{}",term_cursor::Goto(0,10));
-                        println!("{}API request error: {}",clear_line(), e);
+                        print!("{}", term_cursor::Goto(0, 10));
+                        println!("{}API request error: {}", clear_line(), e);
                         break;
                     }
                 }
@@ -177,20 +188,27 @@ pub fn list_remote_folder(client:&UserAuthDefaultClient,path:&str,thread_num:i32
 }
 
 /// sort and write to file
-pub fn sort_remote_list_and_write_to_file(mut file_list_all:Vec<String>){
-    print!("{}",term_cursor::Goto(0,13));
+pub fn sort_remote_list_and_write_to_file(mut file_list_all: Vec<String>) {
+    print!("{}", term_cursor::Goto(0, 13));
     println!("remote list sort");
-    
+
     use rayon::prelude::*;
-    file_list_all.par_sort_unstable_by(|a,b|{
+    file_list_all.par_sort_unstable_by(|a, b| {
         let aa: &UncasedStr = a.as_str().into();
         let bb: &UncasedStr = b.as_str().into();
         aa.cmp(bb)
-    } );
+    });
     // join to string and write to file
-    println!("{}list_remote_files lines: {}",term_cursor::Goto(0,10) , file_list_all.len());  
-    let string_file_list_all = file_list_all.join("\n");              
-    unwrap!(fs::write("temp_data/list_remote_files.csv", string_file_list_all));
+    println!(
+        "{}list_remote_files lines: {}",
+        term_cursor::Goto(0, 10),
+        file_list_all.len()
+    );
+    let string_file_list_all = file_list_all.join("\n");
+    unwrap!(fs::write(
+        "temp_data/list_remote_files.csv",
+        string_file_list_all
+    ));
 }
 
 /// download one file
@@ -198,35 +216,47 @@ pub fn download(path_to_download: &str) {
     let token = get_short_lived_access_token();
     let client = UserAuthDefaultClient::new(token);
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-     // channel for inter-thread communication.
-     let (tx, rx) = mpsc::channel();
-     let path_to_download = path_to_download.to_string();
-     let _sender_thread = thread::spawn(move || {           
+    // channel for inter-thread communication.
+    let (tx, rx) = mpsc::channel();
+    let path_to_download = path_to_download.to_string();
+    let _sender_thread = thread::spawn(move || {
         let base_local_path_ref = &base_local_path;
-        let client_ref=&client; 
+        let client_ref = &client;
         let thread_num = 0;
-        let tx_clone2 = mpsc::Sender::clone(&tx);                     
-        download_with_client(&path_to_download, client_ref, base_local_path_ref, thread_num,tx_clone2); 
+        let tx_clone2 = mpsc::Sender::clone(&tx);
+        download_with_client(
+            &path_to_download,
+            client_ref,
+            base_local_path_ref,
+            thread_num,
+            tx_clone2,
+        );
         drop(tx);
-    });  
+    });
     // the receiver reads all msgs from the queue, until all senders exist - drop(tx)
     // only this thread writes to the terminal, to avoid race in cursor position
     for msg in &rx {
-        let (string_to_print, thread_num) = msg; 
-        if thread_num != -1{
-            println!("\r{}{}","\x1b[1F", &string_to_print);  
-        } else{
+        let (string_to_print, thread_num) = msg;
+        if thread_num != -1 {
+            println!("\r{}{}", "\x1b[1F", &string_to_print);
+        } else {
             println!("{}", &string_to_print);
         }
     }
 }
 
 /// download one file with client object UserAuthDefaultClient
-pub fn download_with_client(download_path: &str, client: &UserAuthDefaultClient, base_local_path: &str, thread_num:i32,tx_clone:mpsc::Sender<(String, i32)>) {
+pub fn download_with_client(
+    download_path: &str,
+    client: &UserAuthDefaultClient,
+    base_local_path: &str,
+    thread_num: i32,
+    tx_clone: mpsc::Sender<(String, i32)>,
+) {
     //log::trace!("download_with_client: {}",download_path);
     let mut bytes_out = 0u64;
     let download_arg = files::DownloadArg::new(download_path.to_string());
-    log::trace!("download_arg: {}", &download_arg.path);    
+    log::trace!("download_arg: {}", &download_arg.path);
     let local_path = format!("{}{}", base_local_path, download_path);
     // create folder if it does not exist
     let path = path::PathBuf::from(&local_path);
@@ -253,10 +283,9 @@ pub fn download_with_client(download_path: &str, client: &UserAuthDefaultClient,
         .unwrap();
 
     let mut modified: Option<filetime::FileTime> = None;
-    let mut s_modified="".to_string();
+    let mut s_modified = "".to_string();
     // I will download to a temp folder and then move the file to the right folder only when the download is complete.
     'download: loop {
-
         let result = files::download(client, &download_arg, Some(bytes_out), None);
         match result {
             Ok(Ok(download_result)) => {
@@ -276,17 +305,28 @@ pub fn download_with_client(download_path: &str, client: &UserAuthDefaultClient,
                         }
                         Ok(len) => {
                             bytes_out += len as u64;
-                            if let Some(total) = download_result.content_length {    
-                                let string_to_print = format!("{}{:.01}% of {:.02} Mb downloading {}", clear_line(), bytes_out as f64 / total as f64 * 100.,total as f64 / 1000000.,download_path);
-                                unwrap!( tx_clone.send((string_to_print, thread_num)));                                                                
-                            } else {                                
-                                let string_to_print = format!("{}{} Mb downloaded {}",clear_line(), bytes_out as f64 / 1000000.,download_path);
-                                unwrap!( tx_clone.send((string_to_print, thread_num)));    
+                            if let Some(total) = download_result.content_length {
+                                let string_to_print = format!(
+                                    "{}{:.01}% of {:.02} Mb downloading {}",
+                                    clear_line(),
+                                    bytes_out as f64 / total as f64 * 100.,
+                                    total as f64 / 1000000.,
+                                    download_path
+                                );
+                                unwrap!(tx_clone.send((string_to_print, thread_num)));
+                            } else {
+                                let string_to_print = format!(
+                                    "{}{} Mb downloaded {}",
+                                    clear_line(),
+                                    bytes_out as f64 / 1000000.,
+                                    download_path
+                                );
+                                unwrap!(tx_clone.send((string_to_print, thread_num)));
                             }
                         }
                         Err(e) => {
                             let string_to_print = format!("Read error: {}", e);
-                            unwrap!( tx_clone.send((string_to_print, -1)));  
+                            unwrap!(tx_clone.send((string_to_print, -1)));
                             continue 'download; // do another request and resume
                         }
                     }
@@ -294,11 +334,11 @@ pub fn download_with_client(download_path: &str, client: &UserAuthDefaultClient,
             }
             Ok(Err(download_error)) => {
                 let string_to_print = format!("Download error: {}", download_error);
-                unwrap!( tx_clone.send((string_to_print, -1)));  
+                unwrap!(tx_clone.send((string_to_print, -1)));
             }
             Err(request_error) => {
                 let string_to_print = format!("Error: {}", request_error);
-                unwrap!( tx_clone.send((string_to_print, -1)));  
+                unwrap!(tx_clone.send((string_to_print, -1)));
             }
         }
 
@@ -308,54 +348,63 @@ pub fn download_with_client(download_path: &str, client: &UserAuthDefaultClient,
     let mtime = unwrap!(modified);
     unwrap!(filetime::set_file_times(&temp_local_path, atime, mtime));
     // move-rename the completed download file o his final folder
-    unwrap!( fs::rename(&temp_local_path, &local_path));
-    // write to file list_just_downloaded. 
+    unwrap!(fs::rename(&temp_local_path, &local_path));
+    // write to file list_just_downloaded.
     // multi-thread no problem: append is atomic on most OS <https://doc.rust-lang.org/std/fs/struct.OpenOptions.html#method.create>
     let list_just_downloaded = "temp_data/list_just_downloaded.csv";
     let line_to_append = format!("{}\t{}\t{}", download_path, s_modified, bytes_out);
-    let string_to_print = format!("{}",&line_to_append);
-    unwrap!( tx_clone.send((string_to_print, -1)));      
+    let string_to_print = format!("{}", &line_to_append);
+    unwrap!(tx_clone.send((string_to_print, -1)));
     let mut just_downloaded = fs::OpenOptions::new()
         .create(true)
         .append(true)
         .open(list_just_downloaded)
         .unwrap();
-    unwrap!( writeln!(just_downloaded,"{}",line_to_append));
+    unwrap!(writeln!(just_downloaded, "{}", line_to_append));
 }
 
 /// download files from list
 pub fn download_from_list() {
     term_cursor::clear().unwrap();
-    println!("download_from_list {}",hide_cursor() );
-    print!("{}",term_cursor::Goto(0,7));
-    println!("{}",clear_line());
-    
+    println!("download_from_list {}", hide_cursor());
+    print!("{}", term_cursor::Goto(0, 7));
+    println!("{}", clear_line());
+
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let list_for_download = fs::read_to_string("temp_data/list_for_download.csv").unwrap();
-    let token = get_short_lived_access_token();    
-    let client = UserAuthDefaultClient::new(token);    
+    let token = get_short_lived_access_token();
+    let client = UserAuthDefaultClient::new(token);
     // channel for inter-thread communication.
     let (tx, rx) = mpsc::channel();
 
     // loop in a new thread, so the send msg will come immediately
     let _sender_thread = thread::spawn(move || {
         let base_local_path_ref = &base_local_path;
-        let client_ref=&client;       
+        let client_ref = &client;
         // 3 threads to download in parallel
-        let pool = rayon::ThreadPoolBuilder::new().num_threads(3).build().unwrap();
-        pool.scope(|scoped|{
-            for line_path_to_download in list_for_download.lines(){   
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(3)
+            .build()
+            .unwrap();
+        pool.scope(|scoped| {
+            for line_path_to_download in list_for_download.lines() {
                 let line: Vec<&str> = line_path_to_download.split("\t").collect();
-                let path_to_download = line[0]; 
-                let tx_clone2 = mpsc::Sender::clone(&tx); 
-                // execute in a separate threads, or waits for a free thread from the pool                
-                scoped.spawn(move |_s| {  
-                    let thread_num =unwrap!(rayon::current_thread_index()) as i32;                    
-                    download_with_client(path_to_download, client_ref, base_local_path_ref, thread_num,tx_clone2); 
-                });         
+                let path_to_download = line[0];
+                let tx_clone2 = mpsc::Sender::clone(&tx);
+                // execute in a separate threads, or waits for a free thread from the pool
+                scoped.spawn(move |_s| {
+                    let thread_num = unwrap!(rayon::current_thread_index()) as i32;
+                    download_with_client(
+                        path_to_download,
+                        client_ref,
+                        base_local_path_ref,
+                        thread_num,
+                        tx_clone2,
+                    );
+                });
             }
             drop(tx);
-        });        
+        });
     });
     // the receiver reads all msgs from the queue, until senders exist - drop(tx)
     // only this thread writes to the terminal, to avoid race in cursor position
@@ -364,44 +413,48 @@ pub fn download_from_list() {
     let mut string_to_print_3 = "".to_string();
     for msg in &rx {
         let (string_to_print, thread_num) = msg;
-        if thread_num != -1{
-            let (x,y) = unwrap!(term_cursor::get_pos());
-            print!("{}",term_cursor::Goto(0,3+thread_num));    
-            println!("{}", &string_to_print);  
-            unwrap!( term_cursor::set_pos(x, y));
+        if thread_num != -1 {
+            let (x, y) = unwrap!(term_cursor::get_pos());
+            print!("{}", term_cursor::Goto(0, 3 + thread_num));
+            println!("{}", &string_to_print);
+            unwrap!(term_cursor::set_pos(x, y));
             if thread_num == 0 {
                 string_to_print_1 = string_to_print;
             } else if thread_num == 1 {
                 string_to_print_2 = string_to_print;
             } else if thread_num == 2 {
                 string_to_print_3 = string_to_print;
-            }            
-        }else{    
-            let (x,y) = unwrap!(term_cursor::get_pos());
+            }
+        } else {
+            let (x, y) = unwrap!(term_cursor::get_pos());
             // there is annoying jumping because of scrolling
             // let clear first and write second
-            println!("{}{}", term_cursor::Goto(0,1),clear_line());
-            println!("{}", clear_line());
-            println!("{}", clear_line());  
-            println!("{}", clear_line());  
-            println!("{}", clear_line());  
+            println!("{}{}", term_cursor::Goto(0, 1), clear_line());
             println!("{}", clear_line());
             println!("{}", clear_line());
-            unwrap!( term_cursor::set_pos(x, y));
+            println!("{}", clear_line());
+            println!("{}", clear_line());
+            println!("{}", clear_line());
+            println!("{}", clear_line());
+            unwrap!(term_cursor::set_pos(x, y));
 
             println!("{}", &string_to_print);
-            // print the first 6 lines, because of scrolling            
-            let (x,y) = unwrap!(term_cursor::get_pos());
-            println!("{}{}download_from_list", term_cursor::Goto(0,1),clear_line());
+            // print the first 6 lines, because of scrolling
+            let (x, y) = unwrap!(term_cursor::get_pos());
+            println!(
+                "{}{}download_from_list",
+                term_cursor::Goto(0, 1),
+                clear_line()
+            );
             println!("{}", clear_line());
-            println!("{}", &string_to_print_1);  
-            println!("{}", &string_to_print_2);  
-            println!("{}", &string_to_print_3);  
+            println!("{}", &string_to_print_1);
+            println!("{}", &string_to_print_2);
+            println!("{}", &string_to_print_3);
             println!("{}", clear_line());
-            unwrap!( term_cursor::set_pos(x, y));
-        }              
+            unwrap!(term_cursor::set_pos(x, y));
+        }
     }
-    print!("{}",unhide_cursor());
+    print!("{}", unhide_cursor());
 }
 
 /// list directory
@@ -477,12 +530,12 @@ impl<'a> Iterator for DirectoryIterator<'a> {
 }
 
 /// get content_hash from remote
-pub fn remote_content_hash(remote_path: &str)->Option<String> {
+pub fn remote_content_hash(remote_path: &str) -> Option<String> {
     let token = get_short_lived_access_token();
     let client = UserAuthDefaultClient::new(token);
     let arg = files::GetMetadataArg::new(remote_path.to_string());
     let res_res_metadata = dropbox_sdk::files::get_metadata(&client, &arg);
-    
+
     match res_res_metadata {
         Ok(Ok(files::Metadata::Folder(_entry))) => {
             return None;
@@ -494,12 +547,12 @@ pub fn remote_content_hash(remote_path: &str)->Option<String> {
             return None;
         }
         Ok(Err(e)) => {
-            println!("Error get metadata: {}",e);  
-            return None;          
+            println!("Error get metadata: {}", e);
+            return None;
         }
         Err(e) => {
-            println!("API request error: {}", e);     
-            return None;       
+            println!("API request error: {}", e);
+            return None;
         }
     }
 }

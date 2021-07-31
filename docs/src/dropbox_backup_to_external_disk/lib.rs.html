@@ -241,6 +241,39 @@
 <span id="238">238</span>
 <span id="239">239</span>
 <span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! dropbox_backup_to_external_disk lib.rs</span>
 
@@ -250,9 +283,9 @@
 <span class="doccomment">//! **one way sync from dropbox to an external disc**  </span>
 <span class="doccomment">//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 0.1.288  date: 2021-07-31 authors: Luciano Bestia***  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1009-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-124-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-101-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1224-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-139-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-100-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
@@ -355,38 +388,60 @@
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
 <span class="kw">use</span> <span class="ident">ansi_term::Colour</span>::{<span class="ident">Blue</span>, <span class="ident">Green</span>, <span class="ident">Red</span>, <span class="ident">Yellow</span>};
-<span class="kw">use</span> <span class="ident">unwrap::unwrap</span>;
 <span class="kw">use</span> <span class="ident">uncased::UncasedStr</span>;
+<span class="kw">use</span> <span class="ident">unwrap::unwrap</span>;
 
 <span class="doccomment">/// list and sync is the complete process for backup in one command</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list_and_sync</span>(<span class="ident">base_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
     <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">term_cursor::Clear</span>);
-    <span class="macro">println!</span>(<span class="string">&quot;{}{}{}{}&quot;</span>, <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>,<span class="number">1</span>),<span class="ident">clear_line</span>(), <span class="string">&quot;dropbox_backup_to_external_disk list_and_sync&quot;</span>,<span class="ident">hide_cursor</span>());
+    <span class="macro">println!</span>(
+        <span class="string">&quot;{}{}{}{}&quot;</span>,
+        <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>, <span class="number">1</span>),
+        <span class="ident">clear_line</span>(),
+        <span class="string">&quot;dropbox_backup_to_external_disk list_and_sync&quot;</span>,
+        <span class="ident">hide_cursor</span>()
+    );
     <span class="ident">ns_start</span>(<span class="string">&quot;&quot;</span>);
     <span class="comment">// start 2 threads, first for remote list and second for local list</span>
     <span class="kw">use</span> <span class="ident">std::thread</span>;
     <span class="kw">let</span> <span class="ident">base_path</span> <span class="op">=</span> <span class="ident">base_path</span>.<span class="ident">to_string</span>();
     <span class="kw">let</span> <span class="ident">handle_2</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-        <span class="macro">println!</span>(<span class="string">&quot;{}{}{}&quot;</span>, <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>,<span class="number">3</span>),<span class="ident">clear_line</span>(), <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;Threads for remote:&quot;</span>));
+        <span class="macro">println!</span>(
+            <span class="string">&quot;{}{}{}&quot;</span>,
+            <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>, <span class="number">3</span>),
+            <span class="ident">clear_line</span>(),
+            <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;Threads for remote:&quot;</span>)
+        );
         <span class="comment">// prints at rows 10,11,12</span>
         <span class="ident">list_remote</span>();
     });
     <span class="kw">let</span> <span class="ident">handle_1</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-        <span class="macro">println!</span>(<span class="string">&quot;{}{}{}&quot;</span>, <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>,<span class="number">15</span>),<span class="ident">clear_line</span>(), <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;Thread for local:&quot;</span>));
+        <span class="macro">println!</span>(
+            <span class="string">&quot;{}{}{}&quot;</span>,
+            <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>, <span class="number">15</span>),
+            <span class="ident">clear_line</span>(),
+            <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;Thread for local:&quot;</span>)
+        );
         <span class="comment">// prints at rows 5, 6, 7</span>
         <span class="ident">list_local</span>(<span class="kw-2">&amp;</span><span class="ident">base_path</span>);
     });
     <span class="comment">// wait for both threads to finish</span>
     <span class="ident">handle_1</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
     <span class="ident">handle_2</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
-    <span class="macro">println!</span>(<span class="string">&quot;{}{}{}{}&quot;</span>, <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>,<span class="number">20</span>),<span class="ident">clear_line</span>(), <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;&quot;</span>),<span class="ident">unhide_cursor</span>());
+    <span class="macro">println!</span>(
+        <span class="string">&quot;{}{}{}{}&quot;</span>,
+        <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>, <span class="number">20</span>),
+        <span class="ident">clear_line</span>(),
+        <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;&quot;</span>),
+        <span class="ident">unhide_cursor</span>()
+    );
 
     <span class="ident">sync_only</span>();
 }
 
 <span class="doccomment">/// sync_only can be stopped and then restarted if downloading takes a lot of time.</span>
 <span class="doccomment">/// no need to repeat the &quot;list&quot; that takes a lot of timeS</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sync_only</span>(){
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sync_only</span>() {
     <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;compare remote and local lists&quot;</span>));
     <span class="ident">compare_lists</span>();
     <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;rename or move equal files&quot;</span>));
@@ -396,7 +451,7 @@
     <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;correct time from list&quot;</span>));
     <span class="ident">correct_time_from_list</span>();
     <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;download from list&quot;</span>));
-    <span class="ident">download_from_list</span>();  
+    <span class="ident">download_from_list</span>();
 }
 
 <span class="doccomment">/// compare list: the lists must be already sorted for this to work correctly</span>
@@ -445,7 +500,7 @@
                 <span class="comment">//println!(&quot;lt&quot;);</span>
                 <span class="ident">vec_for_download</span>.<span class="ident">push</span>(<span class="ident">vec_remote_lines</span>[<span class="ident">cursor_remote</span>].<span class="ident">to_string</span>());
                 <span class="ident">cursor_remote</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">path_remote</span>.<span class="ident">gt</span>(<span class="ident">path_local</span>) { 
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">path_remote</span>.<span class="ident">gt</span>(<span class="ident">path_local</span>) {
                 <span class="comment">//println!(&quot;gt&quot; );</span>
                 <span class="ident">vec_for_trash</span>.<span class="ident">push</span>(<span class="ident">vec_local_lines</span>[<span class="ident">cursor_local</span>].<span class="ident">to_string</span>());
                 <span class="ident">cursor_local</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
@@ -454,9 +509,14 @@
                 <span class="comment">// equal names. check date and size</span>
                 <span class="comment">// println!(&quot;Equal names: {}   {}&quot;,path_remote,path_local);</span>
                 <span class="comment">// if equal size and time difference only in seconds, then correct local time</span>
-                <span class="kw">if</span> <span class="ident">vec_line_remote</span>[<span class="number">2</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">2</span>] <span class="op">&amp;&amp;</span> <span class="ident">vec_line_remote</span>[<span class="number">1</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">1</span>] <span class="op">&amp;&amp;</span> <span class="ident">vec_line_remote</span>[<span class="number">1</span>][<span class="number">0</span>..<span class="number">17</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">1</span>][<span class="number">0</span>..<span class="number">17</span>]{
-                    <span class="ident">vec_for_correct_time</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{}\t{}&quot;</span>,<span class="ident">path_local</span>,<span class="ident">vec_line_remote</span>[<span class="number">1</span>] ));
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">vec_line_remote</span>[<span class="number">1</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">1</span>] <span class="op">|</span><span class="op">|</span> <span class="ident">vec_line_remote</span>[<span class="number">2</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">2</span>] {
+                <span class="kw">if</span> <span class="ident">vec_line_remote</span>[<span class="number">2</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">2</span>]
+                    <span class="op">&amp;&amp;</span> <span class="ident">vec_line_remote</span>[<span class="number">1</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">1</span>]
+                    <span class="op">&amp;&amp;</span> <span class="ident">vec_line_remote</span>[<span class="number">1</span>][<span class="number">0</span>..<span class="number">17</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">1</span>][<span class="number">0</span>..<span class="number">17</span>]
+                {
+                    <span class="ident">vec_for_correct_time</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{}\t{}&quot;</span>, <span class="ident">path_local</span>, <span class="ident">vec_line_remote</span>[<span class="number">1</span>]));
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">vec_line_remote</span>[<span class="number">1</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">1</span>]
+                    <span class="op">|</span><span class="op">|</span> <span class="ident">vec_line_remote</span>[<span class="number">2</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">vec_line_local</span>[<span class="number">2</span>]
+                {
                     <span class="comment">//println!(&quot;Equal names: {}   {}&quot;, path_remote, path_local);</span>
                     <span class="comment">//println!(</span>
                     <span class="comment">//&quot;Different date or size {} {} {} {}&quot;,</span>
@@ -471,8 +531,11 @@
         }
     }
     <span class="macro">println!</span>(<span class="string">&quot;list_for_download: {}&quot;</span>, <span class="ident">vec_for_download</span>.<span class="ident">len</span>());
-    <span class="kw">let</span> <span class="ident">string_for_download</span> <span class="op">=</span> <span class="ident">vec_for_download</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);    
-    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="string">&quot;temp_data/list_for_download.csv&quot;</span>, <span class="ident">string_for_download</span>));
+    <span class="kw">let</span> <span class="ident">string_for_download</span> <span class="op">=</span> <span class="ident">vec_for_download</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);
+    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(
+        <span class="string">&quot;temp_data/list_for_download.csv&quot;</span>,
+        <span class="ident">string_for_download</span>
+    ));
 
     <span class="macro">println!</span>(<span class="string">&quot;list_for_trash: {}&quot;</span>, <span class="ident">vec_for_trash</span>.<span class="ident">len</span>());
     <span class="kw">let</span> <span class="ident">string_for_trash</span> <span class="op">=</span> <span class="ident">vec_for_trash</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);
@@ -480,7 +543,10 @@
 
     <span class="macro">println!</span>(<span class="string">&quot;list_for_correct_time: {}&quot;</span>, <span class="ident">vec_for_correct_time</span>.<span class="ident">len</span>());
     <span class="kw">let</span> <span class="ident">string_for_correct_time</span> <span class="op">=</span> <span class="ident">vec_for_correct_time</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);
-    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="string">&quot;temp_data/list_for_correct_time.csv&quot;</span>, <span class="ident">string_for_correct_time</span>));
+    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(
+        <span class="string">&quot;temp_data/list_for_correct_time.csv&quot;</span>,
+        <span class="ident">string_for_correct_time</span>
+    ));
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="dropbox_backup_to_external_disk" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div>
