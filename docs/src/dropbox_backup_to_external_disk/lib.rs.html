@@ -274,6 +274,15 @@
 <span id="271">271</span>
 <span id="272">272</span>
 <span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! dropbox_backup_to_external_disk lib.rs</span>
 
@@ -281,11 +290,11 @@
 <span class="doccomment">//! # dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! **one way sync from dropbox to an external disc**  </span>
-<span class="doccomment">//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 0.1.288  date: 2021-07-31 authors: Luciano Bestia***  </span>
+<span class="doccomment">//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 0.1.298  date: 2021-07-31 authors: Luciano Bestia***  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1224-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-139-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-100-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1242-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-140-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-102-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
@@ -299,7 +308,9 @@
 <span class="doccomment">//! - dropbox_uploader</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! But I wanted to write something mine for fun, learning Rust and using my own apps.</span>
-<span class="doccomment">//! I have a lot of files, so I wanted to list them first, then compare with the local files and finally download them. The trash part at the end will be &quot;move to trash folder&quot;. So I can inspect what and how to remove it manually.  </span>
+<span class="doccomment">//! I have a lot of files, so I wanted to list them first, then compare with the local files and finally download them.  </span>
+<span class="doccomment">//! Obsolete files will &quot;move to trash folder&quot;, so I can inspect what and how to remove manually.  </span>
+<span class="doccomment">//! The dropbox remote storage will always be read_only, nothing will be modified there, never, no permission for that.  </span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Try it</span>
 <span class="doccomment">//!</span>
@@ -320,7 +331,7 @@
 <span class="doccomment">//!   </span>
 <span class="doccomment">//! Later, use `$ dropbox_backup_to_external_disk --help` to get all the instructions and commands.  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png &quot;screenshot_1&quot;) ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png &quot;screenshot_2&quot;)  </span>
+<span class="doccomment">//! ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png &quot;screenshot_1&quot;) ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png &quot;screenshot_2&quot;) ![list_](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_2.png &quot;list_&quot;)  </span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Warning</span>
 <span class="doccomment">//!</span>
@@ -346,7 +357,7 @@
 <span class="doccomment">//! `move_or_rename_local_files` using the content_hash to be sure they are equal  </span>
 <span class="doccomment">//! `trash_from_list` will move the obsolete files into a trash folder  </span>
 <span class="doccomment">//! `correct_time_from_list` sometimes it is needed  </span>
-<span class="doccomment">//! `download_from_list` - this can take a lot of time and it can be stopped and restarted with the use of the `list_just_downloaded.csv`.  </span>
+<span class="doccomment">//! `download_from_list` - this can take a lot of time and it can be stopped with ctrl+c</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## DropBox api2 - Stone sdk</span>
 <span class="doccomment">//!</span>
@@ -373,6 +384,13 @@
 <span class="doccomment">//! We all know space. But there are other non-visible characters that are very similar and sometimes impossible to distinguish. Tab is one of them, but it is not so difficult to spot with a quick try.  </span>
 <span class="doccomment">//! But nbsp non-breaking space, often used in HTML is a catastrophe. There is no way to tell it apart from the normal space. I used a regex to find a match with some spaces. It worked right for a years. Yesterday it didn&#39;t work. If I changed space to `\s` in the regex expression, it worked, but not with space. I tried everything and didn&#39;t find the cause. Finally I deleted and inserted the space. It works. But how? After a detailed analysis I discovered it was a non-breakable space. This is unicode 160 or \xa0, instead of normal space unicode 32 \x20. Now I will try to find them all and replace with normal space. What a crazy world.  </span>
 <span class="doccomment">//! And another REGEX surprise. I try to have all text files delimited with the unix standard LF. But somehow the windows standard got mixed and I didn&#39;t recognize it. The regex for `end of line` $ didn&#39;t work for CRLF. When I changed it to LF, the good life is back and all works.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Text files</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Simple text files are a terrible way to store data that needs to be changed. It is ok for write once and then read. But there is not a good way to modify only one line inside a big text file. The recommended approach is read all, modify, save all. If the memory is not big enough then use a buffer to read a segment, modify, save a segment, repeat to end.  </span>
+<span class="doccomment">//! There is another approach called memory map to file, but everybody is trying to avoid it because some other process could modify the file when in use and make it garbage.  </span>
+<span class="doccomment">//! Sounds like a database is always a better choice for more agile development.  </span>
+<span class="doccomment">//! In this project I will create additional files that only append lines. Some kind of journal. And later use this to modify the big text files in one go. For example: list_just_downloaded_or_moved.csv is added to list_local_files.csv.  </span>
 <span class="doccomment">//!</span>
 <span class="comment">// endregion: lmake_md_to_doc_comments include README.md A //!</span>
 

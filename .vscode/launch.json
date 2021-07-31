@@ -22,7 +22,7 @@
             "args": ["download_from_list"],
             "cwd": "${workspaceFolder}", 
             "env":{
-                "DBX_OAUTH_TOKEN":"sl.A1WZ8GsGTFarlzPfiNnZkoRc9s7MvoonW0EyTaucE23jirb1Q20bjzqTJ1s9TDu9VGevvso1IwB0izA8N-NhBTefh5kRQczTMz4XqWXE1a5oxOvvOH2ArFJkR-0hvF9vcEkZqSs"
+                "DBX_OAUTH_TOKEN":""
               },
         }
     ]

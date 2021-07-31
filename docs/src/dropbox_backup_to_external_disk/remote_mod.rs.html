@@ -559,6 +559,7 @@
 <span id="556">556</span>
 <span id="557">557</span>
 <span id="558">558</span>
+<span id="559">559</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! remote_mod.rs</span>
 <span class="doccomment">//! Module contains all the communication with the remote dropbox storage.</span>
@@ -592,7 +593,7 @@
 }
 
 <span class="doccomment">/// get token from env variable</span>
-<span class="kw">fn</span> <span class="ident">get_short_lived_access_token</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dropbox_sdk::oauth2::Authorization</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_short_lived_access_token</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">dropbox_sdk::oauth2::Authorization</span> {
     <span class="comment">// The user must prepare the short-lived access token in the environment variable</span>
     <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">env::var</span>(<span class="string">&quot;DBX_OAUTH_TOKEN&quot;</span>) {
         <span class="prelude-val">Ok</span>(<span class="ident">token</span>) <span class="op">=</span><span class="op">&gt;</span> {
@@ -611,6 +612,9 @@
 <span class="doccomment">/// first get the first level of folders and then request in parallel sub-folders recursively</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list_remote</span>() {
     <span class="comment">//println!(&quot;list_remote()&quot;);</span>
+    <span class="comment">// empty the file. I want all or nothing result here if the process is terminated prematurely.</span>
+    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="string">&quot;temp_data/list_remote_files.csv&quot;</span>, <span class="string">&quot;&quot;</span>));
+
     <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="ident">get_short_lived_access_token</span>();
     <span class="kw">let</span> <span class="ident">token_clone2</span> <span class="op">=</span> <span class="ident">token</span>.<span class="ident">to_owned</span>().<span class="ident">clone</span>();
     <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">UserAuthDefaultClient::new</span>(<span class="ident">token_clone2</span>.<span class="ident">to_owned</span>());
@@ -911,16 +915,16 @@
     <span class="macro">unwrap!</span>(<span class="ident">filetime::set_file_times</span>(<span class="kw-2">&amp;</span><span class="ident">temp_local_path</span>, <span class="ident">atime</span>, <span class="ident">mtime</span>));
     <span class="comment">// move-rename the completed download file o his final folder</span>
     <span class="macro">unwrap!</span>(<span class="ident">fs::rename</span>(<span class="kw-2">&amp;</span><span class="ident">temp_local_path</span>, <span class="kw-2">&amp;</span><span class="ident">local_path</span>));
-    <span class="comment">// write to file list_just_downloaded.</span>
+    <span class="comment">// write to file list_just_downloaded_or_moved.</span>
     <span class="comment">// multi-thread no problem: append is atomic on most OS &lt;https://doc.rust-lang.org/std/fs/struct.OpenOptions.html#method.create&gt;</span>
-    <span class="kw">let</span> <span class="ident">list_just_downloaded</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_just_downloaded.csv&quot;</span>;
+    <span class="kw">let</span> <span class="ident">list_just_downloaded_or_moved</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_just_downloaded_or_moved.csv&quot;</span>;
     <span class="kw">let</span> <span class="ident">line_to_append</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}\t{}\t{}&quot;</span>, <span class="ident">download_path</span>, <span class="ident">s_modified</span>, <span class="ident">bytes_out</span>);
     <span class="kw">let</span> <span class="ident">string_to_print</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">line_to_append</span>);
     <span class="macro">unwrap!</span>(<span class="ident">tx_clone</span>.<span class="ident">send</span>((<span class="ident">string_to_print</span>, <span class="op">-</span><span class="number">1</span>)));
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">just_downloaded</span> <span class="op">=</span> <span class="ident">fs::OpenOptions::new</span>()
         .<span class="ident">create</span>(<span class="bool-val">true</span>)
         .<span class="ident">append</span>(<span class="bool-val">true</span>)
-        .<span class="ident">open</span>(<span class="ident">list_just_downloaded</span>)
+        .<span class="ident">open</span>(<span class="ident">list_just_downloaded_or_moved</span>)
         .<span class="ident">unwrap</span>();
     <span class="macro">unwrap!</span>(<span class="macro">writeln!</span>(<span class="ident">just_downloaded</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">line_to_append</span>));
 }
@@ -1092,11 +1096,9 @@
 }
 
 <span class="doccomment">/// get content_hash from remote</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remote_content_hash</span>(<span class="ident">remote_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="ident">get_short_lived_access_token</span>();
-    <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">UserAuthDefaultClient::new</span>(<span class="ident">token</span>);
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remote_content_hash</span>(<span class="ident">remote_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">client</span>: <span class="kw-2">&amp;</span><span class="ident">UserAuthDefaultClient</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="ident">files::GetMetadataArg::new</span>(<span class="ident">remote_path</span>.<span class="ident">to_string</span>());
-    <span class="kw">let</span> <span class="ident">res_res_metadata</span> <span class="op">=</span> <span class="ident">dropbox_sdk::files::get_metadata</span>(<span class="kw-2">&amp;</span><span class="ident">client</span>, <span class="kw-2">&amp;</span><span class="ident">arg</span>);
+    <span class="kw">let</span> <span class="ident">res_res_metadata</span> <span class="op">=</span> <span class="ident">dropbox_sdk::files::get_metadata</span>(<span class="ident">client</span>, <span class="kw-2">&amp;</span><span class="ident">arg</span>);
 
     <span class="kw">match</span> <span class="ident">res_res_metadata</span> {
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Ok</span>(<span class="ident">files::Metadata::Folder</span>(<span class="ident">_entry</span>))) <span class="op">=</span><span class="op">&gt;</span> {

@@ -298,6 +298,26 @@
 <span id="295">295</span>
 <span id="296">296</span>
 <span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! local_mod.rs</span>
 <span class="doccomment">//! Module contains all functions for local external disk.</span>
@@ -308,6 +328,7 @@
 <span class="kw">use</span> <span class="ident">dropbox_content_hasher::DropboxContentHasher</span>;
 <span class="kw">use</span> <span class="ident">log::error</span>;
 <span class="kw">use</span> <span class="ident">std::fs</span>;
+<span class="kw">use</span> <span class="ident">std::io::Write</span>;
 <span class="kw">use</span> <span class="ident">std::path</span>;
 <span class="kw">use</span> <span class="ident">uncased::UncasedStr</span>;
 <span class="kw">use</span> <span class="ident">unwrap::unwrap</span>;
@@ -315,6 +336,10 @@
 <span class="doccomment">/// list all local files and folders. It can take some time.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list_local</span>(<span class="ident">base_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
     <span class="macro">println!</span>(<span class="string">&quot;start list_local {}&quot;</span>, <span class="ident">base_path</span>);
+    <span class="comment">// empty the file. I want all or nothing result here if the process is terminated prematurely.</span>
+    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="string">&quot;temp_data/list_local_files.csv&quot;</span>, <span class="string">&quot;&quot;</span>));
+    <span class="comment">// just_loaded is obsolete once I got the fresh local list</span>
+    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="string">&quot;temp_data/list_just_downloaded_or_moved.csv&quot;</span>, <span class="string">&quot;&quot;</span>));
     <span class="ident">save_base_path</span>(<span class="ident">base_path</span>);
     <span class="comment">// write data to a big string in memory</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output_string</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(<span class="number">1024</span> <span class="op">*</span> <span class="number">1024</span>);
@@ -398,7 +423,7 @@
 <span class="doccomment">/// After compare, the same file (with different path or name) will be in the list_for_trash and in the list_for_download.</span>
 <span class="doccomment">/// First for every trash line, we search list_for_download for same size and modified.</span>
 <span class="doccomment">/// If found, get the remote_metadata with content_hash and calculate local_content_hash.</span>
-<span class="doccomment">/// If they are equal move or rename, else leave: it will be trashed and downloaded eventually.</span>
+<span class="doccomment">/// If they are equal move or rename, else nothing: it will be trashed and downloaded eventually.</span>
 <span class="doccomment">/// Remove also the lines in files list_for_trash and list_for_download.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">move_or_rename_local_files</span>() {
     <span class="kw">let</span> <span class="ident">base_local_path</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;temp_data/base_local_path.csv&quot;</span>).<span class="ident">unwrap</span>();
@@ -408,60 +433,67 @@
     <span class="kw">let</span> <span class="ident">path_list_for_download</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_for_download.csv&quot;</span>;
     <span class="kw">let</span> <span class="ident">list_for_download</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">path_list_for_download</span>).<span class="ident">unwrap</span>();
 
-    <span class="comment">// I will replace the path inside the list_local_file.csv</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">string_local_files</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;temp_data/list_local_files.csv&quot;</span>).<span class="ident">unwrap</span>();
-
+    <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::remote_mod::get_short_lived_access_token</span>();
+    <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">dropbox_sdk::default_client::UserAuthDefaultClient::new</span>(<span class="ident">token</span>);
+    <span class="comment">// write the renamed files to list_just_downloaded_or_moved, later they will be added to list_local_files.csv</span>
+    <span class="kw">let</span> <span class="ident">list_just_downloaded_or_moved</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_just_downloaded_or_moved.csv&quot;</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">just_downloaded</span> <span class="op">=</span> <span class="ident">fs::OpenOptions::new</span>()
+        .<span class="ident">create</span>(<span class="bool-val">true</span>)
+        .<span class="ident">append</span>(<span class="bool-val">true</span>)
+        .<span class="ident">open</span>(<span class="ident">list_just_downloaded_or_moved</span>)
+        .<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count_moved</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">for</span> <span class="ident">line_for_trash</span> <span class="kw">in</span> <span class="ident">list_for_trash</span>.<span class="ident">lines</span>() {
         <span class="kw">let</span> <span class="ident">vec_line_for_trash</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">line_for_trash</span>.<span class="ident">split</span>(<span class="string">&quot;\t&quot;</span>).<span class="ident">collect</span>();
-        <span class="kw">let</span> <span class="ident">path_for_trash</span> <span class="op">=</span> <span class="ident">vec_line_for_trash</span>[<span class="number">0</span>];
-        <span class="kw">let</span> <span class="ident">modified_for_trash</span> <span class="op">=</span> <span class="ident">vec_line_for_trash</span>[<span class="number">1</span>];
-        <span class="kw">let</span> <span class="ident">size_for_trash</span> <span class="op">=</span> <span class="ident">vec_line_for_trash</span>[<span class="number">2</span>];
-        <span class="comment">// search in list_for_download for possible candidates</span>
-        <span class="kw">for</span> <span class="ident">line_for_download</span> <span class="kw">in</span> <span class="ident">list_for_download</span>.<span class="ident">lines</span>() {
-            <span class="kw">let</span> <span class="ident">vec_line_for_download</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">line_for_download</span>.<span class="ident">split</span>(<span class="string">&quot;\t&quot;</span>).<span class="ident">collect</span>();
-            <span class="kw">let</span> <span class="ident">path_for_download</span> <span class="op">=</span> <span class="ident">vec_line_for_download</span>[<span class="number">0</span>];
-            <span class="kw">let</span> <span class="ident">modified_for_download</span> <span class="op">=</span> <span class="ident">vec_line_for_download</span>[<span class="number">1</span>];
-            <span class="kw">let</span> <span class="ident">size_for_download</span> <span class="op">=</span> <span class="ident">vec_line_for_download</span>[<span class="number">2</span>];
-            <span class="kw">if</span> <span class="ident">modified_for_trash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">modified_for_download</span> <span class="op">&amp;&amp;</span> <span class="ident">size_for_trash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">size_for_download</span> {
-                <span class="comment">// same size and date. Let&#39;s check the content_hash to be sure.</span>
-                <span class="kw">let</span> <span class="ident">local_path</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">base_local_path</span>, <span class="ident">path_for_trash</span>);
-                <span class="macro">println!</span>(<span class="string">&quot;local_path {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">local_path</span>);
-                <span class="kw">let</span> <span class="ident">local_content_hash</span> <span class="op">=</span> <span class="macro">format!</span>(
-                    <span class="string">&quot;{:x}&quot;</span>,
-                    <span class="macro">unwrap!</span>(<span class="ident">DropboxContentHasher::hash_file</span>(<span class="kw-2">&amp;</span><span class="ident">local_path</span>))
-                );
-                <span class="macro">println!</span>(<span class="string">&quot;path_for_download {}&quot;</span>, <span class="ident">path_for_download</span>);
-                <span class="kw">let</span> <span class="ident">remote_content_hash</span> <span class="op">=</span>
-                    <span class="macro">unwrap!</span>(<span class="kw">crate</span><span class="ident">::remote_mod::remote_content_hash</span>(<span class="ident">path_for_download</span>));
+        <span class="kw">let</span> <span class="ident">string_path_for_trash</span> <span class="op">=</span> <span class="ident">vec_line_for_trash</span>[<span class="number">0</span>];
+        <span class="kw">let</span> <span class="ident">global_path_to_trash</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">base_local_path</span>, <span class="ident">string_path_for_trash</span>);
+        <span class="kw">let</span> <span class="ident">path_to_trash</span> <span class="op">=</span> <span class="ident">path::Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">global_path_to_trash</span>);
+        <span class="comment">// if path does not exist ignore, probably it eas moved or trashed earlier</span>
+        <span class="kw">if</span> <span class="ident">path_to_trash</span>.<span class="ident">exists</span>() {
+            <span class="kw">let</span> <span class="ident">modified_for_trash</span> <span class="op">=</span> <span class="ident">vec_line_for_trash</span>[<span class="number">1</span>];
+            <span class="kw">let</span> <span class="ident">size_for_trash</span> <span class="op">=</span> <span class="ident">vec_line_for_trash</span>[<span class="number">2</span>];
+            <span class="comment">// search in list_for_download for possible candidates</span>
+            <span class="kw">for</span> <span class="ident">line_for_download</span> <span class="kw">in</span> <span class="ident">list_for_download</span>.<span class="ident">lines</span>() {
+                <span class="kw">let</span> <span class="ident">vec_line_for_download</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">line_for_download</span>.<span class="ident">split</span>(<span class="string">&quot;\t&quot;</span>).<span class="ident">collect</span>();
+                <span class="kw">let</span> <span class="ident">path_for_download</span> <span class="op">=</span> <span class="ident">vec_line_for_download</span>[<span class="number">0</span>];
+                <span class="kw">let</span> <span class="ident">modified_for_download</span> <span class="op">=</span> <span class="ident">vec_line_for_download</span>[<span class="number">1</span>];
+                <span class="kw">let</span> <span class="ident">size_for_download</span> <span class="op">=</span> <span class="ident">vec_line_for_download</span>[<span class="number">2</span>];
+                <span class="kw">if</span> <span class="ident">modified_for_trash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">modified_for_download</span>
+                    <span class="op">&amp;&amp;</span> <span class="ident">size_for_trash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">size_for_download</span>
+                {
+                    <span class="comment">// same size and date. Let&#39;s check the content_hash to be sure.</span>
+                    <span class="kw">let</span> <span class="ident">local_content_hash</span> <span class="op">=</span> <span class="macro">format!</span>(
+                        <span class="string">&quot;{:x}&quot;</span>,
+                        <span class="macro">unwrap!</span>(<span class="ident">DropboxContentHasher::hash_file</span>(<span class="ident">path_to_trash</span>))
+                    );
+                    <span class="kw">let</span> <span class="ident">remote_content_hash</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="kw">crate</span><span class="ident">::remote_mod::remote_content_hash</span>(
+                        <span class="ident">path_for_download</span>,
+                        <span class="kw-2">&amp;</span><span class="ident">client</span>
+                    ));
 
-                <span class="kw">if</span> <span class="ident">local_content_hash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">remote_content_hash</span> {
-                    <span class="kw">let</span> <span class="ident">move_from</span> <span class="op">=</span> <span class="ident">local_path</span>;
-                    <span class="kw">let</span> <span class="ident">move_to</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">base_local_path</span>, <span class="ident">path_for_download</span>);
-                    <span class="macro">println!</span>(<span class="string">&quot;move {}  -&gt;  {}&quot;</span>, <span class="ident">move_from</span>, <span class="ident">move_to</span>);
-                    <span class="kw">let</span> <span class="ident">parent</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">path::Path::parent</span>(<span class="ident">path::Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">move_to</span>)));
-                    <span class="kw">if</span> <span class="op">!</span><span class="ident">parent</span>.<span class="ident">exists</span>() {
-                        <span class="ident">fs::create_dir_all</span>(<span class="kw-2">&amp;</span><span class="ident">parent</span>).<span class="ident">unwrap</span>();
+                    <span class="kw">if</span> <span class="ident">local_content_hash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">remote_content_hash</span> {
+                        <span class="kw">let</span> <span class="ident">move_from</span> <span class="op">=</span> <span class="ident">path_to_trash</span>;
+                        <span class="kw">let</span> <span class="ident">move_to</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">base_local_path</span>, <span class="ident">path_for_download</span>);
+                        <span class="macro">println!</span>(<span class="string">&quot;move {}  -&gt;  {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">move_from</span>.<span class="ident">to_string_lossy</span>(), <span class="ident">move_to</span>);
+                        <span class="kw">let</span> <span class="ident">parent</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">path::Path::parent</span>(<span class="ident">path::Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">move_to</span>)));
+                        <span class="kw">if</span> <span class="op">!</span><span class="ident">parent</span>.<span class="ident">exists</span>() {
+                            <span class="ident">fs::create_dir_all</span>(<span class="kw-2">&amp;</span><span class="ident">parent</span>).<span class="ident">unwrap</span>();
+                        }
+                        <span class="macro">unwrap!</span>(<span class="ident">fs::rename</span>(<span class="kw-2">&amp;</span><span class="ident">move_from</span>, <span class="kw-2">&amp;</span><span class="ident">move_to</span>));
+                        <span class="comment">// append to just_downloaded</span>
+                        <span class="macro">unwrap!</span>(<span class="macro">writeln!</span>(<span class="ident">just_downloaded</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">line_for_download</span>));
+                        <span class="ident">count_moved</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                        <span class="kw">break</span>;
                     }
-                    <span class="macro">unwrap!</span>(<span class="ident">fs::rename</span>(<span class="kw-2">&amp;</span><span class="ident">move_from</span>, <span class="kw-2">&amp;</span><span class="ident">move_to</span>));
-                    <span class="comment">// modify also list_local_files (the same string)</span>
-                    <span class="ident">string_local_files</span> <span class="op">=</span>
-                        <span class="ident">string_local_files</span>.<span class="ident">replace</span>(<span class="ident">line_for_trash</span>, <span class="ident">line_for_download</span>);
-                } <span class="kw">else</span> {
-                    <span class="comment">// nothing to do</span>
-                    <span class="macro">println!</span>(<span class="string">&quot;diff: {} {}&quot;</span>, <span class="ident">remote_content_hash</span>, <span class="ident">local_content_hash</span>);
                 }
             }
         }
     }
-
-    <span class="kw">let</span> <span class="ident">sorted_string</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::sort_string_lines</span>(<span class="kw-2">&amp;</span><span class="ident">string_local_files</span>);
-    <span class="ident">fs::write</span>(<span class="string">&quot;temp_data/list_local_files.csv&quot;</span>, <span class="ident">sorted_string</span>).<span class="ident">expect</span>(<span class="string">&quot;Can&#39;t write&quot;</span>);
-    <span class="comment">// if there was something in list_just_downloaded.csv, it is now obsolete</span>
-    <span class="kw">let</span> <span class="ident">path_list_just_downloaded</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_just_downloaded.csv&quot;</span>;
-    <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="ident">path_list_just_downloaded</span>, <span class="string">&quot;&quot;</span>));
+    <span class="macro">println!</span>(<span class="string">&quot;moved or renamed: {}&quot;</span>, <span class="ident">count_moved</span>);
 }
 
 <span class="doccomment">/// move to trash folder the files from list_for_trash</span>
+<span class="doccomment">/// ignore if the file does not exist anymore</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trash_from_list</span>() {
     <span class="kw">let</span> <span class="ident">base_local_path</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;temp_data/base_local_path.csv&quot;</span>).<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">now_string</span> <span class="op">=</span> <span class="ident">chrono::Local::now</span>()
@@ -476,18 +508,21 @@
     <span class="kw">let</span> <span class="ident">list_for_trash</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">path_list_for_trash</span>).<span class="ident">unwrap</span>();
     <span class="kw">for</span> <span class="ident">line_path_for_trash</span> <span class="kw">in</span> <span class="ident">list_for_trash</span>.<span class="ident">lines</span>() {
         <span class="kw">let</span> <span class="ident">line</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">line_path_for_trash</span>.<span class="ident">split</span>(<span class="string">&quot;\t&quot;</span>).<span class="ident">collect</span>();
-        <span class="kw">let</span> <span class="ident">path_for_trash</span> <span class="op">=</span> <span class="ident">line</span>[<span class="number">0</span>];
-        <span class="kw">let</span> <span class="ident">move_from</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">base_local_path</span>, <span class="ident">path_for_trash</span>);
-        <span class="kw">let</span> <span class="ident">move_to</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">base_trash_path</span>, <span class="ident">path_for_trash</span>);
-        <span class="macro">println!</span>(<span class="string">&quot;{}  -&gt;  {}&quot;</span>, <span class="ident">move_from</span>, <span class="ident">move_to</span>);
-        <span class="kw">let</span> <span class="ident">parent</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">path::Path::parent</span>(<span class="ident">path::Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">move_to</span>)));
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">parent</span>.<span class="ident">exists</span>() {
-            <span class="ident">fs::create_dir_all</span>(<span class="kw-2">&amp;</span><span class="ident">parent</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">string_path_for_trash</span> <span class="op">=</span> <span class="ident">line</span>[<span class="number">0</span>];
+        <span class="kw">let</span> <span class="ident">path_for_trash</span> <span class="op">=</span> <span class="ident">path::Path::new</span>(<span class="ident">string_path_for_trash</span>);
+        <span class="comment">// move to trash if file exists. Nothing if it does not exist, maybe is deleted when moved or in a move_to_trash before.</span>
+        <span class="kw">if</span> <span class="ident">path_for_trash</span>.<span class="ident">exists</span>() {
+            <span class="kw">let</span> <span class="ident">move_from</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">base_local_path</span>, <span class="ident">string_path_for_trash</span>);
+            <span class="kw">let</span> <span class="ident">move_to</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">base_trash_path</span>, <span class="ident">string_path_for_trash</span>);
+            <span class="macro">println!</span>(<span class="string">&quot;{}  -&gt;  {}&quot;</span>, <span class="ident">move_from</span>, <span class="ident">move_to</span>);
+            <span class="kw">let</span> <span class="ident">parent</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">path::Path::parent</span>(<span class="ident">path::Path::new</span>(<span class="kw-2">&amp;</span><span class="ident">move_to</span>)));
+            <span class="kw">if</span> <span class="op">!</span><span class="ident">parent</span>.<span class="ident">exists</span>() {
+                <span class="ident">fs::create_dir_all</span>(<span class="kw-2">&amp;</span><span class="ident">parent</span>).<span class="ident">unwrap</span>();
+            }
+            <span class="macro">unwrap!</span>(<span class="ident">fs::rename</span>(<span class="kw-2">&amp;</span><span class="ident">move_from</span>, <span class="kw-2">&amp;</span><span class="ident">move_to</span>));
         }
-        <span class="macro">unwrap!</span>(<span class="ident">fs::rename</span>(<span class="kw-2">&amp;</span><span class="ident">move_from</span>, <span class="kw-2">&amp;</span><span class="ident">move_to</span>));
     }
-    <span class="comment">// empty the list</span>
-    <span class="comment">// println!(&quot;list_for_trash emptied&quot;);</span>
+    <span class="comment">// empty the list if all is successful</span>
     <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="ident">path_list_for_trash</span>, <span class="string">&quot;&quot;</span>));
 }
 
@@ -496,11 +531,16 @@
     <span class="kw">let</span> <span class="ident">base_local_path</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;temp_data/base_local_path.csv&quot;</span>).<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">path_list_for_correct_time</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_for_correct_time.csv&quot;</span>;
     <span class="kw">let</span> <span class="ident">list_for_correct_time</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">path_list_for_correct_time</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::remote_mod::get_short_lived_access_token</span>();
+    <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">dropbox_sdk::default_client::UserAuthDefaultClient::new</span>(<span class="ident">token</span>);
     <span class="kw">for</span> <span class="ident">path_to_correct_time</span> <span class="kw">in</span> <span class="ident">list_for_correct_time</span>.<span class="ident">lines</span>() {
         <span class="kw">let</span> <span class="ident">line</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">path_to_correct_time</span>.<span class="ident">split</span>(<span class="string">&quot;\t&quot;</span>).<span class="ident">collect</span>();
         <span class="kw">let</span> <span class="ident">remote_path</span> <span class="op">=</span> <span class="ident">line</span>[<span class="number">0</span>];
         <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">remote_path</span>);
-        <span class="kw">let</span> <span class="ident">remote_content_hash</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="kw">crate</span><span class="ident">::remote_mod::remote_content_hash</span>(<span class="kw-2">&amp;</span><span class="ident">remote_path</span>));
+        <span class="kw">let</span> <span class="ident">remote_content_hash</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="kw">crate</span><span class="ident">::remote_mod::remote_content_hash</span>(
+            <span class="kw-2">&amp;</span><span class="ident">remote_path</span>,
+            <span class="kw-2">&amp;</span><span class="ident">client</span>
+        ));
         <span class="kw">let</span> <span class="ident">local_path</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">base_local_path</span>, <span class="ident">remote_path</span>);
         <span class="kw">let</span> <span class="ident">local_content_hash</span> <span class="op">=</span> <span class="macro">format!</span>(
             <span class="string">&quot;{:x}&quot;</span>,
@@ -518,9 +558,9 @@
     <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="ident">path_list_for_correct_time</span>, <span class="string">&quot;&quot;</span>));
 }
 
-<span class="doccomment">/// add lines from just_downloaded to list_local</span>
+<span class="doccomment">/// add lines from just_downloaded to list_local. Only before compare.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_just_downloaded_to_list_local</span>() {
-    <span class="kw">let</span> <span class="ident">path_list_just_downloaded</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_just_downloaded.csv&quot;</span>;
+    <span class="kw">let</span> <span class="ident">path_list_just_downloaded</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_just_downloaded_or_moved.csv&quot;</span>;
     <span class="kw">let</span> <span class="ident">string_just_downloaded</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">path_list_just_downloaded</span>).<span class="ident">unwrap</span>();
     <span class="kw">if</span> <span class="op">!</span><span class="ident">string_just_downloaded</span>.<span class="ident">is_empty</span>() {
         <span class="comment">// it must be sorted, because downloads are multi-thread and not in sort order</span>
@@ -591,8 +631,8 @@
         <span class="kw">let</span> <span class="ident">new_local_files</span> <span class="op">=</span> <span class="ident">vec_sorted_local</span>.<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>);
         <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="ident">path_list_local_files</span>, <span class="kw-2">&amp;</span><span class="ident">new_local_files</span>));
 
-        <span class="comment">// empty the file temp_data/list_just_downloaded.csv</span>
-        <span class="comment">// println!(&quot;list_just_downloaded emptied&quot;);</span>
+        <span class="comment">// empty the file temp_data/list_just_downloaded_or_moved.csv</span>
+        <span class="comment">// println!(&quot;list_just_downloaded_or_moved emptied&quot;);</span>
         <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="ident">path_list_just_downloaded</span>, <span class="string">&quot;&quot;</span>));
     }
 }
