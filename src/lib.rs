@@ -43,20 +43,33 @@
 //!   
 //! Later, use `$ dropbox_backup_to_external_disk --help` to get all the instructions and commands.  
 //!
+//! ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png "screenshot_2")  
+//!
 //! ## Warning
 //!
 //! I don't know why, but WSL2 sometimes does not see all the folders of the external disk.  
-//! Instead of 12000 folders it sees only 28 ???  
+//! Instead of 12.000 folders it sees only 28 ???  
 //! Be careful !  
 //! I then restart my Win10 and the problem magically disappears.
 //!
-//! ## development
+//! ## Development
 //!
-//! List all the files from the remote Dropbox and saves to the file `temp_data/list_remote_files.csv`.
+//! I use WSL2 on Win10 to develope and execute this CLI in Debian Linux.  
+//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`. CLI lists the local files metadata in `temp_data/list_local_files.csv`.  
+//! List all the files metadata from the remote Dropbox to the file `temp_data/list_remote_files.csv`.
 //! Tab delimited with metadata: path (with name), datetime modified, size.
-//! The path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random.
-//! For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads in a ThreadPool to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.
-//! The sorting of lists is also done in parallel with the crate Rayon.
+//! The remote path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random-case.
+//! For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads in a ThreadPool to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.  
+//! The sorting of lists is also done in parallel with the crate Rayon.  
+//! Once the lists are complete the CLI will compare them and create files:  
+//! `list_for_correct_time.csv`  
+//! `list_for_download.csv`  
+//! `list_for_trash.csv`  
+//! With this files the CLI will:  
+//! `move_or_rename_local_files` using the content_hash to be sure they are equal  
+//! `trash_from_list` will move the obsolete files into a trash folder  
+//! `correct_time_from_list` sometimes it is needed  
+//! `download_from_list` - this can take a lot of time and it can be stopped and restarted with the use of the `list_just_downloaded.csv`.  
 //!
 //! ## DropBox api2 - Stone sdk
 //!
@@ -71,13 +84,14 @@
 //! For commercial programs they probably embed them into the binary code somehow. But for OpenSource projects it is not possible to keep a secret. So the workaround is: every user must create a new `dropbox app` exclusive only to him. Creating a new app is simple. This app will stay forever in `development status` in dropbox, to be more private and secure. The  
 //! `$ dropbox_backup_to_external_disk --help`  
 //! has the detailed instructions.  
-//! Then every time before use we need an "access token" that is short-lived for security reasons.  
+//! Then every time before use we need generate the "short-lived access token" for security reasons.  
+//! ![dropbox_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_2.png "dropbox_2") ![dropbox_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_1.png "dropbox_1")
 //!
 //! ## rename or move
 //!
-//! Often a file is renamed or moved to another folder. I can try to recognize if there is the same file in list_for_trash and list_for download, but I cannot use the file path or name. Instead the metadata size, date modified and hash must be the same.  
+//! Often a file is renamed or moved to another folder. I can try to recognize if there is the same file in list_for_trash and list_for download, but I cannot use the file path or name. Instead I use the metadata: size, date modified and content_hash.  
 //!
-//! ## REGEX adventure non-breaking space and CRLF
+//! ## REGEX adventure with non-breaking space and CRLF
 //!
 //! We all know space. But there are other non-visible characters that are very similar and sometimes impossible to distinguish. Tab is one of them, but it is not so difficult to spot with a quick try.  
 //! But nbsp non-breaking space, often used in HTML is a catastrophe. There is no way to tell it apart from the normal space. I used a regex to find a match with some spaces. It worked right for a years. Yesterday it didn't work. If I changed space to `\s` in the regex expression, it worked, but not with space. I tried everything and didn't find the cause. Finally I deleted and inserted the space. It works. But how? After a detailed analysis I discovered it was a non-breakable space. This is unicode 160 or \xa0, instead of normal space unicode 32 \x20. Now I will try to find them all and replace with normal space. What a crazy world.  

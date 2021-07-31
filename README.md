@@ -50,7 +50,6 @@ Test the connection and permission:
 Later, use `$ dropbox_backup_to_external_disk --help` to get all the instructions and commands.  
 
 ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png "screenshot_2")  
-![dropbox_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_1.png "dropbox_1") ![dropbox_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_2.png "dropbox_1")
 
 ## Warning
 
@@ -65,7 +64,7 @@ I use WSL2 on Win10 to develope and execute this CLI in Debian Linux.
 The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`. CLI lists the local files metadata in `temp_data/list_local_files.csv`.  
 List all the files metadata from the remote Dropbox to the file `temp_data/list_remote_files.csv`.
 Tab delimited with metadata: path (with name), datetime modified, size.
-The path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random.
+The remote path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random-case.
 For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads in a ThreadPool to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.  
 The sorting of lists is also done in parallel with the crate Rayon.  
 Once the lists are complete the CLI will compare them and create files:  
@@ -91,11 +90,12 @@ Every app must be authorized on Dropbox and have its own `app key` and `app secr
 For commercial programs they probably embed them into the binary code somehow. But for OpenSource projects it is not possible to keep a secret. So the workaround is: every user must create a new `dropbox app` exclusive only to him. Creating a new app is simple. This app will stay forever in `development status` in dropbox, to be more private and secure. The  
 `$ dropbox_backup_to_external_disk --help`  
 has the detailed instructions.  
-Then every time before use we need an "access token" that is short-lived for security reasons.  
+Then every time before use we need generate the "short-lived access token" for security reasons.  
+![dropbox_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_2.png "dropbox_2") ![dropbox_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_1.png "dropbox_1")
 
 ## rename or move
 
-Often a file is renamed or moved to another folder. I can try to recognize if there is the same file in list_for_trash and list_for download, but I cannot use the file path or name. Instead the metadata size, date modified and content_hash must be the same.  
+Often a file is renamed or moved to another folder. I can try to recognize if there is the same file in list_for_trash and list_for download, but I cannot use the file path or name. Instead I use the metadata: size, date modified and content_hash.  
 
 ## REGEX adventure with non-breaking space and CRLF
 
