@@ -51,7 +51,7 @@ Test the connection and permission:
   
 Later, use `$ dropbox_backup_to_external_disk --help` to get all the instructions and commands.  
 
-![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png "screenshot_2") ![list_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_1.png "list_1")  
+![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png "screenshot_2") ![list_](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_2.png "list_")  
 
 ## Warning
 
