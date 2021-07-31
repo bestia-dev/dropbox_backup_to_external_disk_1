@@ -30,9 +30,6 @@ The original Dropbox Sync app works great for the internal HD, but is "not recom
 But I wanted to write something mine for fun, learning Rust and using my own apps.
 I have a lot of files, so I wanted to list them first, then compare with the local files and finally download them. The trash part at the end will be "move to trash folder". So I can inspect what and how to remove it manually.  
 
-![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png) ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png)  
-![dropbox_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_1.png) ![dropbox_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_2.png)
-
 ## Try it
 
 You should be logged in Linux terminal with your account. So things you do, are not visible to others.  
@@ -51,6 +48,9 @@ Test the connection and permission:
 `$ dropbox_backup_to_external_disk test`  
   
 Later, use `$ dropbox_backup_to_external_disk --help` to get all the instructions and commands.  
+
+![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png "screenshot_2")  
+![dropbox_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_1.png "dropbox_1") ![dropbox_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_2.png "dropbox_1")
 
 ## Warning
 
