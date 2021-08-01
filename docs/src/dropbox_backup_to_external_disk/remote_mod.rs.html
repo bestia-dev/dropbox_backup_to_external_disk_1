@@ -588,6 +588,10 @@
 <span id="585">585</span>
 <span id="586">586</span>
 <span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! remote_mod.rs</span>
 <span class="doccomment">//! Module contains all the communication with the remote dropbox storage.</span>
@@ -1075,6 +1079,10 @@
         }
     }
     <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">unhide_cursor</span>());
+    <span class="comment">// delete the temp folder</span>
+    <span class="kw">let</span> <span class="ident">base_local_path</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;temp_data/base_local_path.csv&quot;</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">base_temp_download_path</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}_temp_download&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">base_local_path</span>);
+    <span class="macro">unwrap!</span>(<span class="ident">fs::remove_dir_all</span>(<span class="ident">base_temp_download_path</span>));
     <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;compare remote and local lists&quot;</span>));
     <span class="ident">compare_lists</span>();
 }

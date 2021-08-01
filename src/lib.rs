@@ -4,11 +4,11 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **one way sync from dropbox to an external disc**  
-//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.310  date: 2021-08-01 authors: Luciano Bestia***  
+//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.311  date: 2021-08-01 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1282-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1287-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-149-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-108-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-109-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //!
@@ -195,8 +195,10 @@ pub fn compare_lists() {
     let path_list_local_files = "temp_data/list_local_files.csv";
     let string_remote = unwrap!(fs::read_to_string(path_list_remote_files));
     let vec_remote_lines: Vec<&str> = string_remote.lines().collect();
+    println!("list_remote_files: {}", vec_remote_lines.len());
     let string_local = unwrap!(fs::read_to_string(path_list_local_files));
     let vec_local_lines: Vec<&str> = string_local.lines().collect();
+    println!("list_local_files: {}", vec_local_lines.len());
 
     let mut vec_for_download: Vec<String> = vec![];
     let mut vec_for_trash: Vec<String> = vec![];

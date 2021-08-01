@@ -484,6 +484,10 @@ pub fn download_from_list() {
         }
     }
     print!("{}", unhide_cursor());
+    // delete the temp folder
+    let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+    let base_temp_download_path = format!("{}_temp_download", &base_local_path);
+    unwrap!(fs::remove_dir_all(base_temp_download_path));
     println!("{}", Yellow.paint("compare remote and local lists"));
     compare_lists();
 }

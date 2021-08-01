@@ -285,6 +285,8 @@
 <span id="282">282</span>
 <span id="283">283</span>
 <span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! dropbox_backup_to_external_disk lib.rs</span>
 
@@ -292,11 +294,11 @@
 <span class="doccomment">//! # dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! **one way sync from dropbox to an external disc**  </span>
-<span class="doccomment">//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.310  date: 2021-08-01 authors: Luciano Bestia***  </span>
+<span class="doccomment">//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.311  date: 2021-08-01 authors: Luciano Bestia***  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1282-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1287-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-149-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-108-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-109-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
@@ -483,8 +485,10 @@
     <span class="kw">let</span> <span class="ident">path_list_local_files</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_local_files.csv&quot;</span>;
     <span class="kw">let</span> <span class="ident">string_remote</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">fs::read_to_string</span>(<span class="ident">path_list_remote_files</span>));
     <span class="kw">let</span> <span class="ident">vec_remote_lines</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">string_remote</span>.<span class="ident">lines</span>().<span class="ident">collect</span>();
+    <span class="macro">println!</span>(<span class="string">&quot;list_remote_files: {}&quot;</span>, <span class="ident">vec_remote_lines</span>.<span class="ident">len</span>());
     <span class="kw">let</span> <span class="ident">string_local</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">fs::read_to_string</span>(<span class="ident">path_list_local_files</span>));
     <span class="kw">let</span> <span class="ident">vec_local_lines</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">string_local</span>.<span class="ident">lines</span>().<span class="ident">collect</span>();
+    <span class="macro">println!</span>(<span class="string">&quot;list_local_files: {}&quot;</span>, <span class="ident">vec_local_lines</span>.<span class="ident">len</span>());
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec_for_download</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec_for_trash</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];

@@ -1,6 +1,6 @@
 [package]
 name = "dropbox_backup_to_external_disk"
-version = "1.0.310"
+version = "1.0.311"
 description = "one way sync from dropbox to an external disc"
 authors = ["Luciano Bestia"]
 edition = "2018"
