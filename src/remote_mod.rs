@@ -215,7 +215,7 @@ pub fn sort_remote_list_and_write_to_file(mut file_list_all: Vec<String>) {
 }
 
 /// download one file
-pub fn download(path_to_download: &str) {
+pub fn download_one_file(path_to_download: &str) {
     let token = get_short_lived_access_token();
     let client = UserAuthDefaultClient::new(token);
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
@@ -227,7 +227,7 @@ pub fn download(path_to_download: &str) {
         let client_ref = &client;
         let thread_num = 0;
         let tx_clone2 = mpsc::Sender::clone(&tx);
-        download_with_client(
+        download_internal(
             &path_to_download,
             client_ref,
             base_local_path_ref,
@@ -249,7 +249,7 @@ pub fn download(path_to_download: &str) {
 }
 
 /// download one file with client object UserAuthDefaultClient
-pub fn download_with_client(
+fn download_internal(
     download_path: &str,
     client: &UserAuthDefaultClient,
     base_local_path: &str,
@@ -393,18 +393,44 @@ pub fn download_from_list() {
             for line_path_to_download in list_for_download.lines() {
                 let line: Vec<&str> = line_path_to_download.split("\t").collect();
                 let path_to_download = line[0];
-                let tx_clone2 = mpsc::Sender::clone(&tx);
-                // execute in a separate threads, or waits for a free thread from the pool
-                scoped.spawn(move |_s| {
-                    let thread_num = unwrap!(rayon::current_thread_index()) as i32;
-                    download_with_client(
-                        path_to_download,
-                        client_ref,
-                        base_local_path_ref,
-                        thread_num,
-                        tx_clone2,
-                    );
-                });
+                let file_size: i32 = line[2].parse().unwrap();
+                if file_size == 0 {
+                    // create a n empty file, because download empty file causes error 416
+                    let local_path = format!("{}{}", base_local_path, path_to_download);
+                    let path = path::PathBuf::from(&local_path);
+                    let parent = path.parent().unwrap();
+                    if !path::Path::new(&parent).exists() {
+                        fs::create_dir_all(parent).unwrap();
+                    }
+                    let mut file = fs::OpenOptions::new()
+                        .create(true)
+                        .write(true)
+                        .open(&local_path)
+                        .unwrap();
+                    unwrap!(writeln!(file, "{}", ""));
+                    // append to list_just_downloaded
+                    let list_just_downloaded_or_moved =
+                        "temp_data/list_just_downloaded_or_moved.csv";
+                    let mut just_downloaded = fs::OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(list_just_downloaded_or_moved)
+                        .unwrap();
+                    unwrap!(writeln!(just_downloaded, "{}", line_path_to_download));
+                } else {
+                    let tx_clone2 = mpsc::Sender::clone(&tx);
+                    // execute in a separate threads, or waits for a free thread from the pool
+                    scoped.spawn(move |_s| {
+                        let thread_num = unwrap!(rayon::current_thread_index()) as i32;
+                        download_internal(
+                            path_to_download,
+                            client_ref,
+                            base_local_path_ref,
+                            thread_num,
+                            tx_clone2,
+                        );
+                    });
+                }
             }
             drop(tx);
         });
@@ -458,6 +484,8 @@ pub fn download_from_list() {
         }
     }
     print!("{}", unhide_cursor());
+    println!("{}", Yellow.paint("compare remote and local lists"));
+    compare_lists();
 }
 
 /// list directory

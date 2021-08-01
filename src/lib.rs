@@ -112,7 +112,7 @@ mod local_mod;
 mod remote_mod;
 mod utils_mod;
 
-use std::fs;
+use std::{fs, thread::sleep};
 
 pub use local_mod::*;
 pub use remote_mod::*;
@@ -183,6 +183,8 @@ pub fn sync_only() {
     println!("{}", Yellow.paint("correct time from list"));
     correct_time_from_list();
     println!("{}", Yellow.paint("download from list"));
+    // wait 2 second, just to see the result on the screen
+    sleep(std::time::Duration::new(2, 0));
     download_from_list();
 }
 

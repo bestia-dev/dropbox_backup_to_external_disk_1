@@ -112,4 +112,8 @@ There is another approach called memory map to file, but everybody is trying to 
 Sounds like a database is always a better choice for more agile development.  
 In this project I will create additional files that only append lines. Some kind of journal. And later use this to modify the big text files in one go. For example: list_just_downloaded_or_moved.csv is added to list_local_files.csv.  
 
+## TODO
+
+Looks like files with size 0 is not possible to download. I could just create them instead.  
+
 [comment]: # (lmake_md_to_doc_comments segment end A)

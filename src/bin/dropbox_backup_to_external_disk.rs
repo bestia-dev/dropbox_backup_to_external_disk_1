@@ -90,7 +90,7 @@ fn main() {
             ns_print_ms("download_from_list", ns_started);
         }
         Some("download") => match env::args().nth(2).as_deref() {
-            Some(path) => download(path),
+            Some(path) => download_one_file(path),
             _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
         },
 

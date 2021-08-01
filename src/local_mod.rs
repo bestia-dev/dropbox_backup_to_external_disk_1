@@ -201,7 +201,23 @@ pub fn trash_from_list() {
             unwrap!(fs::rename(&move_from, &move_to));
         }
     }
+    // remove lines from list_local_files.csv
+    let path_list_local_files = "temp_data/list_local_files.csv";
+    let string_local_files = fs::read_to_string(path_list_local_files).unwrap();
+    let vec_sorted_local: Vec<&str> = string_local_files.lines().collect();
+    // I must create a new vector.
+    let mut string_new_local = String::with_capacity(string_local_files.len());
+    for line in vec_sorted_local {
+        if !list_for_trash.contains(line) {
+            string_new_local.push_str(line);
+            string_new_local.push_str("\n");
+        }
+    }
+    // save the new local
+    unwrap!(fs::write(path_list_local_files, &string_new_local));
+
     // empty the list if all is successful
+    println!("empty the list if all is successful");
     unwrap!(fs::write(path_list_for_trash, ""));
 }
 
