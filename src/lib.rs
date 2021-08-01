@@ -4,11 +4,11 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **one way sync from dropbox to an external disc**  
-//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 0.1.298  date: 2021-07-31 authors: Luciano Bestia***  
+//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.310  date: 2021-08-01 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1242-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-140-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-102-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1282-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-149-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-108-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //!
@@ -45,7 +45,7 @@
 //!   
 //! Later, use `$ dropbox_backup_to_external_disk --help` to get all the instructions and commands.  
 //!
-//! ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png "screenshot_2") ![list_](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_2.png "list_")  
+//! ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png "screenshot_2") ![list_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_2.png "list_2") ![list_3](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_3.png "list_3") ![list_4](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_4.png "list_4")
 //!
 //! ## Warning
 //!
