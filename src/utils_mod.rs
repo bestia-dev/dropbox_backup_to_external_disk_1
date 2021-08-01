@@ -6,7 +6,7 @@ use std::io::Stdout;
 #[allow(unused_imports)]
 use chrono::prelude::*;
 use lazy_static::lazy_static;
-use termion::{input::MouseTerminal, raw::RawTerminal};
+use termion::raw::RawTerminal;
 use uncased::UncasedStr;
 use unwrap::unwrap;
 
@@ -15,33 +15,36 @@ lazy_static! {
     pub static ref YELLOW: String = termion::color::Fg(termion::color::Yellow).to_string();
     pub static ref RESET: String = termion::color::Fg(termion::color::Reset).to_string();
     /// ansi terminal - clears the line on the terminal from cursor to end of line
-    pub static ref CLEAR_LINE: String = "\x1b[0K".to_owned();
+    pub static ref CLEAR_LINE: String = termion::clear::CurrentLine.to_string();
     pub static ref CLEAR_ALL: String = termion::clear::All.to_string();
     pub static ref HIDE_CURSOR: String = termion::cursor::Hide.to_string();
     pub static ref UNHIDE_CURSOR: String = termion::cursor::Show.to_string();
 }
-pub fn at_pos(x: u16, y: u16) -> String {
-    termion::cursor::Goto(x, y).to_string()
-}
+
+/// move cursor to line
 pub fn at_line(y: u16) -> String {
     termion::cursor::Goto(1, y).to_string()
 }
 
-pub fn get_pos(mouse_terminal: &mut MouseTerminal<RawTerminal<Stdout>>) -> (u16, u16) {
-    unwrap!(mouse_terminal.activate_raw_mode());
+/// get cursor position from raw_mode, but return immediately to normal_mode
+pub fn get_pos(
+    hide_cursor_terminal: &mut termion::cursor::HideCursor<RawTerminal<Stdout>>,
+) -> (u16, u16) {
+    unwrap!(hide_cursor_terminal.activate_raw_mode());
     use termion::cursor::DetectCursorPos;
-    let (x, y) = unwrap!(mouse_terminal.cursor_pos());
-    unwrap!(mouse_terminal.suspend_raw_mode());
+    let (x, y) = unwrap!(hide_cursor_terminal.cursor_pos());
+    unwrap!(hide_cursor_terminal.suspend_raw_mode());
     (x, y)
 }
 
-pub fn start_mouse_terminal() -> MouseTerminal<RawTerminal<Stdout>> {
-    let mouse_terminal = termion::input::MouseTerminal::from(
+/// when changing cursor position it is good to hide the cursor
+pub fn start_hide_cursor_terminal() -> termion::cursor::HideCursor<RawTerminal<Stdout>> {
+    let hide_cursor = termion::cursor::HideCursor::from(
         termion::raw::IntoRawMode::into_raw_mode(std::io::stdout()).unwrap(),
     );
-    unwrap!(mouse_terminal.suspend_raw_mode());
+    unwrap!(hide_cursor.suspend_raw_mode());
     // return
-    mouse_terminal
+    hide_cursor
 }
 
 /// returns the now in nanoseconds

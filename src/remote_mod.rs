@@ -365,122 +365,126 @@ fn download_internal(
 
 /// download files from list
 pub fn download_from_list() {
-    println!("{}download_from_list {}", *CLEAR_ALL, *HIDE_CURSOR);
-
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let list_for_download = fs::read_to_string("temp_data/list_for_download.csv").unwrap();
-    let token = get_short_lived_access_token();
-    let client = UserAuthDefaultClient::new(token);
-    // channel for inter-thread communication.
-    let (tx, rx) = mpsc::channel();
+    if !list_for_download.is_empty() {
+        println!(
+            "{}{}download_from_list {}",
+            *CLEAR_ALL,
+            at_line(1),
+            *HIDE_CURSOR
+        );
+        println!("{}", at_line(8));
+        let token = get_short_lived_access_token();
+        let client = UserAuthDefaultClient::new(token);
+        // channel for inter-thread communication.
+        let (tx, rx) = mpsc::channel();
 
-    // loop in a new thread, so the send msg will come immediately
-    let _sender_thread = thread::spawn(move || {
-        let base_local_path_ref = &base_local_path;
-        let client_ref = &client;
-        // 3 threads to download in parallel
-        let pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(3)
-            .build()
-            .unwrap();
-        pool.scope(|scoped| {
-            for line_path_to_download in list_for_download.lines() {
-                let line: Vec<&str> = line_path_to_download.split("\t").collect();
-                let path_to_download = line[0];
-                let file_size: i32 = line[2].parse().unwrap();
-                if file_size == 0 {
-                    // create a n empty file, because download empty file causes error 416
-                    let local_path = format!("{}{}", base_local_path, path_to_download);
-                    let path = path::PathBuf::from(&local_path);
-                    let parent = path.parent().unwrap();
-                    if !path::Path::new(&parent).exists() {
-                        fs::create_dir_all(parent).unwrap();
+        // loop in a new thread, so the send msg will come immediately
+        let _sender_thread = thread::spawn(move || {
+            let base_local_path_ref = &base_local_path;
+            let client_ref = &client;
+            // 3 threads to download in parallel
+            let pool = rayon::ThreadPoolBuilder::new()
+                .num_threads(3)
+                .build()
+                .unwrap();
+            pool.scope(|scoped| {
+                for line_path_to_download in list_for_download.lines() {
+                    let line: Vec<&str> = line_path_to_download.split("\t").collect();
+                    let path_to_download = line[0];
+                    let file_size: i32 = line[2].parse().unwrap();
+                    if file_size == 0 {
+                        // create a n empty file, because download empty file causes error 416
+                        let local_path = format!("{}{}", base_local_path, path_to_download);
+                        let path = path::PathBuf::from(&local_path);
+                        let parent = path.parent().unwrap();
+                        if !path::Path::new(&parent).exists() {
+                            fs::create_dir_all(parent).unwrap();
+                        }
+                        let mut file = fs::OpenOptions::new()
+                            .create(true)
+                            .write(true)
+                            .open(&local_path)
+                            .unwrap();
+                        unwrap!(writeln!(file, "{}", ""));
+                        // append to list_just_downloaded
+                        let list_just_downloaded_or_moved =
+                            "temp_data/list_just_downloaded_or_moved.csv";
+                        let mut just_downloaded = fs::OpenOptions::new()
+                            .create(true)
+                            .append(true)
+                            .open(list_just_downloaded_or_moved)
+                            .unwrap();
+                        unwrap!(writeln!(just_downloaded, "{}", line_path_to_download));
+                    } else {
+                        let tx_clone2 = mpsc::Sender::clone(&tx);
+                        // execute in a separate threads, or waits for a free thread from the pool
+                        scoped.spawn(move |_s| {
+                            let thread_num = unwrap!(rayon::current_thread_index()) as i32;
+                            download_internal(
+                                path_to_download,
+                                client_ref,
+                                base_local_path_ref,
+                                thread_num,
+                                tx_clone2,
+                            );
+                        });
                     }
-                    let mut file = fs::OpenOptions::new()
-                        .create(true)
-                        .write(true)
-                        .open(&local_path)
-                        .unwrap();
-                    unwrap!(writeln!(file, "{}", ""));
-                    // append to list_just_downloaded
-                    let list_just_downloaded_or_moved =
-                        "temp_data/list_just_downloaded_or_moved.csv";
-                    let mut just_downloaded = fs::OpenOptions::new()
-                        .create(true)
-                        .append(true)
-                        .open(list_just_downloaded_or_moved)
-                        .unwrap();
-                    unwrap!(writeln!(just_downloaded, "{}", line_path_to_download));
-                } else {
-                    let tx_clone2 = mpsc::Sender::clone(&tx);
-                    // execute in a separate threads, or waits for a free thread from the pool
-                    scoped.spawn(move |_s| {
-                        let thread_num = unwrap!(rayon::current_thread_index()) as i32;
-                        download_internal(
-                            path_to_download,
-                            client_ref,
-                            base_local_path_ref,
-                            thread_num,
-                            tx_clone2,
-                        );
-                    });
                 }
-            }
-            drop(tx);
+                drop(tx);
+            });
         });
-    });
-    // the receiver reads all msgs from the queue, until senders exist - drop(tx)
-    // only this thread writes to the terminal, to avoid race in cursor position
-    let mut mouse_terminal = start_mouse_terminal();
+        // the receiver reads all msgs from the queue, until senders exist - drop(tx)
+        // only this thread writes to the terminal, to avoid race in cursor position
+        let mut hide_cursor_terminal = crate::start_hide_cursor_terminal();
 
-    let mut string_to_print_1 = "".to_string();
-    let mut string_to_print_2 = "".to_string();
-    let mut string_to_print_3 = "".to_string();
-    for msg in &rx {
-        let (string_to_print, thread_num) = msg;
-        if thread_num != -1 {
-            let (_x, y) = get_pos(&mut mouse_terminal);
-            print!("{}{}", at_line(3 + thread_num as u16), &string_to_print);
-            print!("{}", at_line(y));
-            if thread_num == 0 {
-                string_to_print_1 = string_to_print;
-            } else if thread_num == 1 {
-                string_to_print_2 = string_to_print;
-            } else if thread_num == 2 {
-                string_to_print_3 = string_to_print;
+        let mut string_to_print_1 = "".to_string();
+        let mut string_to_print_2 = "".to_string();
+        let mut string_to_print_3 = "".to_string();
+        for msg in &rx {
+            let (string_to_print, thread_num) = msg;
+            if thread_num != -1 {
+                let (_x, y) = get_pos(&mut hide_cursor_terminal);
+                print!("{}{}", at_line(3 + thread_num as u16), &string_to_print);
+                print!("{}", at_line(y));
+                if thread_num == 0 {
+                    string_to_print_1 = string_to_print;
+                } else if thread_num == 1 {
+                    string_to_print_2 = string_to_print;
+                } else if thread_num == 2 {
+                    string_to_print_3 = string_to_print;
+                }
+            } else {
+                let (_x, y) = get_pos(&mut hide_cursor_terminal);
+                // there is annoying jumping because of scrolling
+                // let clear first and write second
+                println!("{}{}", at_line(8), termion::clear::BeforeCursor);
+                println!("{}{} download_from_list", at_line(1), *CLEAR_LINE);
+                print!("{}", at_line(y));
+
+                println!("{}", &string_to_print);
+
+                // print the first 6 lines, because of scrolling
+                let (_x, y) = get_pos(&mut hide_cursor_terminal);
+                println!("{}{}download_from_list", at_line(1), *CLEAR_LINE);
+                println!("{}", *CLEAR_LINE);
+                println!("{}", &string_to_print_1);
+                println!("{}", &string_to_print_2);
+                println!("{}", &string_to_print_3);
+                println!("{}", *CLEAR_LINE);
+                print!("{}", at_line(y));
             }
-        } else {
-            let (_x, y) = get_pos(&mut mouse_terminal);
-            // there is annoying jumping because of scrolling
-            // let clear first and write second
-            println!("{}{} download_from_list", at_line(1), *CLEAR_LINE);
-            println!("{}", *CLEAR_LINE);
-            println!("{}", *CLEAR_LINE);
-            println!("{}", *CLEAR_LINE);
-            println!("{}", *CLEAR_LINE);
-            println!("{}", *CLEAR_LINE);
-            println!("{}", *CLEAR_LINE);
-            print!("{}", at_line(y));
-
-            println!("{}", &string_to_print);
-
-            // print the first 6 lines, because of scrolling
-            let (_x, y) = get_pos(&mut mouse_terminal);
-            println!("{}{}download_from_list", at_line(1), *CLEAR_LINE);
-            println!("{}", *CLEAR_LINE);
-            println!("{}", &string_to_print_1);
-            println!("{}", &string_to_print_2);
-            println!("{}", &string_to_print_3);
-            println!("{}", *CLEAR_LINE);
-            print!("{}", at_line(y));
         }
+        println!("{}", *UNHIDE_CURSOR);
+        // delete the temp folder
+        let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+        let base_temp_download_path = format!("{}_temp_download", &base_local_path);
+        fs::remove_dir_all(base_temp_download_path).unwrap_or(());
+        println!("{}compare remote and local lists", *YELLOW);
+    } else {
+        println!("list_for_download: 0");
     }
-    println!("{}", *UNHIDE_CURSOR);
-    // delete the temp folder
-    let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-    let base_temp_download_path = format!("{}_temp_download", &base_local_path);
-    unwrap!(fs::remove_dir_all(base_temp_download_path));
-    println!("{}compare remote and local lists", *YELLOW);
     compare_lists();
 }
 

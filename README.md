@@ -5,13 +5,13 @@
 [comment]: # (lmake_cargo_toml_to_md start)
 
 **one way sync from dropbox to an external disc**  
-***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.359  date: 2021-08-01 authors: Luciano Bestia***  
+***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.365  date: 2021-08-01 authors: Luciano Bestia***  
 
 [comment]: # (lmake_cargo_toml_to_md end)
 
 [comment]: # (lmake_lines_of_code start)
-[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1258-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-147-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1262-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-150-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-110-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)

@@ -120,6 +120,9 @@
 <span id="117">117</span>
 <span id="118">118</span>
 <span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! utils_mod.rs</span>
 <span class="doccomment">//! A module with often used functions. For every project I select only the functions I need for the project.</span>
@@ -129,7 +132,7 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
 <span class="kw">use</span> <span class="ident">chrono::prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">lazy_static::lazy_static</span>;
-<span class="kw">use</span> <span class="ident">termion</span>::{<span class="ident">input::MouseTerminal</span>, <span class="ident">raw::RawTerminal</span>};
+<span class="kw">use</span> <span class="ident">termion::raw::RawTerminal</span>;
 <span class="kw">use</span> <span class="ident">uncased::UncasedStr</span>;
 <span class="kw">use</span> <span class="ident">unwrap::unwrap</span>;
 
@@ -138,33 +141,36 @@
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">YELLOW</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::color::Fg</span>(<span class="ident">termion::color::Yellow</span>).<span class="ident">to_string</span>();
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">RESET</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::color::Fg</span>(<span class="ident">termion::color::Reset</span>).<span class="ident">to_string</span>();
     <span class="doccomment">/// ansi terminal - clears the line on the terminal from cursor to end of line</span>
-    <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">CLEAR_LINE</span>: <span class="ident">String</span> <span class="op">=</span> <span class="string">&quot;\x1b[0K&quot;</span>.<span class="ident">to_owned</span>();
+    <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">CLEAR_LINE</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::clear::CurrentLine</span>.<span class="ident">to_string</span>();
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">CLEAR_ALL</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::clear::All</span>.<span class="ident">to_string</span>();
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">HIDE_CURSOR</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::cursor::Hide</span>.<span class="ident">to_string</span>();
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">UNHIDE_CURSOR</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::cursor::Show</span>.<span class="ident">to_string</span>();
 }
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">at_pos</span>(<span class="ident">x</span>: <span class="ident">u16</span>, <span class="ident">y</span>: <span class="ident">u16</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
-    <span class="ident">termion::cursor::Goto</span>(<span class="ident">x</span>, <span class="ident">y</span>).<span class="ident">to_string</span>()
-}
+
+<span class="doccomment">/// move cursor to line</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">at_line</span>(<span class="ident">y</span>: <span class="ident">u16</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
     <span class="ident">termion::cursor::Goto</span>(<span class="number">1</span>, <span class="ident">y</span>).<span class="ident">to_string</span>()
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_pos</span>(<span class="ident">mouse_terminal</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">MouseTerminal</span><span class="op">&lt;</span><span class="ident">RawTerminal</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">u16</span>, <span class="ident">u16</span>) {
-    <span class="macro">unwrap!</span>(<span class="ident">mouse_terminal</span>.<span class="ident">activate_raw_mode</span>());
+<span class="doccomment">/// get cursor position from raw_mode, but return immediately to normal_mode</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_pos</span>(
+    <span class="ident">hide_cursor_terminal</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">termion::cursor::HideCursor</span><span class="op">&lt;</span><span class="ident">RawTerminal</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">u16</span>, <span class="ident">u16</span>) {
+    <span class="macro">unwrap!</span>(<span class="ident">hide_cursor_terminal</span>.<span class="ident">activate_raw_mode</span>());
     <span class="kw">use</span> <span class="ident">termion::cursor::DetectCursorPos</span>;
-    <span class="kw">let</span> (<span class="ident">x</span>, <span class="ident">y</span>) <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">mouse_terminal</span>.<span class="ident">cursor_pos</span>());
-    <span class="macro">unwrap!</span>(<span class="ident">mouse_terminal</span>.<span class="ident">suspend_raw_mode</span>());
+    <span class="kw">let</span> (<span class="ident">x</span>, <span class="ident">y</span>) <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">hide_cursor_terminal</span>.<span class="ident">cursor_pos</span>());
+    <span class="macro">unwrap!</span>(<span class="ident">hide_cursor_terminal</span>.<span class="ident">suspend_raw_mode</span>());
     (<span class="ident">x</span>, <span class="ident">y</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start_mouse_terminal</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">MouseTerminal</span><span class="op">&lt;</span><span class="ident">RawTerminal</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">mouse_terminal</span> <span class="op">=</span> <span class="ident">termion::input::MouseTerminal::from</span>(
+<span class="doccomment">/// when changing cursor position it is good to hide the cursor</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start_hide_cursor_terminal</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">termion::cursor::HideCursor</span><span class="op">&lt;</span><span class="ident">RawTerminal</span><span class="op">&lt;</span><span class="ident">Stdout</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">hide_cursor</span> <span class="op">=</span> <span class="ident">termion::cursor::HideCursor::from</span>(
         <span class="ident">termion::raw::IntoRawMode::into_raw_mode</span>(<span class="ident">std::io::stdout</span>()).<span class="ident">unwrap</span>(),
     );
-    <span class="macro">unwrap!</span>(<span class="ident">mouse_terminal</span>.<span class="ident">suspend_raw_mode</span>());
+    <span class="macro">unwrap!</span>(<span class="ident">hide_cursor</span>.<span class="ident">suspend_raw_mode</span>());
     <span class="comment">// return</span>
-    <span class="ident">mouse_terminal</span>
+    <span class="ident">hide_cursor</span>
 }
 
 <span class="doccomment">/// returns the now in nanoseconds</span>
