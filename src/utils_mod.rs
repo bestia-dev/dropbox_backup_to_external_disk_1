@@ -1,20 +1,59 @@
 //! utils_mod.rs
 //! A module with often used functions. For every project I select only the functions I need for the project.
 
+use std::io::Stdout;
+
 #[allow(unused_imports)]
-use ansi_term::Colour::{Blue, Green, Red, Yellow};
 use chrono::prelude::*;
+use lazy_static::lazy_static;
+use termion::{input::MouseTerminal, raw::RawTerminal};
 use uncased::UncasedStr;
 use unwrap::unwrap;
+
+lazy_static! {
+    pub static ref GREEN: String = termion::color::Fg(termion::color::Green).to_string();
+    pub static ref YELLOW: String = termion::color::Fg(termion::color::Yellow).to_string();
+    pub static ref RESET: String = termion::color::Fg(termion::color::Reset).to_string();
+    /// ansi terminal - clears the line on the terminal from cursor to end of line
+    pub static ref CLEAR_LINE: String = "\x1b[0K".to_owned();
+    pub static ref CLEAR_ALL: String = termion::clear::All.to_string();
+    pub static ref HIDE_CURSOR: String = termion::cursor::Hide.to_string();
+    pub static ref UNHIDE_CURSOR: String = termion::cursor::Show.to_string();
+}
+pub fn at_pos(x: u16, y: u16) -> String {
+    termion::cursor::Goto(x, y).to_string()
+}
+pub fn at_line(y: u16) -> String {
+    termion::cursor::Goto(1, y).to_string()
+}
+
+pub fn get_pos(mouse_terminal: &mut MouseTerminal<RawTerminal<Stdout>>) -> (u16, u16) {
+    unwrap!(mouse_terminal.activate_raw_mode());
+    use termion::cursor::DetectCursorPos;
+    let (x, y) = unwrap!(mouse_terminal.cursor_pos());
+    unwrap!(mouse_terminal.suspend_raw_mode());
+    (x, y)
+}
+
+pub fn start_mouse_terminal() -> MouseTerminal<RawTerminal<Stdout>> {
+    let mouse_terminal = termion::input::MouseTerminal::from(
+        termion::raw::IntoRawMode::into_raw_mode(std::io::stdout()).unwrap(),
+    );
+    unwrap!(mouse_terminal.suspend_raw_mode());
+    // return
+    mouse_terminal
+}
 
 /// returns the now in nanoseconds
 pub fn ns_start(text: &str) -> i64 {
     let now = Utc::now();
     if !text.is_empty() {
         println!(
-            "{}: {}",
-            Green.paint(&Local::now().format("%Y-%m-%d %H:%M:%S").to_string()),
-            Green.paint(text)
+            "{}{}: {}{}",
+            *GREEN,
+            &Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            text,
+            *RESET
         );
     }
     now.timestamp_nanos()
@@ -38,10 +77,8 @@ pub fn ns_print_ms(name: &str, ns_start: i64) -> i64 {
         unwrap!(string_duration_ns.write_formatted(&duration_ns, &Locale::en));
 
         println!(
-            "{:>15} {}: {}",
-            Green.paint(string_duration_ns),
-            Green.paint("ms"),
-            Green.paint(name)
+            "{}{:>15} ms: {}{}",
+            *GREEN, string_duration_ns, name, *RESET
         );
     }
     // return new now_ns
@@ -58,27 +95,12 @@ pub fn ns_print_ns(name: &str, ns_start: i64) -> i64 {
         unwrap!(string_duration_ns.write_formatted(&duration_ns, &Locale::en));
 
         println!(
-            "{:>15} {}: {}",
-            Green.paint(string_duration_ns),
-            Green.paint("ns"),
-            Green.paint(name)
+            "{}{:>15} ns: {}{}",
+            *GREEN, string_duration_ns, name, *RESET
         );
     }
     // return new now_ns
     Utc::now().timestamp_nanos()
-}
-
-/// ansi terminal - clears the line on the terminal from cursor to end of line
-pub fn clear_line() -> &'static str {
-    "\x1b[0K"
-}
-/// ansi terminal - hide cursor
-pub fn hide_cursor() -> &'static str {
-    "\x1b[?25l"
-}
-/// ansi terminal - unhide cursor
-pub fn unhide_cursor() -> &'static str {
-    "\x1b[?25h"
 }
 
 /// sort string lines case insensitive

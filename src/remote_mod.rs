@@ -5,7 +5,6 @@ use dropbox_sdk::default_client::UserAuthDefaultClient;
 use dropbox_sdk::files;
 
 #[allow(unused_imports)]
-use ansi_term::Colour::{Blue, Green, Red, Yellow};
 use std::collections::VecDeque;
 use std::env;
 use std::fs;
@@ -23,7 +22,7 @@ pub fn test_connection() {
     let token = get_short_lived_access_token();
     let client = UserAuthDefaultClient::new(token);
     match files::list_folder(&client, &files::ListFolderArg::new("".to_string())) {
-        Ok(Ok(_result)) => println!("{}", Green.paint("test connection and authorization: ok")),
+        Ok(Ok(_result)) => println!("{}test connection and authorization: ok{}", *GREEN, *RESET),
         Ok(Err(e)) => println!("error: {}", e),
         Err(e) => println!("error: {}", e),
     }
@@ -109,8 +108,8 @@ pub fn list_remote() {
         all_file_count += file_count;
         println!(
             "{}{}\nremote_folder_count: {}\nremote_file_count: {}",
-            term_cursor::Goto(0, 7),
-            clear_line(),
+            at_line(7),
+            *CLEAR_LINE,
             all_folder_count,
             all_file_count
         );
@@ -139,8 +138,8 @@ pub fn list_remote_folder(
                         // for 3 threads this is lines: 4,5, 6,7, 8,9, so summary can be on 10,11 and list_local on 16,17
                         println!(
                             "{}{}{}. Folder: {}",
-                            term_cursor::Goto(0, 4 + thread_num),
-                            clear_line(),
+                            at_line(4 + thread_num as u16),
+                            *CLEAR_LINE,
                             thread_num,
                             &folder_path
                         );
@@ -159,21 +158,20 @@ pub fn list_remote_folder(
                         unwrap!(tx_clone.send((None, None, 0, 1)));
                     }
                     Ok(Ok(files::Metadata::Deleted(entry))) => {
-                        print!("{}", term_cursor::Goto(0, 10));
-                        panic!("{}unexpected deleted entry: {:?}", clear_line(), entry);
+                        print!("{}", at_line(10));
+                        panic!("{}unexpected deleted entry: {:?}", *CLEAR_LINE, entry);
                     }
                     Ok(Err(e)) => {
-                        print!("{}", term_cursor::Goto(0, 13));
+                        print!("{}", at_line(10));
                         println!(
                             "{}Error from files/list_folder_continue: {}",
-                            clear_line(),
-                            e
+                            *CLEAR_LINE, e
                         );
                         break;
                     }
                     Err(e) => {
-                        print!("{}", term_cursor::Goto(0, 10));
-                        println!("{}API request error: {}", clear_line(), e);
+                        print!("{}", at_line(10));
+                        println!("{}API request error: {}", *CLEAR_LINE, e);
                         break;
                     }
                 }
@@ -192,8 +190,7 @@ pub fn list_remote_folder(
 
 /// sort and write to file
 pub fn sort_remote_list_and_write_to_file(mut file_list_all: Vec<String>) {
-    print!("{}", term_cursor::Goto(0, 13));
-    println!("remote list sort");
+    print!("{}remote list sort", at_line(9));
 
     use rayon::prelude::*;
     file_list_all.par_sort_unstable_by(|a, b| {
@@ -203,8 +200,8 @@ pub fn sort_remote_list_and_write_to_file(mut file_list_all: Vec<String>) {
     });
     // join to string and write to file
     println!(
-        "{}list_remote_files lines: {}",
-        term_cursor::Goto(0, 10),
+        "{}list_remote_files sorted lines: {}",
+        at_line(9),
         file_list_all.len()
     );
     let string_file_list_all = file_list_all.join("\n");
@@ -311,7 +308,7 @@ fn download_internal(
                             if let Some(total) = download_result.content_length {
                                 let string_to_print = format!(
                                     "{}{:.01}% of {:.02} Mb downloading {}",
-                                    clear_line(),
+                                    *CLEAR_LINE,
                                     bytes_out as f64 / total as f64 * 100.,
                                     total as f64 / 1000000.,
                                     download_path
@@ -320,7 +317,7 @@ fn download_internal(
                             } else {
                                 let string_to_print = format!(
                                     "{}{} Mb downloaded {}",
-                                    clear_line(),
+                                    *CLEAR_LINE,
                                     bytes_out as f64 / 1000000.,
                                     download_path
                                 );
@@ -368,10 +365,7 @@ fn download_internal(
 
 /// download files from list
 pub fn download_from_list() {
-    term_cursor::clear().unwrap();
-    println!("download_from_list {}", hide_cursor());
-    print!("{}", term_cursor::Goto(0, 7));
-    println!("{}", clear_line());
+    println!("{}download_from_list {}", *CLEAR_ALL, *HIDE_CURSOR);
 
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let list_for_download = fs::read_to_string("temp_data/list_for_download.csv").unwrap();
@@ -437,16 +431,17 @@ pub fn download_from_list() {
     });
     // the receiver reads all msgs from the queue, until senders exist - drop(tx)
     // only this thread writes to the terminal, to avoid race in cursor position
+    let mut mouse_terminal = start_mouse_terminal();
+
     let mut string_to_print_1 = "".to_string();
     let mut string_to_print_2 = "".to_string();
     let mut string_to_print_3 = "".to_string();
     for msg in &rx {
         let (string_to_print, thread_num) = msg;
         if thread_num != -1 {
-            let (x, y) = unwrap!(term_cursor::get_pos());
-            print!("{}", term_cursor::Goto(0, 3 + thread_num));
-            println!("{}", &string_to_print);
-            unwrap!(term_cursor::set_pos(x, y));
+            let (_x, y) = get_pos(&mut mouse_terminal);
+            print!("{}{}", at_line(3 + thread_num as u16), &string_to_print);
+            print!("{}", at_line(y));
             if thread_num == 0 {
                 string_to_print_1 = string_to_print;
             } else if thread_num == 1 {
@@ -455,40 +450,37 @@ pub fn download_from_list() {
                 string_to_print_3 = string_to_print;
             }
         } else {
-            let (x, y) = unwrap!(term_cursor::get_pos());
+            let (_x, y) = get_pos(&mut mouse_terminal);
             // there is annoying jumping because of scrolling
             // let clear first and write second
-            println!("{}{}", term_cursor::Goto(0, 1), clear_line());
-            println!("{}", clear_line());
-            println!("{}", clear_line());
-            println!("{}", clear_line());
-            println!("{}", clear_line());
-            println!("{}", clear_line());
-            println!("{}", clear_line());
-            unwrap!(term_cursor::set_pos(x, y));
+            println!("{}{} download_from_list", at_line(1), *CLEAR_LINE);
+            println!("{}", *CLEAR_LINE);
+            println!("{}", *CLEAR_LINE);
+            println!("{}", *CLEAR_LINE);
+            println!("{}", *CLEAR_LINE);
+            println!("{}", *CLEAR_LINE);
+            println!("{}", *CLEAR_LINE);
+            print!("{}", at_line(y));
 
             println!("{}", &string_to_print);
+
             // print the first 6 lines, because of scrolling
-            let (x, y) = unwrap!(term_cursor::get_pos());
-            println!(
-                "{}{}download_from_list",
-                term_cursor::Goto(0, 1),
-                clear_line()
-            );
-            println!("{}", clear_line());
+            let (_x, y) = get_pos(&mut mouse_terminal);
+            println!("{}{}download_from_list", at_line(1), *CLEAR_LINE);
+            println!("{}", *CLEAR_LINE);
             println!("{}", &string_to_print_1);
             println!("{}", &string_to_print_2);
             println!("{}", &string_to_print_3);
-            println!("{}", clear_line());
-            unwrap!(term_cursor::set_pos(x, y));
+            println!("{}", *CLEAR_LINE);
+            print!("{}", at_line(y));
         }
     }
-    print!("{}", unhide_cursor());
+    println!("{}", *UNHIDE_CURSOR);
     // delete the temp folder
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let base_temp_download_path = format!("{}_temp_download", &base_local_path);
     unwrap!(fs::remove_dir_all(base_temp_download_path));
-    println!("{}", Yellow.paint("compare remote and local lists"));
+    println!("{}compare remote and local lists", *YELLOW);
     compare_lists();
 }
 

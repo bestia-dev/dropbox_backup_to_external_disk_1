@@ -1,6 +1,6 @@
 [package]
 name = "dropbox_backup_to_external_disk"
-version = "1.0.311"
+version = "1.0.359"
 description = "one way sync from dropbox to an external disc"
 authors = ["Luciano Bestia"]
 edition = "2018"
@@ -17,17 +17,17 @@ pretty_env_logger="0.4.0"
 chrono = "0.4.15"
 unwrap = "1.2.1"
 # colorful output to screen
-ansi_term = "0.12.1"
 walkdir = "2.3.1"
 filetime = "0.2"
 humantime = "2.1.0"
 rayon = "1.5.1"
 uncased = "0.9"
-term_cursor = "0.2.1"
 dropbox-content-hasher = "0.3.0"
 num-format = "0.4.0"
 ctrlc = "3.1.9"
 exitcode = "1.1.2"
+termion = "1.5.6"
+lazy_static="1.4.0"
 
 [dependencies.dropbox-sdk]
 version = "0.13.2"

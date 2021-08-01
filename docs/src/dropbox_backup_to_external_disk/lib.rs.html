@@ -282,11 +282,6 @@
 <span id="279">279</span>
 <span id="280">280</span>
 <span id="281">281</span>
-<span id="282">282</span>
-<span id="283">283</span>
-<span id="284">284</span>
-<span id="285">285</span>
-<span id="286">286</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! dropbox_backup_to_external_disk lib.rs</span>
 
@@ -294,11 +289,11 @@
 <span class="doccomment">//! # dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! **one way sync from dropbox to an external disc**  </span>
-<span class="doccomment">//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.311  date: 2021-08-01 authors: Luciano Bestia***  </span>
+<span class="doccomment">//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.359  date: 2021-08-01 authors: Luciano Bestia***  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1287-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-149-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-109-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1258-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-147-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-110-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
@@ -409,19 +404,18 @@
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">utils_mod</span>::<span class="kw-2">*</span>;
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
-<span class="kw">use</span> <span class="ident">ansi_term::Colour</span>::{<span class="ident">Blue</span>, <span class="ident">Green</span>, <span class="ident">Red</span>, <span class="ident">Yellow</span>};
 <span class="kw">use</span> <span class="ident">uncased::UncasedStr</span>;
 <span class="kw">use</span> <span class="ident">unwrap::unwrap</span>;
 
 <span class="doccomment">/// list and sync is the complete process for backup in one command</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list_and_sync</span>(<span class="ident">base_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-    <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">term_cursor::Clear</span>);
+    <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">*</span><span class="ident">CLEAR_ALL</span>);
     <span class="macro">println!</span>(
         <span class="string">&quot;{}{}{}{}&quot;</span>,
-        <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>, <span class="number">1</span>),
-        <span class="ident">clear_line</span>(),
+        <span class="ident">at_line</span>(<span class="number">1</span>),
+        <span class="kw-2">*</span><span class="ident">CLEAR_LINE</span>,
         <span class="string">&quot;dropbox_backup_to_external_disk list_and_sync&quot;</span>,
-        <span class="ident">hide_cursor</span>()
+        <span class="kw-2">*</span><span class="ident">HIDE_CURSOR</span>
     );
     <span class="ident">ns_start</span>(<span class="string">&quot;&quot;</span>);
     <span class="comment">// start 2 threads, first for remote list and second for local list</span>
@@ -429,20 +423,22 @@
     <span class="kw">let</span> <span class="ident">base_path</span> <span class="op">=</span> <span class="ident">base_path</span>.<span class="ident">to_string</span>();
     <span class="kw">let</span> <span class="ident">handle_2</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
         <span class="macro">println!</span>(
-            <span class="string">&quot;{}{}{}&quot;</span>,
-            <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>, <span class="number">3</span>),
-            <span class="ident">clear_line</span>(),
-            <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;Threads for remote:&quot;</span>)
+            <span class="string">&quot;{}{}{}Threads for remote:{}&quot;</span>,
+            <span class="ident">at_line</span>(<span class="number">3</span>),
+            <span class="kw-2">*</span><span class="ident">CLEAR_LINE</span>,
+            <span class="kw-2">*</span><span class="ident">GREEN</span>,
+            <span class="kw-2">*</span><span class="ident">RESET</span>
         );
         <span class="comment">// prints at rows 10,11,12</span>
         <span class="ident">list_remote</span>();
     });
     <span class="kw">let</span> <span class="ident">handle_1</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
         <span class="macro">println!</span>(
-            <span class="string">&quot;{}{}{}&quot;</span>,
-            <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>, <span class="number">15</span>),
-            <span class="ident">clear_line</span>(),
-            <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;Thread for local:&quot;</span>)
+            <span class="string">&quot;{}{}{}Thread for local:{}&quot;</span>,
+            <span class="ident">at_line</span>(<span class="number">15</span>),
+            <span class="kw-2">*</span><span class="ident">CLEAR_LINE</span>,
+            <span class="kw-2">*</span><span class="ident">GREEN</span>,
+            <span class="kw-2">*</span><span class="ident">RESET</span>
         );
         <span class="comment">// prints at rows 5, 6, 7</span>
         <span class="ident">list_local</span>(<span class="kw-2">&amp;</span><span class="ident">base_path</span>);
@@ -450,13 +446,7 @@
     <span class="comment">// wait for both threads to finish</span>
     <span class="ident">handle_1</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
     <span class="ident">handle_2</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
-    <span class="macro">println!</span>(
-        <span class="string">&quot;{}{}{}{}&quot;</span>,
-        <span class="ident">term_cursor::Goto</span>(<span class="number">0</span>, <span class="number">20</span>),
-        <span class="ident">clear_line</span>(),
-        <span class="ident">Green</span>.<span class="ident">paint</span>(<span class="string">&quot;&quot;</span>),
-        <span class="ident">unhide_cursor</span>()
-    );
+    <span class="macro">println!</span>(<span class="string">&quot;{}{}{}&quot;</span>, <span class="ident">at_line</span>(<span class="number">20</span>), <span class="kw-2">*</span><span class="ident">CLEAR_LINE</span>, <span class="kw-2">*</span><span class="ident">UNHIDE_CURSOR</span>);
 
     <span class="ident">sync_only</span>();
 }
@@ -464,15 +454,15 @@
 <span class="doccomment">/// sync_only can be stopped and then restarted if downloading takes a lot of time.</span>
 <span class="doccomment">/// no need to repeat the &quot;list&quot; that takes a lot of timeS</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sync_only</span>() {
-    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;compare remote and local lists&quot;</span>));
+    <span class="macro">println!</span>(<span class="string">&quot;{}compare remote and local lists{}&quot;</span>, <span class="kw-2">*</span><span class="ident">YELLOW</span>, <span class="kw-2">*</span><span class="ident">RESET</span>);
     <span class="ident">compare_lists</span>();
-    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;rename or move equal files&quot;</span>));
+    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="string">&quot;rename or move equal files&quot;</span>);
     <span class="ident">move_or_rename_local_files</span>();
-    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;move to trash from list&quot;</span>));
+    <span class="macro">println!</span>(<span class="string">&quot;{}move to trash from list{}&quot;</span>, <span class="kw-2">*</span><span class="ident">YELLOW</span>, <span class="kw-2">*</span><span class="ident">RESET</span>);
     <span class="ident">trash_from_list</span>();
-    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;correct time from list&quot;</span>));
+    <span class="macro">println!</span>(<span class="string">&quot;{}correct time from list{}&quot;</span>, <span class="kw-2">*</span><span class="ident">YELLOW</span>, <span class="kw-2">*</span><span class="ident">RESET</span>);
     <span class="ident">correct_time_from_list</span>();
-    <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;download from list&quot;</span>));
+    <span class="macro">println!</span>(<span class="string">&quot;{}download from list{}&quot;</span>, <span class="kw-2">*</span><span class="ident">YELLOW</span>, <span class="kw-2">*</span><span class="ident">RESET</span>);
     <span class="comment">// wait 2 second, just to see the result on the screen</span>
     <span class="ident">sleep</span>(<span class="ident">std::time::Duration::new</span>(<span class="number">2</span>, <span class="number">0</span>));
     <span class="ident">download_from_list</span>();

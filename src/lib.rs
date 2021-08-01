@@ -4,11 +4,11 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **one way sync from dropbox to an external disc**  
-//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.311  date: 2021-08-01 authors: Luciano Bestia***  
+//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.359  date: 2021-08-01 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1287-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-149-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-109-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1258-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-147-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-110-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //!
@@ -119,19 +119,18 @@ pub use remote_mod::*;
 pub use utils_mod::*;
 
 #[allow(unused_imports)]
-use ansi_term::Colour::{Blue, Green, Red, Yellow};
 use uncased::UncasedStr;
 use unwrap::unwrap;
 
 /// list and sync is the complete process for backup in one command
 pub fn list_and_sync(base_path: &str) {
-    print!("{}", term_cursor::Clear);
+    print!("{}", *CLEAR_ALL);
     println!(
         "{}{}{}{}",
-        term_cursor::Goto(0, 1),
-        clear_line(),
+        at_line(1),
+        *CLEAR_LINE,
         "dropbox_backup_to_external_disk list_and_sync",
-        hide_cursor()
+        *HIDE_CURSOR
     );
     ns_start("");
     // start 2 threads, first for remote list and second for local list
@@ -139,20 +138,22 @@ pub fn list_and_sync(base_path: &str) {
     let base_path = base_path.to_string();
     let handle_2 = thread::spawn(move || {
         println!(
-            "{}{}{}",
-            term_cursor::Goto(0, 3),
-            clear_line(),
-            Green.paint("Threads for remote:")
+            "{}{}{}Threads for remote:{}",
+            at_line(3),
+            *CLEAR_LINE,
+            *GREEN,
+            *RESET
         );
         // prints at rows 10,11,12
         list_remote();
     });
     let handle_1 = thread::spawn(move || {
         println!(
-            "{}{}{}",
-            term_cursor::Goto(0, 15),
-            clear_line(),
-            Green.paint("Thread for local:")
+            "{}{}{}Thread for local:{}",
+            at_line(15),
+            *CLEAR_LINE,
+            *GREEN,
+            *RESET
         );
         // prints at rows 5, 6, 7
         list_local(&base_path);
@@ -160,13 +161,7 @@ pub fn list_and_sync(base_path: &str) {
     // wait for both threads to finish
     handle_1.join().unwrap();
     handle_2.join().unwrap();
-    println!(
-        "{}{}{}{}",
-        term_cursor::Goto(0, 20),
-        clear_line(),
-        Green.paint(""),
-        unhide_cursor()
-    );
+    println!("{}{}{}", at_line(20), *CLEAR_LINE, *UNHIDE_CURSOR);
 
     sync_only();
 }
@@ -174,15 +169,15 @@ pub fn list_and_sync(base_path: &str) {
 /// sync_only can be stopped and then restarted if downloading takes a lot of time.
 /// no need to repeat the "list" that takes a lot of timeS
 pub fn sync_only() {
-    println!("{}", Yellow.paint("compare remote and local lists"));
+    println!("{}compare remote and local lists{}", *YELLOW, *RESET);
     compare_lists();
-    println!("{}", Yellow.paint("rename or move equal files"));
+    println!("{}", "rename or move equal files");
     move_or_rename_local_files();
-    println!("{}", Yellow.paint("move to trash from list"));
+    println!("{}move to trash from list{}", *YELLOW, *RESET);
     trash_from_list();
-    println!("{}", Yellow.paint("correct time from list"));
+    println!("{}correct time from list{}", *YELLOW, *RESET);
     correct_time_from_list();
-    println!("{}", Yellow.paint("download from list"));
+    println!("{}download from list{}", *YELLOW, *RESET);
     // wait 2 second, just to see the result on the screen
     sleep(std::time::Duration::new(2, 0));
     download_from_list();

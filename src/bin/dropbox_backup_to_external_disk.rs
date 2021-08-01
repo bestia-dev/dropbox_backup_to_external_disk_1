@@ -1,13 +1,12 @@
 //! dropbox_backup_to_external_disk.rs
 
-use ansi_term::Colour::{Green, Yellow};
 use dropbox_backup_to_external_disk::*;
 use std::env;
 
 fn main() {
     pretty_env_logger::init();
     ctrlc::set_handler(move || {
-        println!("terminated with ctrl+c. {}", unhide_cursor());
+        println!("terminated with ctrl+c. {}", *UNHIDE_CURSOR);
         std::process::exit(exitcode::OK);
     })
     .expect("Error setting Ctrl-C handler");
@@ -35,26 +34,26 @@ fn main() {
             ns_print_ms("sync_only", ns_started);
         }
         Some("list_remote") => {
-            print!("{}", term_cursor::Clear);
+            print!("{}", *CLEAR_ALL);
             println!(
                 "{}{}{}{}",
-                term_cursor::Goto(0, 1),
-                clear_line(),
+                at_line(1),
+                *CLEAR_LINE,
                 "list_remote into temp_data/list_remote_files.csv",
-                hide_cursor()
+                *HIDE_CURSOR
             );
             let ns_started = ns_start("");
             list_remote();
-            println!("{}", unhide_cursor());
+            println!("{}", *UNHIDE_CURSOR);
             ns_print_ms("list_remote", ns_started);
         }
         Some("list_local") => match env::args().nth(2).as_deref() {
             Some(path) => {
-                print!("{}", term_cursor::Clear);
+                print!("{}", *CLEAR_ALL);
                 println!(
                     "{}{}{}",
-                    term_cursor::Goto(0, 1),
-                    clear_line(),
+                    at_line(1),
+                    *CLEAR_LINE,
                     "list_local into temp_data/list_local_files.csv"
                 );
                 let ns_started = ns_start("");
@@ -100,44 +99,34 @@ fn main() {
 
 fn print_help(cargo_pkg_name: &str) {
     println!(
-        "{}",
-        Yellow.paint("1. Before first use, create your private Dropbox app:")
+        "{}1. Before first use, create your private Dropbox app:{}",
+        *YELLOW, *RESET
     );
-    println!(
-        "- open browser on <{}>",
-        Green
-            .paint("https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps")
-    );
+    println!( "- open browser on {}<https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps>{}", *GREEN, *RESET );
     println!("- click Create app, choose Scoped access, choose Full dropbox");
     println!(
-        "- choose a unique app name like `{}{}`",
-        Green.paint("backup_"),
-        Green.paint(
-            chrono::offset::Utc::now()
-                .format("%Y%m%dT%H%M%SZ")
-                .to_string()
-        ),
+        "- choose a unique app name like {}`backup_{}`{}",
+        *GREEN,
+        chrono::offset::Utc::now()
+            .format("%Y%m%dT%H%M%SZ")
+            .to_string(),
+        *RESET
     );
     println!("- go to tab Permissions, check `files.metadata.read` and `files.content.read`, click Submit, close browser");
     println!("");
 
     println!(
-        "{}",
-        Yellow.paint("2. Before every use, create a short-lived access token (secret):")
+        "{}2. Before every use, create a short-lived access token (secret):{}",
+        *YELLOW, *RESET
     );
+    println!( "- open browser on {}<https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps>{}", *GREEN, *RESET );
     println!(
-        "- open browser on <{}>",
-        Green
-            .paint("https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps")
-    );
-    println!(
-        ". choose your existing private Dropbox app like `{}{}`",
-        Green.paint("backup_"),
-        Green.paint(
-            chrono::offset::Utc::now()
-                .format("%Y%m%dT%H%M%SZ")
-                .to_string()
-        ),
+        ". choose your existing private Dropbox app like {}`backup_{}`{}",
+        *GREEN,
+        chrono::offset::Utc::now()
+            .format("%Y%m%dT%H%M%SZ")
+            .to_string(),
+        *RESET
     );
     println!(
         "- click button Generate to generated short-lived access token and copy it, close browser"
@@ -146,93 +135,65 @@ fn print_help(cargo_pkg_name: &str) {
         "- In you Linux terminal session set a short-lived private/secret environment variable:"
     );
     println!(
-        "$ {}{}",
-        Green.paint("export DBX_OAUTH_TOKEN="),
-        "here paste the access token"
+        "$ {}export DBX_OAUTH_TOKEN={}here paste the access token",
+        *GREEN, *RESET
     );
     println!("- create an alias for easy of use:");
     println!(
-        "$ {}",
-        Green.paint(
-            "alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk"
-        )
+        "$ {}alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk{}",
+        *GREEN, *RESET
     );
     println!("- test if the authentication works: ");
-    println!("$ {}", Green.paint("dropbox_backup_to_external_disk test"));
+    println!("$ {}dropbox_backup_to_external_disk test{}", *GREEN, *RESET);
     println!("");
 
-    println!("{}", Yellow.paint("Commands:"));
+    println!("{}Commands:{}", *YELLOW, *RESET);
     println!("Full list and sync - from dropbox to external disk.");
     println!(
         "It lists remote and local files (that takes a lot of time) and then starts the sync."
     );
     println!(
-        "$ {} {}",
-        Green.paint(cargo_pkg_name),
-        Green.paint("list_and_sync /mnt/d/DropBoxBackup2")
+        "$ {}{} list_and_sync /mnt/d/DropBoxBackup2{}",
+        *GREEN, cargo_pkg_name, *RESET
     );
     println!("Sync only - from dropbox to external disk.");
     println!("It starts the sync only. Does NOT list again the remote and local files, because it takes a lot of time.");
     println!("It continues where the previous sync has finished.");
-    println!(
-        "$ {} {}",
-        Green.paint(cargo_pkg_name),
-        Green.paint("sync_only")
-    );
+    println!("$ {}{} sync_only{}", *GREEN, cargo_pkg_name, *RESET);
     println!("");
 
     println!(
-        "{}",
-        Yellow.paint("For debugging purpose, you can run every step separately.")
+        "{}For debugging purpose, you can run every step separately.{}",
+        *YELLOW, *RESET
     );
     println!("Test connection and authorization:");
-    println!("$ {} {}", Green.paint(cargo_pkg_name), Green.paint("test"));
+    println!("$ {}{} test{}", *GREEN, cargo_pkg_name, *RESET);
     println!("List all files in your remote Dropbox to list_remote_files.csv:");
-    println!(
-        "$ {} {}",
-        Green.paint(cargo_pkg_name),
-        Green.paint("list_remote")
-    );
+    println!("$ {}{} list_remote{}", *GREEN, cargo_pkg_name, *RESET);
     println!("List local files to list_local_files.csv:");
     println!(
-        "$ {} {}",
-        Green.paint(cargo_pkg_name),
-        Green.paint("list_local /mnt/d/DropBoxBackup2")
+        "$ {}{} list_local /mnt/d/DropBoxBackup2{}",
+        *GREEN, cargo_pkg_name, *RESET
     );
     println!("Compare lists and create list_for_download.csv, list_for_trash.csv and list_for_correct_time.csv:");
-    println!(
-        "$ {} {}",
-        Green.paint(cargo_pkg_name),
-        Green.paint("compare_lists")
-    );
+    println!("$ {}{} compare_lists{}", *GREEN, cargo_pkg_name, *RESET);
     println!("move_or_rename_local_files:");
     println!(
-        "$ {} {}",
-        Green.paint(cargo_pkg_name),
-        Green.paint("move_or_rename_local_files")
+        "$ {}{} move_or_rename_local_files{}",
+        *GREEN, cargo_pkg_name, *RESET
     );
     println!("Move to trash folder from list_for_trash.csv:");
-    println!(
-        "$ {} {}",
-        Green.paint(cargo_pkg_name),
-        Green.paint("trash_from_list")
-    );
+    println!("$ {}{} trash_from_list{}", *GREEN, cargo_pkg_name, *RESET);
     println!("Correct time of files from list_for_correct_time.csv:");
     println!(
-        "$ {} {}",
-        Green.paint(cargo_pkg_name),
-        Green.paint("correct_time_from_list")
+        "$ {}{} correct_time_from_list{}",
+        *GREEN, cargo_pkg_name, *RESET
     );
     println!("Download files from list_for_download.csv:");
     println!(
-        "$ {} {}",
-        Green.paint(cargo_pkg_name),
-        Green.paint("download_from_list")
+        "$ {}{} download_from_list{}",
+        *GREEN, cargo_pkg_name, *RESET
     );
     println!("Download one single file:");
-    println!(
-        "$ {} {}",
-        Green.paint(cargo_pkg_name),
-        Green.paint("download <path>")
-    );
+    println!("$ {}{} download <path>{}", *GREEN, cargo_pkg_name, *RESET);
 }

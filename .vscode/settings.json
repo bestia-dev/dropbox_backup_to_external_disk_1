@@ -6,6 +6,7 @@
         "hasher",
         "humantime",
         "rclone",
+        "termion",
         "unhide"
     ]
 }

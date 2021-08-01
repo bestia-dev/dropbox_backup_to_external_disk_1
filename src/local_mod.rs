@@ -1,9 +1,7 @@
 //! local_mod.rs
 //! Module contains all functions for local external disk.
 
-use crate::clear_line;
 #[allow(unused_imports)]
-use ansi_term::Colour::{Blue, Green, Red, Yellow};
 use dropbox_content_hasher::DropboxContentHasher;
 use log::error;
 use std::fs;
@@ -11,6 +9,8 @@ use std::io::Write;
 use std::path;
 use uncased::UncasedStr;
 use unwrap::unwrap;
+
+use crate::*;
 
 /// list all local files and folders. It can take some time.
 pub fn list_local(base_path: &str) {
@@ -37,14 +37,14 @@ pub fn list_local(base_path: &str) {
         if entry.file_type().is_dir() {
             println!(
                 "{}{}Folder: {}",
-                term_cursor::Goto(0, 16),
-                clear_line(),
+                at_line(13),
+                *CLEAR_LINE,
                 str_path.trim_start_matches(base_path)
             );
             println!(
                 "{}{}local_folder_count: {}",
-                term_cursor::Goto(0, 17),
-                clear_line(),
+                at_line(14),
+                *CLEAR_LINE,
                 folder_count
             );
 
@@ -67,8 +67,8 @@ pub fn list_local(base_path: &str) {
                 ));
                 println!(
                     "{}{}local_file_count: {}",
-                    term_cursor::Goto(0, 18),
-                    clear_line(),
+                    at_line(15),
+                    *CLEAR_LINE,
                     file_count
                 );
 
@@ -78,11 +78,11 @@ pub fn list_local(base_path: &str) {
         //ns_print("WalkDir entry end", ns_started);
     }
     // region: sort
-    println!("{}local list sort...", term_cursor::Goto(0, 19));
+    println!("{}local list sort...", at_line(16));
     let sorted_string = crate::sort_string_lines(&output_string);
     println!(
-        "{}list_local_files lines: {}",
-        term_cursor::Goto(0, 19),
+        "{}list_local_files sorted lines: {}",
+        at_line(16),
         sorted_string.lines().count()
     );
     // end region: sort
