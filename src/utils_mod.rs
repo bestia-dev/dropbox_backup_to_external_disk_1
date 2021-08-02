@@ -13,11 +13,12 @@ use unwrap::unwrap;
 lazy_static! {
     pub static ref GREEN: String = termion::color::Fg(termion::color::Green).to_string();
     pub static ref YELLOW: String = termion::color::Fg(termion::color::Yellow).to_string();
+    pub static ref RED: String = termion::color::Fg(termion::color::Red).to_string();
     pub static ref RESET: String = termion::color::Fg(termion::color::Reset).to_string();
     /// ansi terminal - clears the line on the terminal from cursor to end of line
     pub static ref CLEAR_LINE: String = termion::clear::CurrentLine.to_string();
     pub static ref CLEAR_ALL: String = termion::clear::All.to_string();
-    pub static ref HIDE_CURSOR: String = termion::cursor::Hide.to_string();
+    //pub static ref HIDE_CURSOR: String = termion::cursor::Hide.to_string();
     pub static ref UNHIDE_CURSOR: String = termion::cursor::Show.to_string();
 }
 
@@ -32,6 +33,7 @@ pub fn get_pos(
 ) -> (u16, u16) {
     unwrap!(hide_cursor_terminal.activate_raw_mode());
     use termion::cursor::DetectCursorPos;
+    // this can return error: Cursor position detection timed out.
     let (x, y) = unwrap!(hide_cursor_terminal.cursor_pos());
     unwrap!(hide_cursor_terminal.suspend_raw_mode());
     (x, y)
@@ -119,4 +121,22 @@ pub fn sort_string_lines(output_string: &str) -> String {
     let joined = sorted_local.join("\n");
     // return
     joined
+}
+
+/// shorten path for screen to avoid word-wrap
+pub fn shorten_string(text: &str, x_max_char: u16) -> String {
+    if text.chars().count() > x_max_char as usize {
+        let x_half_in_char = (x_max_char / 2 - 2) as usize;
+        let pos1_in_bytes = byte_pos_from_chars(text, x_half_in_char);
+        let pos2_in_bytes = byte_pos_from_chars(text, text.chars().count() - x_half_in_char);
+        return format!("{}...{}", &text[..pos1_in_bytes], &text[pos2_in_bytes..]);
+    } else {
+        return text.to_string();
+    }
+}
+
+/// it is used for substring, because string slice are counted in bytes and not chars.
+/// if we have multi-byte unicode characters we can get an error if the boundary is not on char boundary.
+pub fn byte_pos_from_chars(text: &str, char_pos: usize) -> usize {
+    text.char_indices().nth(char_pos).unwrap().0
 }

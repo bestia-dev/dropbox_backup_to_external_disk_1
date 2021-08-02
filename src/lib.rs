@@ -4,11 +4,11 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **one way sync from dropbox to an external disc**  
-//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.365  date: 2021-08-01 authors: Luciano Bestia***  
+//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.378  date: 2021-08-02 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1262-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-150-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-110-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1335-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-153-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-111-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //!
@@ -106,6 +106,11 @@
 //! Sounds like a database is always a better choice for more agile development.  
 //! In this project I will create additional files that only append lines. Some kind of journal. And later use this to modify the big text files in one go. For example: list_just_downloaded_or_moved.csv is added to list_local_files.csv.  
 //!
+//! ## TODO
+//!
+//! shorten path for screen to avoid word-wrap
+//! press Enter to continue or it will continue automatically in 5 seconds
+//!
 // endregion: lmake_md_to_doc_comments include README.md A //!
 
 mod local_mod;
@@ -124,13 +129,14 @@ use unwrap::unwrap;
 
 /// list and sync is the complete process for backup in one command
 pub fn list_and_sync(base_path: &str) {
+    let mut hide_cursor_terminal = crate::start_hide_cursor_terminal();
     print!("{}", *CLEAR_ALL);
     println!(
-        "{}{}{}{}",
+        "{}{}{}dropbox_backup_to_external_disk list_and_sync{}",
         at_line(1),
         *CLEAR_LINE,
-        "dropbox_backup_to_external_disk list_and_sync",
-        *HIDE_CURSOR
+        *YELLOW,
+        *RESET
     );
     ns_start("");
     // start 2 threads, first for remote list and second for local list
@@ -144,24 +150,24 @@ pub fn list_and_sync(base_path: &str) {
             *GREEN,
             *RESET
         );
-        // prints at rows 10,11,12
+        // prints at rows 4,5,6 and 7,8,9
         list_remote();
     });
     let handle_1 = thread::spawn(move || {
         println!(
             "{}{}{}Thread for local:{}",
-            at_line(15),
+            at_line(12),
             *CLEAR_LINE,
             *GREEN,
             *RESET
         );
-        // prints at rows 5, 6, 7
+        // prints at rows 13,14,15,16
         list_local(&base_path);
     });
     // wait for both threads to finish
     handle_1.join().unwrap();
     handle_2.join().unwrap();
-    println!("{}{}{}", at_line(20), *CLEAR_LINE, *UNHIDE_CURSOR);
+    println!("{}{}", at_line(20), *CLEAR_LINE);
 
     sync_only();
 }
@@ -171,7 +177,7 @@ pub fn list_and_sync(base_path: &str) {
 pub fn sync_only() {
     println!("{}compare remote and local lists{}", *YELLOW, *RESET);
     compare_lists();
-    println!("{}", "rename or move equal files");
+    println!("{}rename or move equal files{}", *YELLOW, *RESET);
     move_or_rename_local_files();
     println!("{}move to trash from list{}", *YELLOW, *RESET);
     trash_from_list();

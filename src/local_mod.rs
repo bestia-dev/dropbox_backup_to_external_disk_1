@@ -14,7 +14,6 @@ use crate::*;
 
 /// list all local files and folders. It can take some time.
 pub fn list_local(base_path: &str) {
-    println!("start list_local {}", base_path);
     // empty the file. I want all or nothing result here if the process is terminated prematurely.
     unwrap!(fs::write("temp_data/list_local_files.csv", ""));
     // just_loaded is obsolete once I got the fresh local list
@@ -22,7 +21,7 @@ pub fn list_local(base_path: &str) {
     save_base_path(base_path);
     // write data to a big string in memory
     let mut output_string = String::with_capacity(1024 * 1024);
-
+    let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
     use walkdir::WalkDir;
 
     let mut folder_count = 0;
@@ -32,14 +31,13 @@ pub fn list_local(base_path: &str) {
         let entry: walkdir::DirEntry = entry.unwrap();
         let path = entry.path();
         let str_path = unwrap!(path.to_str());
-        // println!("{}",str_path);
         // path.is_dir() is slow. entry.file-type().is_dir() is fast
         if entry.file_type().is_dir() {
             println!(
                 "{}{}Folder: {}",
                 at_line(13),
                 *CLEAR_LINE,
-                str_path.trim_start_matches(base_path)
+                shorten_string(str_path.trim_start_matches(base_path), x_screen_len - 9),
             );
             println!(
                 "{}{}local_folder_count: {}",

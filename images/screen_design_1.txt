@@ -1,0 +1,17 @@
+01/ CLI screen design for: Yellow: dropbox_backup_to_external_disk list_and_sync
+02/ 
+03/ Green: Threads for remote:
+04/ 0. Folder: /arhiv/stanovanjski objekt soška 5/2018/Nacrt stavbe
+05/ 1. Folder: /SlikeAlbumi/PhotoArchive/1969-2007PhotoArchive
+06/ 2. Folder: /aioss/documents/eyeshot ultimate 8.0 samples/wpf/draftanalysis/visual basic/draftanalysis/obj/x86
+07/ remote_folder_count: 1312
+08/ remote_file_count: 2917
+09/ list_remote_files sorted lines:
+10/ 
+11/ 
+12/ Green: Threads for local:
+13/ Folder: /Aioss/RazvojGit/001.DEV/APS3/APS3/packages/Microsoft.AspNet.SignalR.Client.2.2.1/lib/netcore50
+14/ local_folder_count: 2197
+15/ local_file_count: 6529
+16/ list_local_files sorted lines:
+17/ 

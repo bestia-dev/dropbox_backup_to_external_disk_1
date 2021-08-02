@@ -5,14 +5,14 @@
 [comment]: # (lmake_cargo_toml_to_md start)
 
 **one way sync from dropbox to an external disc**  
-***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.365  date: 2021-08-01 authors: Luciano Bestia***  
+***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.378  date: 2021-08-02 authors: Luciano Bestia***  
 
 [comment]: # (lmake_cargo_toml_to_md end)
 
 [comment]: # (lmake_lines_of_code start)
-[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1262-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-150-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-110-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1335-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-153-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-111-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 
@@ -111,5 +111,10 @@ Simple text files are a terrible way to store data that needs to be changed. It 
 There is another approach called memory map to file, but everybody is trying to avoid it because some other process could modify the file when in use and make it garbage.  
 Sounds like a database is always a better choice for more agile development.  
 In this project I will create additional files that only append lines. Some kind of journal. And later use this to modify the big text files in one go. For example: list_just_downloaded_or_moved.csv is added to list_local_files.csv.  
+
+## TODO
+
+shorten path for screen to avoid word-wrap
+press Enter to continue or it will continue automatically in 5 seconds
 
 [comment]: # (lmake_md_to_doc_comments segment end A)

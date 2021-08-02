@@ -33,7 +33,7 @@ pub fn get_short_lived_access_token() -> dropbox_sdk::oauth2::Authorization {
     // The user must prepare the short-lived access token in the environment variable
     let token = match env::var("DBX_OAUTH_TOKEN") {
         Ok(token) => {
-            println!("short-lived access token read from env var DBX_OAUTH_TOKEN.");
+            //println!("short-lived access token read from env var DBX_OAUTH_TOKEN.");
             token
         }
         Err(_err) => {
@@ -47,7 +47,6 @@ pub fn get_short_lived_access_token() -> dropbox_sdk::oauth2::Authorization {
 /// get remote list in parallel
 /// first get the first level of folders and then request in parallel sub-folders recursively
 pub fn list_remote() {
-    //println!("list_remote()");
     // empty the file. I want all or nothing result here if the process is terminated prematurely.
     unwrap!(fs::write("temp_data/list_remote_files.csv", ""));
 
@@ -59,8 +58,11 @@ pub fn list_remote() {
     let (tx, rx) = mpsc::channel();
     let tx_clone3 = mpsc::Sender::clone(&tx);
 
+    let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
+
     // walkdir non-recursive for the first level of folders
-    let (folder_list, file_list) = list_remote_folder(&client, "/", 0, false, tx_clone3);
+    let (folder_list, file_list) =
+        list_remote_folder(&client, "/", 0, false, tx_clone3, x_screen_len);
     let folder_list_root = folder_list.clone();
     let mut folder_list_all = folder_list;
     let mut file_list_all = file_list;
@@ -84,8 +86,14 @@ pub fn list_remote() {
                     let client = UserAuthDefaultClient::new(token_clone2.to_owned());
                     // recursive walkdir
                     let thread_num = unwrap!(rayon::current_thread_index()) as i32;
-                    let (folder_list, file_list) =
-                        list_remote_folder(&client, &folder_path, thread_num, true, tx_clone2);
+                    let (folder_list, file_list) = list_remote_folder(
+                        &client,
+                        &folder_path,
+                        thread_num,
+                        true,
+                        tx_clone2,
+                        x_screen_len,
+                    );
                     unwrap!(tx_clone4.send((Some(folder_list), Some(file_list), 0, 0)));
                 });
             }
@@ -107,10 +115,15 @@ pub fn list_remote() {
         all_folder_count += folder_count;
         all_file_count += file_count;
         println!(
-            "{}{}\nremote_folder_count: {}\nremote_file_count: {}",
+            "{}{}remote_folder_count: {}",
             at_line(7),
             *CLEAR_LINE,
-            all_folder_count,
+            all_folder_count
+        );
+        println!(
+            "{}{}remote_file_count: {}",
+            at_line(8),
+            *CLEAR_LINE,
             all_file_count
         );
     }
@@ -125,9 +138,11 @@ pub fn list_remote_folder(
     thread_num: i32,
     recursive: bool,
     tx_clone: mpsc::Sender<(Option<Vec<String>>, Option<Vec<String>>, i32, i32)>,
+    x_screen_len: u16,
 ) -> (Vec<String>, Vec<String>) {
     let mut folder_list: Vec<String> = vec![];
     let mut file_list: Vec<String> = vec![];
+    let screen_line = 4 + thread_num as u16;
     match list_directory(&client, path, recursive) {
         Ok(Ok(iterator)) => {
             for entry_result in iterator {
@@ -138,10 +153,10 @@ pub fn list_remote_folder(
                         // for 3 threads this is lines: 4,5, 6,7, 8,9, so summary can be on 10,11 and list_local on 16,17
                         println!(
                             "{}{}{}. Folder: {}",
-                            at_line(4 + thread_num as u16),
+                            at_line(screen_line),
                             *CLEAR_LINE,
                             thread_num,
-                            &folder_path
+                            shorten_string(&folder_path, x_screen_len - 11)
                         );
                         folder_list.push(folder_path);
                         unwrap!(tx_clone.send((None, None, 1, 0)));
@@ -158,30 +173,59 @@ pub fn list_remote_folder(
                         unwrap!(tx_clone.send((None, None, 0, 1)));
                     }
                     Ok(Ok(files::Metadata::Deleted(entry))) => {
-                        print!("{}", at_line(10));
-                        panic!("{}unexpected deleted entry: {:?}", *CLEAR_LINE, entry);
+                        panic!(
+                            "{}{}{}unexpected deleted entry: {:?}{}",
+                            at_line(screen_line),
+                            *CLEAR_LINE,
+                            *RED,
+                            entry,
+                            *RESET
+                        );
                     }
                     Ok(Err(e)) => {
-                        print!("{}", at_line(10));
                         println!(
-                            "{}Error from files/list_folder_continue: {}",
-                            *CLEAR_LINE, e
+                            "{}{}{}Error from files/list_folder_continue: {}{}",
+                            at_line(screen_line),
+                            *CLEAR_LINE,
+                            *RED,
+                            e,
+                            *RESET
                         );
                         break;
                     }
                     Err(e) => {
-                        print!("{}", at_line(10));
-                        println!("{}API request error: {}", *CLEAR_LINE, e);
+                        println!(
+                            "{}{}{}API request error: {}{}",
+                            at_line(screen_line),
+                            *CLEAR_LINE,
+                            *RED,
+                            e,
+                            *RESET
+                        );
                         break;
                     }
                 }
             }
         }
         Ok(Err(e)) => {
-            println!("Error from files/list_folder: {}", e);
+            println!(
+                "{}{}{}Error from files/list_folder: {}{}",
+                at_line(screen_line),
+                *CLEAR_LINE,
+                *RED,
+                e,
+                *RESET
+            );
         }
         Err(e) => {
-            println!("API request error: {}", e);
+            println!(
+                "{}{}{}API request error: {}{}",
+                at_line(screen_line),
+                *CLEAR_LINE,
+                *RED,
+                e,
+                *RESET
+            );
         }
     }
     // return
@@ -216,6 +260,7 @@ pub fn download_one_file(path_to_download: &str) {
     let token = get_short_lived_access_token();
     let client = UserAuthDefaultClient::new(token);
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+    let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
     // channel for inter-thread communication.
     let (tx, rx) = mpsc::channel();
     let path_to_download = path_to_download.to_string();
@@ -230,6 +275,7 @@ pub fn download_one_file(path_to_download: &str) {
             base_local_path_ref,
             thread_num,
             tx_clone2,
+            x_screen_len,
         );
         drop(tx);
     });
@@ -252,6 +298,7 @@ fn download_internal(
     base_local_path: &str,
     thread_num: i32,
     tx_clone: mpsc::Sender<(String, i32)>,
+    x_screen_len: u16,
 ) {
     //log::trace!("download_with_client: {}",download_path);
     let mut bytes_out = 0u64;
@@ -311,7 +358,7 @@ fn download_internal(
                                     *CLEAR_LINE,
                                     bytes_out as f64 / total as f64 * 100.,
                                     total as f64 / 1000000.,
-                                    download_path
+                                    shorten_string(download_path, x_screen_len - 31)
                                 );
                                 unwrap!(tx_clone.send((string_to_print, thread_num)));
                             } else {
@@ -319,13 +366,13 @@ fn download_internal(
                                     "{}{} Mb downloaded {}",
                                     *CLEAR_LINE,
                                     bytes_out as f64 / 1000000.,
-                                    download_path
+                                    shorten_string(download_path, x_screen_len - 31)
                                 );
                                 unwrap!(tx_clone.send((string_to_print, thread_num)));
                             }
                         }
                         Err(e) => {
-                            let string_to_print = format!("Read error: {}", e);
+                            let string_to_print = format!("{}Read error: {}{}", *RED, e, *RESET);
                             unwrap!(tx_clone.send((string_to_print, -1)));
                             continue 'download; // do another request and resume
                         }
@@ -333,11 +380,12 @@ fn download_internal(
                 }
             }
             Ok(Err(download_error)) => {
-                let string_to_print = format!("Download error: {}", download_error);
+                let string_to_print =
+                    format!("{}Download error: {}{}", *RED, download_error, *RESET);
                 unwrap!(tx_clone.send((string_to_print, -1)));
             }
             Err(request_error) => {
-                let string_to_print = format!("Error: {}", request_error);
+                let string_to_print = format!("{}Error: {}{}", *RED, request_error, *RESET);
                 unwrap!(tx_clone.send((string_to_print, -1)));
             }
         }
@@ -367,14 +415,18 @@ fn download_internal(
 pub fn download_from_list() {
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let list_for_download = fs::read_to_string("temp_data/list_for_download.csv").unwrap();
+    let mut hide_cursor_terminal = crate::start_hide_cursor_terminal();
+    let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
+
     if !list_for_download.is_empty() {
         println!(
-            "{}{}download_from_list {}",
+            "{}{}{}download_from_list{}",
             *CLEAR_ALL,
             at_line(1),
-            *HIDE_CURSOR
+            *YELLOW,
+            *RESET
         );
-        println!("{}", at_line(8));
+        print!("{}", at_line(7));
         let token = get_short_lived_access_token();
         let client = UserAuthDefaultClient::new(token);
         // channel for inter-thread communication.
@@ -428,6 +480,7 @@ pub fn download_from_list() {
                                 base_local_path_ref,
                                 thread_num,
                                 tx_clone2,
+                                x_screen_len,
                             );
                         });
                     }
@@ -437,7 +490,6 @@ pub fn download_from_list() {
         });
         // the receiver reads all msgs from the queue, until senders exist - drop(tx)
         // only this thread writes to the terminal, to avoid race in cursor position
-        let mut hide_cursor_terminal = crate::start_hide_cursor_terminal();
 
         let mut string_to_print_1 = "".to_string();
         let mut string_to_print_2 = "".to_string();
@@ -446,8 +498,8 @@ pub fn download_from_list() {
             let (string_to_print, thread_num) = msg;
             if thread_num != -1 {
                 let (_x, y) = get_pos(&mut hide_cursor_terminal);
-                print!("{}{}", at_line(3 + thread_num as u16), &string_to_print);
-                print!("{}", at_line(y));
+                println!("{}{}", at_line(3 + thread_num as u16), &string_to_print);
+                print!("{}", at_line(y),);
                 if thread_num == 0 {
                     string_to_print_1 = string_to_print;
                 } else if thread_num == 1 {
@@ -459,15 +511,20 @@ pub fn download_from_list() {
                 let (_x, y) = get_pos(&mut hide_cursor_terminal);
                 // there is annoying jumping because of scrolling
                 // let clear first and write second
-                println!("{}{}", at_line(8), termion::clear::BeforeCursor);
-                println!("{}{} download_from_list", at_line(1), *CLEAR_LINE);
+                println!("{}{}", at_line(7), termion::clear::CurrentLine);
                 print!("{}", at_line(y));
 
                 println!("{}", &string_to_print);
 
-                // print the first 6 lines, because of scrolling
                 let (_x, y) = get_pos(&mut hide_cursor_terminal);
-                println!("{}{}download_from_list", at_line(1), *CLEAR_LINE);
+                // print the first 6 lines, because of scrolling
+                println!(
+                    "{}{}{}download_from_list{}",
+                    *CLEAR_LINE,
+                    at_line(1),
+                    *YELLOW,
+                    *RESET
+                );
                 println!("{}", *CLEAR_LINE);
                 println!("{}", &string_to_print_1);
                 println!("{}", &string_to_print_2);
@@ -476,15 +533,14 @@ pub fn download_from_list() {
                 print!("{}", at_line(y));
             }
         }
-        println!("{}", *UNHIDE_CURSOR);
         // delete the temp folder
         let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
         let base_temp_download_path = format!("{}_temp_download", &base_local_path);
         fs::remove_dir_all(base_temp_download_path).unwrap_or(());
-        println!("{}compare remote and local lists", *YELLOW);
     } else {
         println!("list_for_download: 0");
     }
+    println!("{}compare remote and local lists{}", *YELLOW, *RESET);
     compare_lists();
 }
 

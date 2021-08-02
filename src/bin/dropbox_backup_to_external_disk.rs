@@ -36,25 +36,25 @@ fn main() {
         Some("list_remote") => {
             print!("{}", *CLEAR_ALL);
             println!(
-                "{}{}{}{}",
+                "{}{}{}list_remote into temp_data/list_remote_files.csv{}",
                 at_line(1),
                 *CLEAR_LINE,
-                "list_remote into temp_data/list_remote_files.csv",
-                *HIDE_CURSOR
+                *YELLOW,
+                *RESET
             );
             let ns_started = ns_start("");
             list_remote();
-            println!("{}", *UNHIDE_CURSOR);
             ns_print_ms("list_remote", ns_started);
         }
         Some("list_local") => match env::args().nth(2).as_deref() {
             Some(path) => {
                 print!("{}", *CLEAR_ALL);
                 println!(
-                    "{}{}{}",
+                    "{}{}{}list_local into temp_data/list_local_files.csv{}",
                     at_line(1),
                     *CLEAR_LINE,
-                    "list_local into temp_data/list_local_files.csv"
+                    *YELLOW,
+                    *RESET
                 );
                 let ns_started = ns_start("");
                 list_local(path);
@@ -64,6 +64,7 @@ fn main() {
         },
         Some("compare_lists") => {
             let ns_started = ns_start("compare lists");
+            println!("{}compare remote and local lists{}", *YELLOW, *RESET);
             compare_lists();
             ns_print_ms("compare_lists", ns_started);
         }
@@ -98,6 +99,7 @@ fn main() {
 }
 
 fn print_help(cargo_pkg_name: &str) {
+    println!("");
     println!(
         "{}1. Before first use, create your private Dropbox app:{}",
         *YELLOW, *RESET
