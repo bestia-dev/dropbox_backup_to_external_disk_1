@@ -5,6 +5,7 @@
         "filetime",
         "hasher",
         "humantime",
+        "nbsp",
         "rclone",
         "termion",
         "unhide"
