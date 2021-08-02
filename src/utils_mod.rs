@@ -5,6 +5,7 @@ use std::io::Stdout;
 
 #[allow(unused_imports)]
 use chrono::prelude::*;
+use chrono::Duration;
 use lazy_static::lazy_static;
 use termion::raw::RawTerminal;
 use uncased::UncasedStr;
@@ -139,4 +140,60 @@ pub fn shorten_string(text: &str, x_max_char: u16) -> String {
 /// if we have multi-byte unicode characters we can get an error if the boundary is not on char boundary.
 pub fn byte_pos_from_chars(text: &str, char_pos: usize) -> usize {
     text.char_indices().nth(char_pos).unwrap().0
+}
+
+use std::io::Write;
+use std::thread;
+use std::time;
+
+use termion;
+use termion::input::TermRead;
+use termion::raw::IntoRawMode;
+
+/// waits 5 seconds fr the user to press any key then continues
+/// It is usable to make visible some data before going to the next step where the screen is cleaned.
+pub fn press_enter_to_continue_timeout_5_sec() {
+    print!("press any key or wait 5 seconds to continue. 5..");
+    let started = Utc::now();
+    // Set terminal to raw mode to allow reading stdin one key at a time
+    let raw_stdout = std::io::stdout().into_raw_mode().unwrap();
+
+    // Use asynchronous stdin
+    let mut stdin = termion::async_stdin().keys();
+    let mut count_seconds = 0;
+    loop {
+        // Read input (if any)
+        let input = stdin.next();
+
+        // If any key was pressed
+        if let Some(Ok(_key)) = input {
+            break;
+        }
+        // if timeout 5 seconds passed
+        let passed = Utc::now().signed_duration_since(started);
+        if passed > Duration::seconds(1) && count_seconds < 1 {
+            count_seconds += 1;
+            print!("4..");
+            raw_stdout.lock().flush().unwrap();
+        } else if passed > Duration::seconds(2) && count_seconds < 2 {
+            count_seconds += 1;
+            print!("3..");
+            raw_stdout.lock().flush().unwrap();
+        } else if passed > Duration::seconds(3) && count_seconds < 3 {
+            count_seconds += 1;
+            print!("2..");
+            raw_stdout.lock().flush().unwrap();
+        } else if passed > Duration::seconds(4) && count_seconds < 4 {
+            count_seconds += 1;
+            print!("1..");
+            raw_stdout.lock().flush().unwrap();
+        } else if passed > Duration::seconds(5) {
+            print!("0",);
+            break;
+        }
+        // to avoid CPU overuse because of loop
+        thread::sleep(time::Duration::from_millis(50));
+    }
+    unwrap!(raw_stdout.suspend_raw_mode());
+    println!("");
 }

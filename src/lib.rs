@@ -6,9 +6,9 @@
 //! **one way sync from dropbox to an external disc**  
 //! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.378  date: 2021-08-02 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1335-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-153-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-111-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1365-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-158-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-116-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //!
@@ -108,7 +108,6 @@
 //!
 //! ## TODO
 //!
-//! shorten path for screen to avoid word-wrap
 //! press Enter to continue or it will continue automatically in 5 seconds
 //!
 // endregion: lmake_md_to_doc_comments include README.md A //!
@@ -117,7 +116,7 @@ mod local_mod;
 mod remote_mod;
 mod utils_mod;
 
-use std::{fs, thread::sleep};
+use std::fs;
 
 pub use local_mod::*;
 pub use remote_mod::*;
@@ -129,7 +128,7 @@ use unwrap::unwrap;
 
 /// list and sync is the complete process for backup in one command
 pub fn list_and_sync(base_path: &str) {
-    let mut hide_cursor_terminal = crate::start_hide_cursor_terminal();
+    let _hide_cursor_terminal = crate::start_hide_cursor_terminal();
     print!("{}", *CLEAR_ALL);
     println!(
         "{}{}{}dropbox_backup_to_external_disk list_and_sync{}",
@@ -168,7 +167,7 @@ pub fn list_and_sync(base_path: &str) {
     handle_1.join().unwrap();
     handle_2.join().unwrap();
     println!("{}{}", at_line(20), *CLEAR_LINE);
-
+    press_enter_to_continue_timeout_5_sec();
     sync_only();
 }
 
@@ -183,9 +182,7 @@ pub fn sync_only() {
     trash_from_list();
     println!("{}correct time from list{}", *YELLOW, *RESET);
     correct_time_from_list();
-    println!("{}download from list{}", *YELLOW, *RESET);
-    // wait 2 second, just to see the result on the screen
-    sleep(std::time::Duration::new(2, 0));
+    press_enter_to_continue_timeout_5_sec();
     download_from_list();
 }
 

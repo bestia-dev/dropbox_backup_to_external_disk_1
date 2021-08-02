@@ -10,9 +10,9 @@
 [comment]: # (lmake_cargo_toml_to_md end)
 
 [comment]: # (lmake_lines_of_code start)
-[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1335-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-153-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-111-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1365-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-158-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-116-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 
@@ -112,9 +112,9 @@ There is another approach called memory map to file, but everybody is trying to 
 Sounds like a database is always a better choice for more agile development.  
 In this project I will create additional files that only append lines. Some kind of journal. And later use this to modify the big text files in one go. For example: list_just_downloaded_or_moved.csv is added to list_local_files.csv.  
 
-## TODO
+## termion
 
-shorten path for screen to avoid word-wrap
-press Enter to continue or it will continue automatically in 5 seconds
+After using some small crates to help me with Linux tty terminal ansi codes, I am happy to finally use only the `termion` crate.  
+It has all I need.  
 
 [comment]: # (lmake_md_to_doc_comments segment end A)
