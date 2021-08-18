@@ -15,6 +15,7 @@ fn main() {
 
     match env::args().nth(1).as_deref() {
         None | Some("--help") | Some("-h") => print_help(&cargo_pkg_name),
+        Some("completion") => completion(),
         Some("test") => {
             let ns_started = ns_start("test");
             test_connection();
@@ -93,9 +94,74 @@ fn main() {
             Some(path) => download_one_file(path),
             _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
         },
-
+        Some("second_backup") => match env::args().nth(2).as_deref() {
+            Some(path) => second_backup(path),
+            _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
+        },
         _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
     }
+}
+
+/// sub-command for bash auto-completion of `cargo auto` using the crate `dev_bestia_cargo_completion`
+/// `complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk`
+fn completion() {
+    /// println one, more or all sub_commands
+    fn completion_return_one_or_more_sub_commands(
+        sub_commands: Vec<&str>,
+        word_being_completed: &str,
+    ) {
+        let mut sub_found = false;
+        for sub_command in sub_commands.iter() {
+            if sub_command.starts_with(word_being_completed) {
+                println!("{}", sub_command);
+                sub_found = true;
+            }
+        }
+        if sub_found == false {
+            // print all sub-commands
+            for sub_command in sub_commands.iter() {
+                println!("{}", sub_command);
+            }
+        }
+    }
+
+    let args: Vec<String> = std::env::args().collect();
+    // `complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk`
+    // this completion always sends this arguments:
+    // 0. executable path
+    // 1. word completion
+    // 2. executable file name
+    // 3. word_being_completed (even if it is empty)
+    // 4. last_word
+    let word_being_completed = args[3].as_str();
+    let last_word = args[4].as_str();
+
+    if last_word == "dropbox_backup_to_external_disk" {
+        let sub_commands = vec![
+            "--help",
+            "-h",
+            "test",
+            "list_and_sync",
+            "sync_only",
+            "list_remote",
+            "list_local",
+            "compare_lists",
+            "move_or_rename_local_files",
+            "trash_from_list",
+            "correct_time_from_list",
+            "download_from_list",
+            "download",
+            "second_backup",
+        ];
+        completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
+    }
+    /*
+    // the second level if needed
+    else if last_word == "new" {
+        let sub_commands = vec!["with_lib"];
+        completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
+    }
+    */
 }
 
 fn print_help(cargo_pkg_name: &str) {
@@ -198,4 +264,10 @@ fn print_help(cargo_pkg_name: &str) {
     );
     println!("Download one single file:");
     println!("$ {}{} download <path>{}", *GREEN, cargo_pkg_name, *RESET);
+
+    println!("Second backup:");
+    println!(
+        "$ {}{} second_backup <path>{}",
+        *GREEN, cargo_pkg_name, *RESET
+    );
 }

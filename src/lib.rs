@@ -186,11 +186,44 @@ pub fn sync_only() {
     download_from_list();
 }
 
-/// compare list: the lists must be already sorted for this to work correctly
 pub fn compare_lists() {
     add_just_downloaded_to_list_local();
     let path_list_remote_files = "temp_data/list_remote_files.csv";
     let path_list_local_files = "temp_data/list_local_files.csv";
+    let path_list_for_download = "temp_data/list_for_download.csv";
+    let path_list_for_trash = "temp_data/list_for_trash.csv";
+    let path_list_for_correct_time = "temp_data/list_for_correct_time.csv";
+    compare_lists_internal(
+        path_list_remote_files,
+        path_list_local_files,
+        path_list_for_download,
+        path_list_for_trash,
+        path_list_for_correct_time,
+    );
+}
+pub fn compare2_lists() {
+    add2_just_downloaded_to_list_local();
+    let path_list_remote_files = "temp_data/list_local_files.csv";
+    let path_list_local_files = "temp_data/list2_local_files.csv";
+    let path_list_for_download = "temp_data/list2_for_download.csv";
+    let path_list_for_trash = "temp_data/list2_for_trash.csv";
+    let path_list_for_correct_time = "temp_data/list2_for_correct_time.csv";
+    compare_lists_internal(
+        path_list_remote_files,
+        path_list_local_files,
+        path_list_for_download,
+        path_list_for_trash,
+        path_list_for_correct_time,
+    );
+}
+/// compare list: the lists must be already sorted for this to work correctly
+fn compare_lists_internal(
+    path_list_remote_files: &str,
+    path_list_local_files: &str,
+    path_list_for_download: &str,
+    path_list_for_trash: &str,
+    path_list_for_correct_time: &str,
+) {
     let string_remote = unwrap!(fs::read_to_string(path_list_remote_files));
     let vec_remote_lines: Vec<&str> = string_remote.lines().collect();
     println!("list_remote_files: {}", vec_remote_lines.len());
@@ -266,19 +299,16 @@ pub fn compare_lists() {
     }
     println!("list_for_download: {}", vec_for_download.len());
     let string_for_download = vec_for_download.join("\n");
-    unwrap!(fs::write(
-        "temp_data/list_for_download.csv",
-        string_for_download
-    ));
+    unwrap!(fs::write(path_list_for_download, string_for_download));
 
     println!("list_for_trash: {}", vec_for_trash.len());
     let string_for_trash = vec_for_trash.join("\n");
-    unwrap!(fs::write("temp_data/list_for_trash.csv", string_for_trash));
+    unwrap!(fs::write(path_list_for_trash, string_for_trash));
 
     println!("list_for_correct_time: {}", vec_for_correct_time.len());
     let string_for_correct_time = vec_for_correct_time.join("\n");
     unwrap!(fs::write(
-        "temp_data/list_for_correct_time.csv",
+        path_list_for_correct_time,
         string_for_correct_time
     ));
 }

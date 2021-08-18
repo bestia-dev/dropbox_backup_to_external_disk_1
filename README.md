@@ -62,6 +62,18 @@ I then restart my Win10 and the problem magically disappears.
 
 ## Development
 
+I use [cargo-auto](https://crates.io/crates/cargo-auto) for automation tasks in rust language. Install it:
+
+```bash
+cargo install cargo-auto
+```
+
+List user-defined automation tasks in `automation_tasks_rs`:
+
+```bash
+cargo auto
+```
+
 I use WSL2 on Win10 to develope and execute this CLI in Debian Linux.  
 The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`. CLI lists the local files metadata in `temp_data/list_local_files.csv`.  
 List all the files metadata from the remote Dropbox to the file `temp_data/list_remote_files.csv`.
@@ -116,5 +128,16 @@ In this project I will create additional files that only append lines. Some kind
 
 After using some small crates to help me with Linux tty terminal ansi codes, I am happy to finally use only the `termion` crate.  
 It has all I need.  
+
+## bash auto-completion
+
+This executable is prepared for auto-completion in bash.  
+Run this command to define auto-completion in bash for the current session:  
+
+```bash
+complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
+```
+
+To make it permanent add this command to the file `~/.bashrc` or some other file that runs commands on bash initialization.  
 
 [comment]: # (lmake_md_to_doc_comments segment end A)
