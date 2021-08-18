@@ -199,9 +199,14 @@
 <span id="197">197</span>
 <span id="198">198</span>
 <span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
 </pre><pre class="rust">
-<span class="doccomment">//! utils_mod.rs</span>
-<span class="doccomment">//! A module with often used functions. For every project I select only the functions I need for the project.</span>
+<span class="comment">// utils_mod.rs</span>
+<span class="doccomment">//! A module with often used functions.</span>
 
 <span class="kw">use</span> <span class="ident">std::io::Stdout</span>;
 
@@ -214,14 +219,19 @@
 <span class="kw">use</span> <span class="ident">unwrap::unwrap</span>;
 
 <span class="macro">lazy_static!</span> {
+    <span class="doccomment">/// ansi color</span>
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">GREEN</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::color::Fg</span>(<span class="ident">termion::color::Green</span>).<span class="ident">to_string</span>();
+    <span class="doccomment">/// ansi color</span>
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">YELLOW</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::color::Fg</span>(<span class="ident">termion::color::Yellow</span>).<span class="ident">to_string</span>();
+    <span class="doccomment">/// ansi color</span>
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">RED</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::color::Fg</span>(<span class="ident">termion::color::Red</span>).<span class="ident">to_string</span>();
+    <span class="doccomment">/// ansi reset color</span>
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">RESET</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::color::Fg</span>(<span class="ident">termion::color::Reset</span>).<span class="ident">to_string</span>();
-    <span class="doccomment">/// ansi terminal - clears the line on the terminal from cursor to end of line</span>
+    <span class="doccomment">/// ansi clear line</span>
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">CLEAR_LINE</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::clear::CurrentLine</span>.<span class="ident">to_string</span>();
+    <span class="doccomment">/// ansi clear all</span>
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">CLEAR_ALL</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::clear::All</span>.<span class="ident">to_string</span>();
-    <span class="comment">//pub static ref HIDE_CURSOR: String = termion::cursor::Hide.to_string();</span>
+    <span class="doccomment">/// ansi unhide cursor</span>
     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">UNHIDE_CURSOR</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">termion::cursor::Show</span>.<span class="ident">to_string</span>();
 }
 
@@ -352,8 +362,8 @@
 <span class="kw">use</span> <span class="ident">termion::input::TermRead</span>;
 <span class="kw">use</span> <span class="ident">termion::raw::IntoRawMode</span>;
 
-<span class="doccomment">/// waits 5 seconds fr the user to press any key then continues</span>
-<span class="doccomment">/// It is usable to make visible some data before going to the next step where the screen is cleaned.</span>
+<span class="doccomment">/// waits 5 seconds for the user to press any key then continues  </span>
+<span class="doccomment">/// It is usable to make visible some data before going to the next step where the screen is cleaned.  </span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">press_enter_to_continue_timeout_5_sec</span>() {
     <span class="macro">print!</span>(<span class="string">&quot;press any key or wait 5 seconds to continue. 5..&quot;</span>);
     <span class="kw">let</span> <span class="ident">started</span> <span class="op">=</span> <span class="ident">Utc::now</span>();

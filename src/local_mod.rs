@@ -1,4 +1,4 @@
-//! local_mod.rs
+// local_mod.rs
 //! Module contains all functions for local external disk.
 
 #[allow(unused_imports)]
@@ -105,7 +105,7 @@ fn list_local_internal(base_path: &str, path_list: &str, path_just_downloaded: &
     unwrap!(fs::write(path_list, sorted_string));
 }
 
-/// saves the base local path for later commands like "/mnt/f/DropBoxBackup1"
+/// saves the base local path for later use like "/mnt/d/DropBoxBackup1"
 pub fn save_base_path(base_path: &str) {
     if !path::Path::new(base_path).exists() {
         println!("error: base_path not exists {}", base_path);
@@ -114,7 +114,7 @@ pub fn save_base_path(base_path: &str) {
     fs::write("temp_data/base_local_path.csv", base_path).unwrap();
 }
 
-/// saves the base local path for later commands like "/mnt/d/DropBoxBackup2"
+/// saves the base local path for later use like "/mnt/f/DropBoxBackup2"
 pub fn save2_base_path(base2_path: &str) {
     if !path::Path::new(base2_path).exists() {
         println!("error: base2_path not exists {}", base2_path);
@@ -123,8 +123,7 @@ pub fn save2_base_path(base2_path: &str) {
     fs::write("temp_data/base2_local_path.csv", base2_path).unwrap();
 }
 
-/// with this enum I can send a completely different parameter to a function
-/// and then call a method on it, that processes differently depending on the kind. Smart.
+/// The source file can be on dropbox or on external disk Backup_1
 pub enum RemoteKind {
     Client {
         client: dropbox_sdk::default_client::UserAuthDefaultClient,
@@ -164,12 +163,12 @@ impl RemoteKind {
     }
 }
 
-/// Files are often moved or renamed
-/// After compare, the same file (with different path or name) will be in the list_for_trash and in the list_for_download.
-/// First for every trash line, we search list_for_download for same size and modified.
-/// If found, get the remote_metadata with content_hash and calculate local_content_hash.
-/// If they are equal move or rename, else nothing: it will be trashed and downloaded eventually.
-/// Remove also the lines in files list_for_trash and list_for_download.
+/// Files are often moved or renamed  
+/// After compare, the same file (with different path or name) will be in the list_for_trash and in the list_for_download.  
+/// First for every trash line, we search list_for_download for same size and modified.  
+/// If found, get the remote_metadata with content_hash and calculate local_content_hash.  
+/// If they are equal move or rename, else nothing: it will be trashed and downloaded eventually.  
+/// Remove also the lines in files list_for_trash and list_for_download.  
 pub fn move_or_rename_local_files() {
     let to_base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let path_list_for_trash = "temp_data/list_for_trash.csv";
@@ -186,12 +185,7 @@ pub fn move_or_rename_local_files() {
     );
 }
 
-/// Files are often moved or renamed
-/// After compare, the same file (with different path or name) will be in the list_for_trash and in the list_for_download.
-/// First for every trash line, we search list_for_download for same size and modified.
-/// If found, get the remote_metadata with content_hash and calculate local_content_hash.
-/// If they are equal move or rename, else nothing: it will be trashed and downloaded eventually.
-/// Remove also the lines in files list_for_trash and list_for_download.
+/// internal function
 fn move_or_rename_local_files_internal(
     client_or_base_path: RemoteKind,
     to_base_local_path: &str,
@@ -271,12 +265,17 @@ fn move_or_rename_local_files_internal(
     println!("moved or renamed: {}", count_moved);
 }
 
+/// Move to trash folder the files from list_for_trash.  
+/// Ignore if the file does not exist anymore.  
 pub fn trash_from_list() {
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let path_list_for_trash = "temp_data/list_for_trash.csv";
     let path_list_local_files = "temp_data/list_local_files.csv";
     trash_from_list_internal(&base_local_path, path_list_for_trash, path_list_local_files);
 }
+
+/// Move to trash folder the files from list_for_trash.  
+/// Ignore if the file does not exist anymore.  
 pub fn trash2_from_list() {
     let base2_local_path = fs::read_to_string("temp_data/base2_local_path.csv").unwrap();
     let path2_list_for_trash = "temp_data/list2_for_trash.csv";
@@ -288,8 +287,7 @@ pub fn trash2_from_list() {
     );
 }
 
-/// move to trash folder the files from list_for_trash
-/// ignore if the file does not exist anymore
+/// internal
 pub fn trash_from_list_internal(
     base_local_path: &str,
     path_list_for_trash: &str,
@@ -341,6 +339,7 @@ pub fn trash_from_list_internal(
     unwrap!(fs::write(path_list_for_trash, ""));
 }
 
+/// modify the date od files from list_for_correct_time
 pub fn correct_time_from_list() {
     let token = crate::remote_mod::get_short_lived_access_token();
     let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
@@ -353,8 +352,8 @@ pub fn correct_time_from_list() {
     );
 }
 
-/// modify the files from list_for_correct_time
-pub fn correct_time_from_list_internal(
+/// modify the date od files from list_for_correct_time
+fn correct_time_from_list_internal(
     client_or_base_path: RemoteKind,
     base_local_path: &str,
     path_list_for_correct_time: &str,
@@ -387,12 +386,14 @@ pub fn correct_time_from_list_internal(
     unwrap!(fs::write(path_list_for_correct_time, ""));
 }
 
+/// add just downloaded files to list_local (from dropbox remote)
 pub fn add_just_downloaded_to_list_local() {
     let path_list_just_downloaded = "temp_data/list_just_downloaded_or_moved.csv";
     let path_list_local_files = "temp_data/list_local_files.csv";
     add_just_downloaded_to_list_local_internal(path_list_just_downloaded, path_list_local_files);
 }
 
+/// add just downloaded files to list_local (from external disk)
 pub fn add2_just_downloaded_to_list_local() {
     let path2_list_just_downloaded = "temp_data/list2_just_downloaded_or_moved.csv";
     let path2_list_local_files = "temp_data/list2_local_files.csv";
@@ -480,7 +481,7 @@ fn add_just_downloaded_to_list_local_internal(
     }
 }
 
-/// download files from list
+/// copies files from external disk backup_1 to backup_2
 pub fn copy_from_list2_for_download(path_list2_for_download: &str) {
     let list2_for_download = fs::read_to_string(path_list2_for_download).unwrap();
     let base_source_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();

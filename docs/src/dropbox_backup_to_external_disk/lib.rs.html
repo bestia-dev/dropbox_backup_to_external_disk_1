@@ -408,6 +408,23 @@
 <span id="406">406</span>
 <span id="407">407</span>
 <span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
 </pre><pre class="rust">
 <span class="doccomment">//! dropbox_backup_to_external_disk lib.rs</span>
 
@@ -415,15 +432,15 @@
 <span class="doccomment">//! # dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! **One way sync from dropbox to external disc**  </span>
-<span class="doccomment">//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1453  date: 2021-08-18 authors: Luciano Bestia***  </span>
+<span class="doccomment">//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1625  date: 2021-08-18 authors: Luciano Bestia***  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1730-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-180-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-136-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1738-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-248-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-139-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Licence](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/blob/master/LICENSE) [![Rust](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Licence](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/blob/main/LICENSE) [![Rust](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Motivation</span>
 <span class="doccomment">//!</span>
@@ -450,8 +467,11 @@
 <span class="doccomment">//! cd ~</span>
 <span class="doccomment">//! mkdir dropbox_backup_to_external_disk</span>
 <span class="doccomment">//! cd dropbox_backup_to_external_disk</span>
-<span class="doccomment">//! TODO: curl from github</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! curl -L https://github.com/LucianoBestia/dropbox_backup_to_external_disk/releases/latest/download/dropbox_backup_to_external_disk --output dropbox_backup_to_external_disk</span>
+<span class="doccomment">//!</span>
 <span class="doccomment">//! chmod +x dropbox_backup_to_external_disk</span>
+<span class="doccomment">//! alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk</span>
 <span class="doccomment">//! complete -C &quot;dropbox_backup_to_external_disk completion&quot; dropbox_backup_to_external_disk</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
@@ -461,7 +481,7 @@
 <span class="doccomment">//! dropbox_backup_to_external_disk --help</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png &quot;screenshot_1&quot;) ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png &quot;screenshot_2&quot;) ![list_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_2.png &quot;list_2&quot;) ![list_3](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_3.png &quot;list_3&quot;) ![list_4](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_4.png &quot;list_4&quot;)</span>
+<span class="doccomment">//! ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/screenshot_1.png &quot;screenshot_1&quot;) ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/screenshot_2.png &quot;screenshot_2&quot;) ![list_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_2.png &quot;list_2&quot;) ![list_3](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_3.png &quot;list_3&quot;) ![list_4](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_4.png &quot;list_4&quot;)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Warning</span>
 <span class="doccomment">//!</span>
@@ -469,6 +489,17 @@
 <span class="doccomment">//! Instead of 12.000 folders it sees only 28 ???  </span>
 <span class="doccomment">//! Be careful !  </span>
 <span class="doccomment">//! I then restart my Win10 and the problem magically disappears.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## Second backup</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! It is wise to have 2 backups on external disks and store them in separate locations. Just to be sure.  </span>
+<span class="doccomment">//! If you have internet access on both places then you can sync backup_2 just the same way you sync backup_1.  </span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ![workflow_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png &quot;workflow_2&quot;)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with `second_backup`.  </span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ![workflow_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png &quot;workflow_1&quot;)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Development</span>
 <span class="doccomment">//!</span>
@@ -485,7 +516,8 @@
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! I use WSL2 on Win10 to develope and execute this CLI in Debian Linux.  </span>
-<span class="doccomment">//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`. CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  </span>
+<span class="doccomment">//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  </span>
+<span class="doccomment">//! CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  </span>
 <span class="doccomment">//! Save the list all the files metadata from the remote Dropbox to the file `temp_data/list_remote_files.csv`.</span>
 <span class="doccomment">//! Tab delimited with metadata: path (with name), datetime modified, size.</span>
 <span class="doccomment">//! The remote path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random-case.</span>
@@ -515,7 +547,7 @@
 <span class="doccomment">//! `$ dropbox_backup_to_external_disk --help`  </span>
 <span class="doccomment">//! has the detailed instructions.  </span>
 <span class="doccomment">//! Then every time before use we need generate the &quot;short-lived access token&quot; for security reasons.  </span>
-<span class="doccomment">//! ![dropbox_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_2.png &quot;dropbox_2&quot;) ![dropbox_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/dropbox_1.png &quot;dropbox_1&quot;)</span>
+<span class="doccomment">//! ![dropbox_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/dropbox_2.png &quot;dropbox_2&quot;) ![dropbox_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/dropbox_1.png &quot;dropbox_1&quot;)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## rename or move</span>
 <span class="doccomment">//!</span>
@@ -630,8 +662,8 @@
     <span class="ident">sync_only</span>();
 }
 
-<span class="doccomment">/// sync_only can be stopped and then restarted if downloading takes a lot of time.</span>
-<span class="doccomment">/// no need to repeat the &quot;list&quot; that takes a lot of timeS</span>
+<span class="doccomment">/// sync_only can be stopped with ctrl+c and then restarted if downloading takes lots of time.  </span>
+<span class="doccomment">/// No need to repeat the &quot;list&quot; that takes lots of times.  </span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sync_only</span>() {
     <span class="macro">println!</span>(<span class="string">&quot;{}compare remote and local lists{}&quot;</span>, <span class="kw-2">*</span><span class="ident">YELLOW</span>, <span class="kw-2">*</span><span class="ident">RESET</span>);
     <span class="ident">compare_lists</span>();
@@ -645,6 +677,7 @@
     <span class="ident">download_from_list</span>();
 }
 
+<span class="doccomment">/// compare list: the lists and produce list_for_download, list_for_trash, list_for_correct_time</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">compare_lists</span>() {
     <span class="ident">add_just_downloaded_to_list_local</span>();
     <span class="kw">let</span> <span class="ident">path_list_source_files</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_remote_files.csv&quot;</span>;
@@ -661,6 +694,7 @@
     );
 }
 
+<span class="doccomment">/// compare list: the lists and produce list2_for_download, list2_for_trash, list2_for_correct_time</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">compare2_lists</span>() {
     <span class="ident">add2_just_downloaded_to_list_local</span>();
     <span class="kw">let</span> <span class="ident">path_list_source_files</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_local_files.csv&quot;</span>;
@@ -801,10 +835,10 @@
     ));
 }
 
-<span class="doccomment">/// after the first backup from dropbox, we want to make a second backup from the first backup</span>
-<span class="doccomment">/// ideally, we put it somewhere safe in a distant location</span>
-<span class="doccomment">/// having 2 external disks on the same computer, is faster to just copy files then to question for calculating hash</span>
-<span class="doccomment">/// no need to move files or correct time. Just copy it. It is faster.</span>
+<span class="doccomment">/// After the first backup from dropbox, we want to make a second backup from the first backup.  </span>
+<span class="doccomment">/// Ideally, we put it somewhere safe in a distant location.  </span>
+<span class="doccomment">/// Having 2 external disks on the same computer, it is faster to just copy files then to question for calculating hash.  </span>
+<span class="doccomment">/// No need to move files or correct time. Just copy it. It is faster.  </span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">second_backup</span>(<span class="ident">base_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
     <span class="ident">list2_local</span>(<span class="ident">base_path</span>);
     <span class="comment">// compare list_local_files and list2_local_files</span>

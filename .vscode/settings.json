@@ -7,9 +7,11 @@
         "humantime",
         "mkdir",
         "nbsp",
+        "paypal",
         "rclone",
         "readonly",
         "termion",
-        "unhide"
+        "unhide",
+        "zdravje"
     ]
 }

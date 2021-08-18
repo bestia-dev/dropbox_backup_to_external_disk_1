@@ -11,7 +11,8 @@ fn main() {
     })
     .expect("Error setting Ctrl-C handler");
 
-    let cargo_pkg_name = env!("CARGO_PKG_NAME");
+    //create the directory temp_data/
+    std::fs::create_dir_all("temp_data").unwrap();
 
     match env::args().nth(1).as_deref() {
         None | Some("--help") | Some("-h") => print_help(),
@@ -27,7 +28,7 @@ fn main() {
                 list_and_sync(path);
                 ns_print_ms("list_and_sync", ns_started);
             }
-            _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
+            _ => println!("Unrecognized arguments. Try dropbox_backup_to_external_disk --help"),
         },
         Some("sync_only") => {
             let ns_started = ns_start("sync_only");
@@ -61,7 +62,7 @@ fn main() {
                 list_local(path);
                 ns_print_ms("local_list", ns_started);
             }
-            _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
+            _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
         },
         Some("compare_lists") => {
             let ns_started = ns_start("compare lists");
@@ -92,13 +93,13 @@ fn main() {
         }
         Some("one_file_download") => match env::args().nth(2).as_deref() {
             Some(path) => download_one_file(path),
-            _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
+            _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
         },
         Some("second_backup") => match env::args().nth(2).as_deref() {
             Some(path) => second_backup(path),
-            _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
+            _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
         },
-        _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
+        _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
     }
 }
 
@@ -293,4 +294,11 @@ It can be interrupted with crl+c. The next `sync_only` will continue where it wa
         *GREEN, *RESET
     );
     println!("");
+    println!(
+        r#"Run in ~/dropbox_backup_to_external_disk directory to gain auto-completion:
+  $ alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk
+  $ complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
+open-source: https://github.com/LucianoBestia/dropbox_backup_to_external_disk
+    "#
+    );
 }

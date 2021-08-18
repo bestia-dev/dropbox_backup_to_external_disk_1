@@ -1,5 +1,5 @@
-//! utils_mod.rs
-//! A module with often used functions. For every project I select only the functions I need for the project.
+// utils_mod.rs
+//! A module with often used functions.
 
 use std::io::Stdout;
 
@@ -12,14 +12,19 @@ use uncased::UncasedStr;
 use unwrap::unwrap;
 
 lazy_static! {
+    /// ansi color
     pub static ref GREEN: String = termion::color::Fg(termion::color::Green).to_string();
+    /// ansi color
     pub static ref YELLOW: String = termion::color::Fg(termion::color::Yellow).to_string();
+    /// ansi color
     pub static ref RED: String = termion::color::Fg(termion::color::Red).to_string();
+    /// ansi reset color
     pub static ref RESET: String = termion::color::Fg(termion::color::Reset).to_string();
-    /// ansi terminal - clears the line on the terminal from cursor to end of line
+    /// ansi clear line
     pub static ref CLEAR_LINE: String = termion::clear::CurrentLine.to_string();
+    /// ansi clear all
     pub static ref CLEAR_ALL: String = termion::clear::All.to_string();
-    //pub static ref HIDE_CURSOR: String = termion::cursor::Hide.to_string();
+    /// ansi unhide cursor
     pub static ref UNHIDE_CURSOR: String = termion::cursor::Show.to_string();
 }
 
@@ -150,8 +155,8 @@ use termion;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
-/// waits 5 seconds fr the user to press any key then continues
-/// It is usable to make visible some data before going to the next step where the screen is cleaned.
+/// waits 5 seconds for the user to press any key then continues  
+/// It is usable to make visible some data before going to the next step where the screen is cleaned.  
 pub fn press_enter_to_continue_timeout_5_sec() {
     print!("press any key or wait 5 seconds to continue. 5..");
     let started = Utc::now();

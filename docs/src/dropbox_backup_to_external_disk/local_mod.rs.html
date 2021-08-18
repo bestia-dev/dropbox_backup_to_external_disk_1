@@ -548,8 +548,9 @@
 <span id="546">546</span>
 <span id="547">547</span>
 <span id="548">548</span>
+<span id="549">549</span>
 </pre><pre class="rust">
-<span class="doccomment">//! local_mod.rs</span>
+<span class="comment">// local_mod.rs</span>
 <span class="doccomment">//! Module contains all functions for local external disk.</span>
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_imports</span>)]</span>
@@ -656,7 +657,7 @@
     <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="ident">path_list</span>, <span class="ident">sorted_string</span>));
 }
 
-<span class="doccomment">/// saves the base local path for later commands like &quot;/mnt/f/DropBoxBackup1&quot;</span>
+<span class="doccomment">/// saves the base local path for later use like &quot;/mnt/d/DropBoxBackup1&quot;</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">save_base_path</span>(<span class="ident">base_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
     <span class="kw">if</span> <span class="op">!</span><span class="ident">path::Path::new</span>(<span class="ident">base_path</span>).<span class="ident">exists</span>() {
         <span class="macro">println!</span>(<span class="string">&quot;error: base_path not exists {}&quot;</span>, <span class="ident">base_path</span>);
@@ -665,7 +666,7 @@
     <span class="ident">fs::write</span>(<span class="string">&quot;temp_data/base_local_path.csv&quot;</span>, <span class="ident">base_path</span>).<span class="ident">unwrap</span>();
 }
 
-<span class="doccomment">/// saves the base local path for later commands like &quot;/mnt/d/DropBoxBackup2&quot;</span>
+<span class="doccomment">/// saves the base local path for later use like &quot;/mnt/f/DropBoxBackup2&quot;</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">save2_base_path</span>(<span class="ident">base2_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
     <span class="kw">if</span> <span class="op">!</span><span class="ident">path::Path::new</span>(<span class="ident">base2_path</span>).<span class="ident">exists</span>() {
         <span class="macro">println!</span>(<span class="string">&quot;error: base2_path not exists {}&quot;</span>, <span class="ident">base2_path</span>);
@@ -674,8 +675,7 @@
     <span class="ident">fs::write</span>(<span class="string">&quot;temp_data/base2_local_path.csv&quot;</span>, <span class="ident">base2_path</span>).<span class="ident">unwrap</span>();
 }
 
-<span class="doccomment">/// with this enum I can send a completely different parameter to a function</span>
-<span class="doccomment">/// and then call a method on it, that processes differently depending on the kind. Smart.</span>
+<span class="doccomment">/// The source file can be on dropbox or on external disk Backup_1</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">RemoteKind</span> {
     <span class="ident">Client</span> {
         <span class="ident">client</span>: <span class="ident">dropbox_sdk::default_client::UserAuthDefaultClient</span>,
@@ -715,12 +715,12 @@
     }
 }
 
-<span class="doccomment">/// Files are often moved or renamed</span>
-<span class="doccomment">/// After compare, the same file (with different path or name) will be in the list_for_trash and in the list_for_download.</span>
-<span class="doccomment">/// First for every trash line, we search list_for_download for same size and modified.</span>
-<span class="doccomment">/// If found, get the remote_metadata with content_hash and calculate local_content_hash.</span>
-<span class="doccomment">/// If they are equal move or rename, else nothing: it will be trashed and downloaded eventually.</span>
-<span class="doccomment">/// Remove also the lines in files list_for_trash and list_for_download.</span>
+<span class="doccomment">/// Files are often moved or renamed  </span>
+<span class="doccomment">/// After compare, the same file (with different path or name) will be in the list_for_trash and in the list_for_download.  </span>
+<span class="doccomment">/// First for every trash line, we search list_for_download for same size and modified.  </span>
+<span class="doccomment">/// If found, get the remote_metadata with content_hash and calculate local_content_hash.  </span>
+<span class="doccomment">/// If they are equal move or rename, else nothing: it will be trashed and downloaded eventually.  </span>
+<span class="doccomment">/// Remove also the lines in files list_for_trash and list_for_download.  </span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">move_or_rename_local_files</span>() {
     <span class="kw">let</span> <span class="ident">to_base_local_path</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;temp_data/base_local_path.csv&quot;</span>).<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">path_list_for_trash</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_for_trash.csv&quot;</span>;
@@ -737,12 +737,7 @@
     );
 }
 
-<span class="doccomment">/// Files are often moved or renamed</span>
-<span class="doccomment">/// After compare, the same file (with different path or name) will be in the list_for_trash and in the list_for_download.</span>
-<span class="doccomment">/// First for every trash line, we search list_for_download for same size and modified.</span>
-<span class="doccomment">/// If found, get the remote_metadata with content_hash and calculate local_content_hash.</span>
-<span class="doccomment">/// If they are equal move or rename, else nothing: it will be trashed and downloaded eventually.</span>
-<span class="doccomment">/// Remove also the lines in files list_for_trash and list_for_download.</span>
+<span class="doccomment">/// internal function</span>
 <span class="kw">fn</span> <span class="ident">move_or_rename_local_files_internal</span>(
     <span class="ident">client_or_base_path</span>: <span class="ident">RemoteKind</span>,
     <span class="ident">to_base_local_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
@@ -822,12 +817,17 @@
     <span class="macro">println!</span>(<span class="string">&quot;moved or renamed: {}&quot;</span>, <span class="ident">count_moved</span>);
 }
 
+<span class="doccomment">/// Move to trash folder the files from list_for_trash.  </span>
+<span class="doccomment">/// Ignore if the file does not exist anymore.  </span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trash_from_list</span>() {
     <span class="kw">let</span> <span class="ident">base_local_path</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;temp_data/base_local_path.csv&quot;</span>).<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">path_list_for_trash</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_for_trash.csv&quot;</span>;
     <span class="kw">let</span> <span class="ident">path_list_local_files</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_local_files.csv&quot;</span>;
     <span class="ident">trash_from_list_internal</span>(<span class="kw-2">&amp;</span><span class="ident">base_local_path</span>, <span class="ident">path_list_for_trash</span>, <span class="ident">path_list_local_files</span>);
 }
+
+<span class="doccomment">/// Move to trash folder the files from list_for_trash.  </span>
+<span class="doccomment">/// Ignore if the file does not exist anymore.  </span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trash2_from_list</span>() {
     <span class="kw">let</span> <span class="ident">base2_local_path</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;temp_data/base2_local_path.csv&quot;</span>).<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">path2_list_for_trash</span> <span class="op">=</span> <span class="string">&quot;temp_data/list2_for_trash.csv&quot;</span>;
@@ -839,8 +839,7 @@
     );
 }
 
-<span class="doccomment">/// move to trash folder the files from list_for_trash</span>
-<span class="doccomment">/// ignore if the file does not exist anymore</span>
+<span class="doccomment">/// internal</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trash_from_list_internal</span>(
     <span class="ident">base_local_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
     <span class="ident">path_list_for_trash</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
@@ -892,6 +891,7 @@
     <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="ident">path_list_for_trash</span>, <span class="string">&quot;&quot;</span>));
 }
 
+<span class="doccomment">/// modify the date od files from list_for_correct_time</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">correct_time_from_list</span>() {
     <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::remote_mod::get_short_lived_access_token</span>();
     <span class="kw">let</span> <span class="ident">client</span> <span class="op">=</span> <span class="ident">dropbox_sdk::default_client::UserAuthDefaultClient::new</span>(<span class="ident">token</span>);
@@ -904,8 +904,8 @@
     );
 }
 
-<span class="doccomment">/// modify the files from list_for_correct_time</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">correct_time_from_list_internal</span>(
+<span class="doccomment">/// modify the date od files from list_for_correct_time</span>
+<span class="kw">fn</span> <span class="ident">correct_time_from_list_internal</span>(
     <span class="ident">client_or_base_path</span>: <span class="ident">RemoteKind</span>,
     <span class="ident">base_local_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
     <span class="ident">path_list_for_correct_time</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
@@ -938,12 +938,14 @@
     <span class="macro">unwrap!</span>(<span class="ident">fs::write</span>(<span class="ident">path_list_for_correct_time</span>, <span class="string">&quot;&quot;</span>));
 }
 
+<span class="doccomment">/// add just downloaded files to list_local (from dropbox remote)</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_just_downloaded_to_list_local</span>() {
     <span class="kw">let</span> <span class="ident">path_list_just_downloaded</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_just_downloaded_or_moved.csv&quot;</span>;
     <span class="kw">let</span> <span class="ident">path_list_local_files</span> <span class="op">=</span> <span class="string">&quot;temp_data/list_local_files.csv&quot;</span>;
     <span class="ident">add_just_downloaded_to_list_local_internal</span>(<span class="ident">path_list_just_downloaded</span>, <span class="ident">path_list_local_files</span>);
 }
 
+<span class="doccomment">/// add just downloaded files to list_local (from external disk)</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add2_just_downloaded_to_list_local</span>() {
     <span class="kw">let</span> <span class="ident">path2_list_just_downloaded</span> <span class="op">=</span> <span class="string">&quot;temp_data/list2_just_downloaded_or_moved.csv&quot;</span>;
     <span class="kw">let</span> <span class="ident">path2_list_local_files</span> <span class="op">=</span> <span class="string">&quot;temp_data/list2_local_files.csv&quot;</span>;
@@ -1031,7 +1033,7 @@
     }
 }
 
-<span class="doccomment">/// download files from list</span>
+<span class="doccomment">/// copies files from external disk backup_1 to backup_2</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">copy_from_list2_for_download</span>(<span class="ident">path_list2_for_download</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
     <span class="kw">let</span> <span class="ident">list2_for_download</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="ident">path_list2_for_download</span>).<span class="ident">unwrap</span>();
     <span class="kw">let</span> <span class="ident">base_source_path</span> <span class="op">=</span> <span class="ident">fs::read_to_string</span>(<span class="string">&quot;temp_data/base_local_path.csv&quot;</span>).<span class="ident">unwrap</span>();

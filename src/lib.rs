@@ -4,11 +4,11 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **One way sync from dropbox to external disc**  
-//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1453  date: 2021-08-18 authors: Luciano Bestia***  
+//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1625  date: 2021-08-18 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1730-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-180-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-136-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1738-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-248-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-139-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //!
@@ -39,7 +39,11 @@
 //! cd ~
 //! mkdir dropbox_backup_to_external_disk
 //! cd dropbox_backup_to_external_disk
+//!
+//! curl -L https://github.com/LucianoBestia/dropbox_backup_to_external_disk/releases/latest/download/dropbox_backup_to_external_disk --output dropbox_backup_to_external_disk
+//!
 //! chmod +x dropbox_backup_to_external_disk
+//! alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk
 //! complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
 //! ```
 //!
@@ -58,6 +62,17 @@
 //! Be careful !  
 //! I then restart my Win10 and the problem magically disappears.
 //!
+//! ## Second backup
+//!
+//! It is wise to have 2 backups on external disks and store them in separate locations. Just to be sure.  
+//! If you have internet access on both places then you can sync backup_2 just the same way you sync backup_1.  
+//!
+//! ![workflow_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png "workflow_2")
+//!
+//! But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with `second_backup`.  
+//!
+//! ![workflow_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png "workflow_1")
+//!
 //! ## Development
 //!
 //! I use [cargo-auto](https://crates.io/crates/cargo-auto) for automation tasks in rust language. Install it:
@@ -73,7 +88,8 @@
 //! ```
 //!
 //! I use WSL2 on Win10 to develope and execute this CLI in Debian Linux.  
-//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`. CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  
+//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  
+//! CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  
 //! Save the list all the files metadata from the remote Dropbox to the file `temp_data/list_remote_files.csv`.
 //! Tab delimited with metadata: path (with name), datetime modified, size.
 //! The remote path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random-case.
@@ -218,8 +234,8 @@ pub fn list_and_sync(base_path: &str) {
     sync_only();
 }
 
-/// sync_only can be stopped and then restarted if downloading takes a lot of time.
-/// no need to repeat the "list" that takes a lot of timeS
+/// sync_only can be stopped with ctrl+c and then restarted if downloading takes lots of time.  
+/// No need to repeat the "list" that takes lots of times.  
 pub fn sync_only() {
     println!("{}compare remote and local lists{}", *YELLOW, *RESET);
     compare_lists();
@@ -233,6 +249,7 @@ pub fn sync_only() {
     download_from_list();
 }
 
+/// compare list: the lists and produce list_for_download, list_for_trash, list_for_correct_time
 pub fn compare_lists() {
     add_just_downloaded_to_list_local();
     let path_list_source_files = "temp_data/list_remote_files.csv";
@@ -249,6 +266,7 @@ pub fn compare_lists() {
     );
 }
 
+/// compare list: the lists and produce list2_for_download, list2_for_trash, list2_for_correct_time
 pub fn compare2_lists() {
     add2_just_downloaded_to_list_local();
     let path_list_source_files = "temp_data/list_local_files.csv";
@@ -389,10 +407,10 @@ fn compare_lists_internal(
     ));
 }
 
-/// after the first backup from dropbox, we want to make a second backup from the first backup
-/// ideally, we put it somewhere safe in a distant location
-/// having 2 external disks on the same computer, is faster to just copy files then to question for calculating hash
-/// no need to move files or correct time. Just copy it. It is faster.
+/// After the first backup from dropbox, we want to make a second backup from the first backup.  
+/// Ideally, we put it somewhere safe in a distant location.  
+/// Having 2 external disks on the same computer, it is faster to just copy files then to question for calculating hash.  
+/// No need to move files or correct time. Just copy it. It is faster.  
 pub fn second_backup(base_path: &str) {
     list2_local(base_path);
     // compare list_local_files and list2_local_files

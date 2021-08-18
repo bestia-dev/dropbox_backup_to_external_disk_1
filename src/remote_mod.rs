@@ -1,4 +1,4 @@
-//! remote_mod.rs
+// remote_mod.rs
 //! Module contains all the communication with the remote dropbox storage.
 
 use dropbox_sdk::default_client::UserAuthDefaultClient;
