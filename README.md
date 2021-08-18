@@ -68,6 +68,17 @@ Instead of 12.000 folders it sees only 28 ???
 Be careful !  
 I then restart my Win10 and the problem magically disappears.
 
+## Second backup
+
+It is wise to have 2 backups on external disks and store them in separate locations. Just to be sure.  
+If you have internet access on both places then you can sync backup_2 just the same way you sync backup_1.  
+
+![workflow_2.png](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png "workflow_2.png")
+
+But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with `second_backup`.  
+
+![workflow_1.png](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png "workflow_1.png")
+
 ## Development
 
 I use [cargo-auto](https://crates.io/crates/cargo-auto) for automation tasks in rust language. Install it:
@@ -83,7 +94,8 @@ cargo auto
 ```
 
 I use WSL2 on Win10 to develope and execute this CLI in Debian Linux.  
-The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`. CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  
+The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  
+CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  
 Save the list all the files metadata from the remote Dropbox to the file `temp_data/list_remote_files.csv`.
 Tab delimited with metadata: path (with name), datetime modified, size.
 The remote path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random-case.
