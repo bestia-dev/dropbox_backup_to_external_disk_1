@@ -51,13 +51,10 @@ curl -L https://github.com/LucianoBestia/dropbox_backup_to_external_disk/release
 chmod +x dropbox_backup_to_external_disk
 alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk
 complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
+dropbox_backup_to_external_disk --help
 ```
 
 Run the executable with --help and follow carefully the instructions 1. and 2.  
-
-```bash
-dropbox_backup_to_external_disk --help
-```
 
 ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/screenshot_2.png "screenshot_2") ![list_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_2.png "list_2") ![list_3](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_3.png "list_3") ![list_4](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_4.png "list_4")
 
