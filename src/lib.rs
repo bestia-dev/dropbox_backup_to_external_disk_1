@@ -4,9 +4,9 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **One way sync from dropbox to external disc**  
-//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1950  date: 2021-08-18 authors: Luciano Bestia***  
+//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.2015  date: 2021-08-18 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1788-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1790-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-249-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-141-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
@@ -155,6 +155,12 @@
 //!
 //! After using some small crates to help me with Linux tty terminal ansi codes, I am happy to finally use only the `termion` crate.  
 //! It has all I need.  
+//!
+//! ## TODO
+//!
+//! Can I recognize that a directory is moved or renamed? This is common and should be super fast.  
+//! If most of the files in the directory are equal it means, that it is moved/renamed.  
+//! Then a new `compare` will show if there are smaller differences.  
 //!
 //! ## cargo crev reviews and advisory
 //!

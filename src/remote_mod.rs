@@ -470,6 +470,8 @@ pub fn download_from_list() {
                         let mtime = modified;
                         unwrap!(filetime::set_file_times(&local_path, atime, mtime));
 
+                        unwrap!(tx.send((format!("{}", &local_path), -1)));
+
                         // append to list_just_downloaded
                         let list_just_downloaded_or_moved =
                             "temp_data/list_just_downloaded_or_moved.csv";

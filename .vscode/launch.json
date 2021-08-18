@@ -20,7 +20,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["second_backup", "/mnt/d/DropBoxBackup2"],
+            "args": ["download_from_list"],
             "cwd": "${workspaceFolder}", 
             "env":{
                 "DBX_OAUTH_TOKEN":""

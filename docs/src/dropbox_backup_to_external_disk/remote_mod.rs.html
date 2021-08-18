@@ -653,6 +653,8 @@
 <span id="651">651</span>
 <span id="652">652</span>
 <span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
 </pre><pre class="rust">
 <span class="comment">// remote_mod.rs</span>
 <span class="doccomment">//! Module contains all the communication with the remote dropbox storage.</span>
@@ -1125,6 +1127,8 @@
                         <span class="kw">let</span> <span class="ident">atime</span> <span class="op">=</span> <span class="ident">modified</span>;
                         <span class="kw">let</span> <span class="ident">mtime</span> <span class="op">=</span> <span class="ident">modified</span>;
                         <span class="macro">unwrap!</span>(<span class="ident">filetime::set_file_times</span>(<span class="kw-2">&amp;</span><span class="ident">local_path</span>, <span class="ident">atime</span>, <span class="ident">mtime</span>));
+
+                        <span class="macro">unwrap!</span>(<span class="ident">tx</span>.<span class="ident">send</span>((<span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">local_path</span>), <span class="op">-</span><span class="number">1</span>)));
 
                         <span class="comment">// append to list_just_downloaded</span>
                         <span class="kw">let</span> <span class="ident">list_just_downloaded_or_moved</span> <span class="op">=</span>
