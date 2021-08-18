@@ -413,9 +413,7 @@ fn add_just_downloaded_to_list_local_internal(
         vec_sorted_downloaded.dedup();
         println!(
             "{}: {}",
-            path_list_just_downloaded
-            .split("/")
-            .collect::<Vec<&str>>()[1],
+            path_list_just_downloaded.split("/").collect::<Vec<&str>>()[1],
             vec_sorted_downloaded.len()
         );
         unwrap!(fs::write(
@@ -525,10 +523,14 @@ pub fn copy_from_list2_for_download(path_list2_for_download: &str) {
             // copy also the modified file date time
             use chrono::offset::Utc;
             use chrono::DateTime;
-            let modified_system_time = unwrap!( unwrap!(fs::metadata(&path_from)).modified());
-            let modified_date_time_utc: DateTime<Utc> = modified_system_time.into();            
+            let modified_system_time = unwrap!(unwrap!(fs::metadata(&path_from)).modified());
+            let modified_date_time_utc: DateTime<Utc> = modified_system_time.into();
             let modified_file_time = filetime::FileTime::from_system_time(modified_system_time);
-            unwrap!(filetime::set_file_times(&path_to, modified_file_time, modified_file_time));
+            unwrap!(filetime::set_file_times(
+                &path_to,
+                modified_file_time,
+                modified_file_time
+            ));
 
             // write to file list2_just_downloaded_or_moved.
             let line_to_append = format!(

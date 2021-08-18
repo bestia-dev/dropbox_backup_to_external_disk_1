@@ -32,12 +32,8 @@ fn match_arguments_and_call_tasks(mut args: std::env::Args) {
                     task_build();
                 } else if &task == "release" || &task == "r" {
                     task_release();
-                } else if &task == "increment_minor" {
-                    task_increment_minor();
                 } else if &task == "docs" || &task == "doc" || &task == "d" {
                     task_docs();
-                } else if &task == "publish_to_crates_io" {
-                    task_publish_to_crates_io();
                 } else {
                     println!("Task {} is unknown.", &task);
                     print_help();
@@ -49,19 +45,18 @@ fn match_arguments_and_call_tasks(mut args: std::env::Args) {
 
 /// write a comprehensible help for user defined tasks
 fn print_help() {
-    println!("");
-    println!("User defined tasks in automation_tasks_rs:");
-    println!("cargo auto build - builds the crate in debug mode, fmt");
-    println!(
-        "cargo auto release - builds the crate in release mode, version from date, fmt"
-    );
-    println!("cargo auto increment_minor - increments the semver version minor part (only for libraries)");
-    println!("cargo auto docs - builds the docs, copy to docs directory");
-    println!("");
-    println!("create alias for easy use:");
-    println!("alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk");
-    println!("dropbox_backup_to_external_disk --help - instructions especially for first use because of authentication");
-    println!("");
+    println!(r#"
+User defined tasks in automation_tasks_rs:
+cargo auto build - builds the crate in debug mode, fmt
+cargo auto release - builds the crate in release mode, version from date, fmt
+cargo auto docs - builds the docs, copy to docs directory
+    
+Create alias for easy use when developing:
+  $ alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk
+Create auto-completion:
+  $ complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
+dropbox_backup_to_external_disk --help - instructions especially for first use because of authentication
+"#);
 }
 
 /// sub-command for bash auto-completion of `cargo auto` using the crate `dev_bestia_cargo_completion`
@@ -106,39 +101,41 @@ fn completion() {
 
 /// example how to call a list of shell commands
 fn task_build() {
-    auto_semver_increment_patch();
+    auto_version_from_date();
     #[rustfmt::skip]
     let shell_commands = [
         "cargo fmt", 
         "cargo build",
-        "alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk",
-        "dropbox_backup_to_external_disk --help",
+        "target/debug/dropbox_backup_to_external_disk --help",
         ];
     run_shell_commands(shell_commands.to_vec());
-    println!("After `cargo auto build`, run the tests and the code. If ok, then `cargo auto release`");
+    println!(r#"
+Create alias for easy use when developing:
+  $  alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk
+Create auto-completion:
+  $  complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
+
+After `cargo auto build`, run the tests and the code. If ok, then `cargo auto release`
+"#);
 }
 
 /// example how to call one shell command and combine with rust code
 fn task_release() {    
-    auto_semver_increment_patch();
+    auto_version_from_date();
     auto_cargo_toml_to_md();
     auto_lines_of_code("");
 
     run_shell_command("cargo fmt");
     run_shell_command("cargo build --release");
-    #[rustfmt::skip]
-    let shell_commands = [
-        "alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk",
-        "dropbox_backup_to_external_disk --help",
-        ];
-    run_shell_commands(shell_commands.to_vec());
-    println!("After `cargo auto release`, run the tests and the code. If ok, then `cargo auto doc`");
-}
+    run_shell_command("target/release/dropbox_backup_to_external_disk --help");
+    println!(r#"
+Create alias for easy use when developing:
+    $  alias dropbox_backup_to_external_disk=target/release/dropbox_backup_to_external_disk
+Create auto-completion:
+    $  complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
 
-/// semver is used for libraries, increment the second part of the version
-fn task_increment_minor() {
-    auto_semver_increment_minor();
-    auto_cargo_toml_to_md();
+After `cargo auto release`, run the tests and the code. If ok, then `cargo auto doc`
+"#);
 }
 
 /// example how to call a list of shell commands and combine with rust code
@@ -157,26 +154,12 @@ fn task_docs() {
     run_shell_commands(shell_commands.to_vec());
     // message to help user with next move
     println!(
-        r#"After `cargo auto doc`, check `docs/index.html`. If ok, then `git commit -am"message"` and `git push`,"#
-    );
-    println!("then `cargo auto publish_to_crates_io`");
+        r#"
+After `cargo auto doc`, check `docs/index.html`. If ok, then `git commit -am"message"` and `git push`,
+then `cargo auto publish_to_crates_io`"#);
 }
 
-/// example hot to publish to crates.io and git tag
-fn task_publish_to_crates_io() {
-    // git tag
-    let shell_command = format!(
-        "git tag -f -a v{version} -m version_{version}",
-        version = package_version()
-    );
-    run_shell_command(&shell_command);
 
-    // cargo publish
-    run_shell_command("cargo publish");
-    println!(r#"After `cargo auto task_publish_to_crates_io', check `crates.io` page."#);
-    println!(r#"If binary then install with `cargo install crate_name` and check how it works."#);
-    println!(r#"If library then add dependency to your rust project and check how it works."#);
-}
 
 // endregion: tasks
 

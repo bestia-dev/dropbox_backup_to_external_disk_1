@@ -1,22 +1,22 @@
-[comment]: # (lmake_md_to_doc_comments segment start A)
+[comment]: # (auto_md_to_doc_comments segment start A)
 
 # dropbox_backup_to_external_disk
 
-[comment]: # (lmake_cargo_toml_to_md start)
+[comment]: # (auto_cargo_toml_to_md start)
 
-**one way sync from dropbox to external disc**  
-***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.378  date: 2021-08-02 authors: Luciano Bestia***  
+**One way sync from dropbox to external disc**  
+***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1453  date: 2021-08-18 authors: Luciano Bestia***  
 
-[comment]: # (lmake_cargo_toml_to_md end)
+[comment]: # (auto_cargo_toml_to_md end)
 
-[comment]: # (lmake_lines_of_code start)
-[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1365-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-158-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-116-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[comment]: # (auto_lines_of_code start)
+[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1730-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-180-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-136-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 
-[comment]: # (lmake_lines_of_code end)
+[comment]: # (auto_lines_of_code end)
 
 [![Licence](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/blob/master/LICENSE) [![Rust](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 
@@ -164,4 +164,4 @@ But I need also to drink. If you find my projects and tutorials helpful, please 
 So I can drink a free beer for your health :-)  
 [Na zdravje](https://translate.google.com/?hl=en&sl=sl&tl=en&text=Na%20zdravje&op=translate) !
 
-[comment]: # (lmake_md_to_doc_comments segment end A)
+[comment]: # (auto_md_to_doc_comments segment end A)

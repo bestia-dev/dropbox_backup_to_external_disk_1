@@ -1,18 +1,20 @@
 //! dropbox_backup_to_external_disk lib.rs
 
-// region: lmake_md_to_doc_comments include README.md A //!
+// region: auto_md_to_doc_comments include README.md A //!
 //! # dropbox_backup_to_external_disk
 //!
-//! **one way sync from dropbox to an external disc**  
-//! ***[repo](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 1.0.378  date: 2021-08-02 authors: Luciano Bestia***  
+//! **One way sync from dropbox to external disc**  
+//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1453  date: 2021-08-18 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1365-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-158-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-116-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1730-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-180-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-136-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //!
 //! [![Licence](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/blob/master/LICENSE) [![Rust](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//!
+//! ## Motivation
 //!
 //! On my Dropbox "remote drive" I have more than 1 Terabyte of data in 200 000 files.  
 //! I own now 4 notebooks and 2 android phones and 1 tablet and not a single one has an internal drive with more than 1 Terabyte. I use dropbox `Selective Sync` to sync only the bare minimum I temporarily need on the local device. But I want to have a backup of all of my data. I must have a backup. Better, I want to have 2 backups of all the data on 2 external hard disks in different locations. So if Dropbox go bankrupt, I still have all my data.  
@@ -22,28 +24,31 @@
 //! - dropbox_uploader
 //!
 //! But I wanted to write something mine for fun, learning Rust and using my own apps.
-//! I have a lot of files, so I wanted to list them first, then compare with the local files and finally download them.  
-//! Obsolete files will "move to trash folder", so I can inspect what and how to remove manually.  
+//! I have a lot of files, so I wanted to list them first - remote and local. Then compare the lists and finally download the files.  
+//! Obsolete files will "move to trash folder", so I can inspect what and how to delete manually.  
 //! The dropbox remote storage will always be read_only, nothing will be modified there, never, no permission for that.  
 //!
 //! ## Try it
 //!
-//! You should be logged in Linux terminal with your account. So things you do, are not visible to others.  
-//! You will set some local environment variables that are private/secret to your linux Session.  
-//! After you logout from you Linux session the local environment variables will be deleted.  
-//! You have to be in the project folder where cargo.toml is.  
-//! Build the CLI:  
-//! `$ cargo make debug`  
-//! Follow carefully the instructions.  
-//! Before the first use, create your Dropbox app.  
-//! Before every use generate your "short-lived access token" and in Linux bash write the "token" into the environment variable like this:  
-//! `$ export DBX_OAUTH_TOKEN=here paste the token`  
-//! Make a temporary alias for easy of use (it lasts only for this session lifetime) :  
-//! `$ alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk`  
-//! Test the connection and permission:  
-//! `$ dropbox_backup_to_external_disk test`  
-//!   
-//! Later, use `$ dropbox_backup_to_external_disk --help` to get all the instructions and commands.  
+//! There are a few manual steps for the security of you files on Dropbox. Authentication on internet is a complex topic.  
+//! You should be logged in Linux terminal (also in WSL2) with your account. So things you do, are not visible to others. You will set some local environment variables that are private/secret to your linux Session.  After you logout from you Linux session these local environment variables will be deleted.  
+//! The executable will create a sub-directory `temp_data` in the current directory. Maybe it is best if you create a dedicated directory `~/dropbox_backup_to_external_disk/` just for this executable.
+//! Download the latest release from [Github](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/releases) and make the file executable and enable auto-completion:
+//!
+//! ```bash
+//! cd ~
+//! mkdir dropbox_backup_to_external_disk
+//! cd dropbox_backup_to_external_disk
+//! TODO: curl from github
+//! chmod +x dropbox_backup_to_external_disk
+//! complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
+//! ```
+//!
+//! Run the executable with --help and follow carefully the instructions 1. and 2.  
+//!
+//! ```bash
+//! dropbox_backup_to_external_disk --help
+//! ```
 //!
 //! ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_1.png "screenshot_1") ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/screenshot_2.png "screenshot_2") ![list_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_2.png "list_2") ![list_3](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_3.png "list_3") ![list_4](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/master/images/list_4.png "list_4")
 //!
@@ -56,9 +61,21 @@
 //!
 //! ## Development
 //!
+//! I use [cargo-auto](https://crates.io/crates/cargo-auto) for automation tasks in rust language. Install it:
+//!
+//! ```bash
+//! cargo install cargo-auto
+//! ```
+//!
+//! List user-defined automation tasks in `automation_tasks_rs`:
+//!
+//! ```bash
+//! cargo auto
+//! ```
+//!
 //! I use WSL2 on Win10 to develope and execute this CLI in Debian Linux.  
-//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`. CLI lists the local files metadata in `temp_data/list_local_files.csv`.  
-//! List all the files metadata from the remote Dropbox to the file `temp_data/list_remote_files.csv`.
+//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`. CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  
+//! Save the list all the files metadata from the remote Dropbox to the file `temp_data/list_remote_files.csv`.
 //! Tab delimited with metadata: path (with name), datetime modified, size.
 //! The remote path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random-case.
 //! For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads in a ThreadPool to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.  
@@ -75,7 +92,7 @@
 //!
 //! ## DropBox api2 - Stone sdk
 //!
-//! Dropbox has made a `Stone` thing that contains all the API definition. From there is possible to generate code boilerplate for different languages for the api-client.  
+//! Dropbox has made a `Stone` thingy that contains all the API definition. From there is possible to generate code boilerplate for different languages for the api-client.  
 //! For Rust there is this quasi official project:  
 //! <https://crates.io/crates/dropbox-sdk>  
 //!
@@ -93,24 +110,55 @@
 //!
 //! Often a file is renamed or moved to another folder. I can try to recognize if there is the same file in list_for_trash and list_for download, but I cannot use the file path or name. Instead I use the metadata: size, date modified and content_hash.  
 //!
-//! ## REGEX adventure with non-breaking space and CRLF
+//! ## bash auto-completion
+//!
+//! This executable is prepared for auto-completion in bash.  
+//! Run this command to define auto-completion in bash for the current session:  
+//!
+//! ```bash
+//! complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
+//! ```
+//!
+//! To make it permanent add this command to the file `~/.bashrc` or some other file that runs commands on bash initialization.  
+//!
+//! ## Learn something new every day
+//!
+//! ### REGEX adventure with non-breaking space and CRLF
 //!
 //! We all know space. But there are other non-visible characters that are very similar and sometimes impossible to distinguish. Tab is one of them, but it is not so difficult to spot with a quick try.  
 //! But nbsp non-breaking space, often used in HTML is a catastrophe. There is no way to tell it apart from the normal space. I used a regex to find a match with some spaces. It worked right for a years. Yesterday it didn't work. If I changed space to `\s` in the regex expression, it worked, but not with space. I tried everything and didn't find the cause. Finally I deleted and inserted the space. It works. But how? After a detailed analysis I discovered it was a non-breakable space. This is unicode 160 or \xa0, instead of normal space unicode 32 \x20. Now I will try to find them all and replace with normal space. What a crazy world.  
 //! And another REGEX surprise. I try to have all text files delimited with the unix standard LF. But somehow the windows standard got mixed and I didn't recognize it. The regex for `end of line` $ didn't work for CRLF. When I changed it to LF, the good life is back and all works.
 //!
-//! ## Text files
+//! ### Text files
 //!
 //! Simple text files are a terrible way to store data that needs to be changed. It is ok for write once and then read. But there is not a good way to modify only one line inside a big text file. The recommended approach is read all, modify, save all. If the memory is not big enough then use a buffer to read a segment, modify, save a segment, repeat to end.  
 //! There is another approach called memory map to file, but everybody is trying to avoid it because some other process could modify the file when in use and make it garbage.  
 //! Sounds like a database is always a better choice for more agile development.  
 //! In this project I will create additional files that only append lines. Some kind of journal. And later use this to modify the big text files in one go. For example: list_just_downloaded_or_moved.csv is added to list_local_files.csv.  
 //!
-//! ## TODO
+//! ### termion
 //!
-//! press Enter to continue or it will continue automatically in 5 seconds
+//! After using some small crates to help me with Linux tty terminal ansi codes, I am happy to finally use only the `termion` crate.  
+//! It has all I need.  
 //!
-// endregion: lmake_md_to_doc_comments include README.md A //!
+//! ## cargo crev reviews and advisory
+//!
+//! We leave in times of danger with `supply chain attacks`.  
+//! It is recommended to always use [cargo-crev](https://github.com/crev-dev/cargo-crev)  
+//! to verify the trustworthiness of each of your dependencies.  
+//! Please, spread this info.  
+//! You can also read reviews quickly on the web. Example for the crate `num-traits`:  
+//! <https://web.crev.dev/rust-reviews/crate/num-traits/>  
+//!
+//! ## open-source free and free as a beer
+//!
+//! My open-source projects are free and free as a beer (MIT license).  
+//! I just love programming.  
+//! But I need also to drink. If you find my projects and tutorials helpful, please buy me a beer or two donating on my [paypal](https://www.paypal.com/paypalme/LucianoBestia). You know the price of a beer in your local bar ;-)  
+//! So I can drink a free beer for your health :-)  
+//! [Na zdravje](https://translate.google.com/?hl=en&sl=sl&tl=en&text=Na%20zdravje&op=translate) !
+//!
+// endregion: auto_md_to_doc_comments include README.md A //!
 
 mod local_mod;
 mod remote_mod;
@@ -346,7 +394,7 @@ fn compare_lists_internal(
 /// ideally, we put it somewhere safe in a distant location
 /// having 2 external disks on the same computer, is faster to just copy files then to question for calculating hash
 /// no need to move files or correct time. Just copy it. It is faster.
-pub fn second_backup(base_path: &str) {    
+pub fn second_backup(base_path: &str) {
     list2_local(base_path);
     // compare list_local_files and list2_local_files
     compare2_lists();

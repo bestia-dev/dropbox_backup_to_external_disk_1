@@ -34,10 +34,10 @@ fn main() {
             sync_only();
             ns_print_ms("sync_only", ns_started);
         }
-        Some("list_remote") => {
+        Some("remote_list") => {
             print!("{}", *CLEAR_ALL);
             println!(
-                "{}{}{}list_remote into temp_data/list_remote_files.csv{}",
+                "{}{}{}remote_list into temp_data/list_remote_files.csv{}",
                 at_line(1),
                 *CLEAR_LINE,
                 *YELLOW,
@@ -45,13 +45,13 @@ fn main() {
             );
             let ns_started = ns_start("");
             list_remote();
-            ns_print_ms("list_remote", ns_started);
+            ns_print_ms("remote_list", ns_started);
         }
-        Some("list_local") => match env::args().nth(2).as_deref() {
+        Some("local_list") => match env::args().nth(2).as_deref() {
             Some(path) => {
                 print!("{}", *CLEAR_ALL);
                 println!(
-                    "{}{}{}list_local into temp_data/list_local_files.csv{}",
+                    "{}{}{}local_list into temp_data/list_local_files.csv{}",
                     at_line(1),
                     *CLEAR_LINE,
                     *YELLOW,
@@ -59,7 +59,7 @@ fn main() {
                 );
                 let ns_started = ns_start("");
                 list_local(path);
-                ns_print_ms("list_local", ns_started);
+                ns_print_ms("local_list", ns_started);
             }
             _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
         },
@@ -90,7 +90,7 @@ fn main() {
             download_from_list();
             ns_print_ms("download_from_list", ns_started);
         }
-        Some("download") => match env::args().nth(2).as_deref() {
+        Some("one_file_download") => match env::args().nth(2).as_deref() {
             Some(path) => download_one_file(path),
             _ => println!("Unrecognized arguments. Try {} --help", &cargo_pkg_name),
         },
@@ -143,14 +143,14 @@ fn completion() {
             "test",
             "list_and_sync",
             "sync_only",
-            "list_remote",
-            "list_local",
+            "remote_list",
+            "local_list",
             "compare_lists",
             "move_or_rename_local_files",
             "trash_from_list",
             "correct_time_from_list",
             "download_from_list",
-            "download",
+            "one_file_download",
             "second_backup",
         ];
         completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
@@ -197,7 +197,7 @@ fn print_help() {
         *RESET
     );
     println!(
-        "- click button Generate to generated short-lived access token and copy it, close browser"
+        "- click button `Generate` to generated short-lived access token and copy it, close browser"
     );
     println!(
         "- In you Linux terminal session set a short-lived private/secret environment variable:"
@@ -217,27 +217,28 @@ fn print_help() {
 This command has 2 phases. 
 1. First it lists all remote and local files. That can take a lot of time if you have lot of files.
 For faster work it uses concurrent threads. 
-If you interrupt the execution with Ctrl+c in this phase, before the lists are completed, the lists are empty.
+If you interrupt the execution with ctrl+c in this phase, before the lists are completed, the lists are empty.
 You will need to rerun the command and wait for the lists to be fully completed.
 2. The second phase is the same as the command `sync_only`. 
-It can be interrupted with crl+c. The next `sync_only` will continue where it was interrupted. 
-");
+It can be interrupted with crl+c. The next `sync_only` will continue where it was interrupted. ");
     println!(
-        "$ {}dropbox_backup_to_external_disk list_and_sync /mnt/d/DropBoxBackup1{}",
+        "   $ {}dropbox_backup_to_external_disk list_and_sync /mnt/d/DropBoxBackup1{}\n",
         *GREEN, *RESET
     );
 
     println!("Sync only - one-way sync from dropbox to external disk
 It starts the sync only. Does NOT list again the remote and local files, the lists must already be completed 
 from the first command `list_and_sync`.
-It can be interrupted with crl+c. The next `sync_only` will continue where it was interrupted.
-");
-    println!("$ {}dropbox_backup_to_external_disk sync_only{}", *GREEN, *RESET);
+It can be interrupted with crl+c. The next `sync_only` will continue where it was interrupted.");
+    println!(
+        "  $ {}dropbox_backup_to_external_disk sync_only{}\n",
+        *GREEN, *RESET
+    );
 
     println!("Second backup");
-    println!("One-way sync from backup_1 external disk to backup_2 external disks.");
+    println!("One-way sync from backup_1 external disk to backup_2 external disk.");
     println!(
-        "$ {}dropbox_backup_to_external_disk second_backup /mnt/f/DropBoxBackup2{}",
+        "  $ {}dropbox_backup_to_external_disk second_backup /mnt/f/DropBoxBackup2{}",
         *GREEN, *RESET
     );
     println!("");
@@ -247,34 +248,49 @@ It can be interrupted with crl+c. The next `sync_only` will continue where it wa
         *YELLOW, *RESET
     );
     println!("Test connection and authorization:");
-    println!("$ {}dropbox_backup_to_external_disk test{}", *GREEN, *RESET);
+    println!(
+        "  $ {}dropbox_backup_to_external_disk test{}",
+        *GREEN, *RESET
+    );
     println!("List all files in your remote Dropbox to `list_remote_files.csv`:");
-    println!("$ {}dropbox_backup_to_external_disk list_remote{}", *GREEN, *RESET);
+    println!(
+        "  $ {}dropbox_backup_to_external_disk remote_list{}",
+        *GREEN, *RESET
+    );
     println!("List local files to `list_local_files.csv`:");
     println!(
-        "$ {}dropbox_backup_to_external_disk list_local /mnt/d/DropBoxBackup1{}",
+        "  $ {}dropbox_backup_to_external_disk local_list /mnt/d/DropBoxBackup1{}",
         *GREEN, *RESET
     );
     println!("Compare lists and create `list_for_download.csv`, `list_for_trash.csv` and `list_for_correct_time.csv`:");
-    println!("$ {}dropbox_backup_to_external_disk compare_lists{}", *GREEN, *RESET);
+    println!(
+        "  $ {}dropbox_backup_to_external_disk compare_lists{}",
+        *GREEN, *RESET
+    );
     println!("Move or rename local files (check with content_hash that they are equal):");
     println!(
-        "$ {}dropbox_backup_to_external_disk move_or_rename_local_files{}",
+        "  $ {}dropbox_backup_to_external_disk move_or_rename_local_files{}",
         *GREEN, *RESET
     );
     println!("Move to trash folder from `list_for_trash.csv`:");
-    println!("$ {}dropbox_backup_to_external_disk trash_from_list{}", *GREEN, *RESET);
+    println!(
+        "  $ {}dropbox_backup_to_external_disk trash_from_list{}",
+        *GREEN, *RESET
+    );
     println!("Correct time of files from `list_for_correct_time.csv`:");
     println!(
-        "$ {}dropbox_backup_to_external_disk correct_time_from_list{}",
+        "  $ {}dropbox_backup_to_external_disk correct_time_from_list{}",
         *GREEN, *RESET
     );
     println!("Download files from `list_for_download.csv`:");
     println!(
-        "$ {}dropbox_backup_to_external_disk download_from_list{}",
+        "  $ {}dropbox_backup_to_external_disk download_from_list{}",
         *GREEN, *RESET
     );
-    println!("Download one single file:");
-    println!("$ {}dropbox_backup_to_external_disk download <path>{}", *GREEN, *RESET);
-
+    println!("One single file download:");
+    println!(
+        "  $ {}dropbox_backup_to_external_disk one_file_download <path>{}",
+        *GREEN, *RESET
+    );
+    println!("");
 }
