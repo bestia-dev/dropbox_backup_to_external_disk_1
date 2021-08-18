@@ -212,24 +212,39 @@ fn move_or_rename_local_files_internal(
         if path_global_path_to_trash.exists() {
             let modified_for_trash = vec_line_for_trash[1];
             let size_for_trash = vec_line_for_trash[2];
+            let file_name_for_trash: Vec<&str> = string_path_for_trash.split("/").collect();
+            let file_name_for_trash = unwrap!(file_name_for_trash.last());
+
             // search in list_for_download for possible candidates
             for line_for_download in list_for_download.lines() {
                 let vec_line_for_download: Vec<&str> = line_for_download.split("\t").collect();
                 let path_for_download = vec_line_for_download[0];
                 let modified_for_download = vec_line_for_download[1];
                 let size_for_download = vec_line_for_download[2];
+                let file_name_for_download: Vec<&str> = path_for_download.split("/").collect();
+                let file_name_for_download = unwrap!(file_name_for_download.last());
+
                 if modified_for_trash == modified_for_download
                     && size_for_trash == size_for_download
                 {
-                    // same size and date. Let's check the content_hash to be sure.
-                    let local_content_hash = format!(
-                        "{:x}",
-                        unwrap!(DropboxContentHasher::hash_file(path_global_path_to_trash))
-                    );
-                    let remote_content_hash =
-                        client_or_base_path.get_content_hash(path_for_download);
+                    let mut do_move = false;
+                    // same size and date. if the name is the same, then copy, else check hash (slow)
+                    if file_name_for_trash == file_name_for_download {
+                        do_move = true;
+                    } else {
+                        // same size and date. Let's check the content_hash to be sure.
+                        let local_content_hash = format!(
+                            "{:x}",
+                            unwrap!(DropboxContentHasher::hash_file(path_global_path_to_trash))
+                        );
+                        let remote_content_hash =
+                            client_or_base_path.get_content_hash(path_for_download);
 
-                    if local_content_hash == remote_content_hash {
+                        if local_content_hash == remote_content_hash {
+                            do_move = true;
+                        }
+                    }
+                    if do_move == true {
                         let move_from = path_global_path_to_trash;
                         let move_to = format!("{}{}", to_base_local_path, path_for_download);
                         println!("move {}  ->  {}", &move_from.to_string_lossy(), move_to);

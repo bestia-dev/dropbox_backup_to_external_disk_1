@@ -5,14 +5,14 @@
 [comment]: # (auto_cargo_toml_to_md start)
 
 **One way sync from dropbox to external disc**  
-***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1625  date: 2021-08-18 authors: Luciano Bestia***  
+***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1713  date: 2021-08-18 authors: Luciano Bestia***  
 
 [comment]: # (auto_cargo_toml_to_md end)
 
 [comment]: # (auto_lines_of_code start)
-[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1738-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1752-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-248-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-139-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-140-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 
@@ -103,7 +103,7 @@ Once the lists are complete the CLI will compare them and create files:
 `list_for_download.csv`  
 `list_for_trash.csv`  
 With this files the CLI will:  
-`move_or_rename_local_files` using the content_hash to be sure they are equal  
+`move_or_rename_local_files` if (name, size and file date) are equal, or (size, date and content_hash)
 `trash_from_list` will move the obsolete files into a trash folder  
 `correct_time_from_list` sometimes it is needed  
 `download_from_list` - this can take a lot of time and it can be stopped with ctrl+c
@@ -126,7 +126,10 @@ Then every time before use we need generate the "short-lived access token" for s
 
 ## rename or move
 
-Often a file is renamed or moved to another folder. I can try to recognize if there is the same file in list_for_trash and list_for download, but I cannot use the file path or name. Instead I use the metadata: size, date modified and content_hash.  
+Often a file is renamed or moved to another folder.  
+I can try to recognize if there is the same file in list_for_trash and list_for download.  
+If the name, size and file date are equal then they are probably the same file.  
+If the name is different, then try if content_hash is equal, but that is slow.  
 
 ## bash auto-completion
 

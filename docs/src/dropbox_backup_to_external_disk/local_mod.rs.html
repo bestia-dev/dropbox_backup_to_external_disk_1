@@ -549,6 +549,21 @@
 <span id="547">547</span>
 <span id="548">548</span>
 <span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
 </pre><pre class="rust">
 <span class="comment">// local_mod.rs</span>
 <span class="doccomment">//! Module contains all functions for local external disk.</span>
@@ -764,24 +779,39 @@
         <span class="kw">if</span> <span class="ident">path_global_path_to_trash</span>.<span class="ident">exists</span>() {
             <span class="kw">let</span> <span class="ident">modified_for_trash</span> <span class="op">=</span> <span class="ident">vec_line_for_trash</span>[<span class="number">1</span>];
             <span class="kw">let</span> <span class="ident">size_for_trash</span> <span class="op">=</span> <span class="ident">vec_line_for_trash</span>[<span class="number">2</span>];
+            <span class="kw">let</span> <span class="ident">file_name_for_trash</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">string_path_for_trash</span>.<span class="ident">split</span>(<span class="string">&quot;/&quot;</span>).<span class="ident">collect</span>();
+            <span class="kw">let</span> <span class="ident">file_name_for_trash</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">file_name_for_trash</span>.<span class="ident">last</span>());
+
             <span class="comment">// search in list_for_download for possible candidates</span>
             <span class="kw">for</span> <span class="ident">line_for_download</span> <span class="kw">in</span> <span class="ident">list_for_download</span>.<span class="ident">lines</span>() {
                 <span class="kw">let</span> <span class="ident">vec_line_for_download</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">line_for_download</span>.<span class="ident">split</span>(<span class="string">&quot;\t&quot;</span>).<span class="ident">collect</span>();
                 <span class="kw">let</span> <span class="ident">path_for_download</span> <span class="op">=</span> <span class="ident">vec_line_for_download</span>[<span class="number">0</span>];
                 <span class="kw">let</span> <span class="ident">modified_for_download</span> <span class="op">=</span> <span class="ident">vec_line_for_download</span>[<span class="number">1</span>];
                 <span class="kw">let</span> <span class="ident">size_for_download</span> <span class="op">=</span> <span class="ident">vec_line_for_download</span>[<span class="number">2</span>];
+                <span class="kw">let</span> <span class="ident">file_name_for_download</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">path_for_download</span>.<span class="ident">split</span>(<span class="string">&quot;/&quot;</span>).<span class="ident">collect</span>();
+                <span class="kw">let</span> <span class="ident">file_name_for_download</span> <span class="op">=</span> <span class="macro">unwrap!</span>(<span class="ident">file_name_for_download</span>.<span class="ident">last</span>());
+
                 <span class="kw">if</span> <span class="ident">modified_for_trash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">modified_for_download</span>
                     <span class="op">&amp;&amp;</span> <span class="ident">size_for_trash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">size_for_download</span>
                 {
-                    <span class="comment">// same size and date. Let&#39;s check the content_hash to be sure.</span>
-                    <span class="kw">let</span> <span class="ident">local_content_hash</span> <span class="op">=</span> <span class="macro">format!</span>(
-                        <span class="string">&quot;{:x}&quot;</span>,
-                        <span class="macro">unwrap!</span>(<span class="ident">DropboxContentHasher::hash_file</span>(<span class="ident">path_global_path_to_trash</span>))
-                    );
-                    <span class="kw">let</span> <span class="ident">remote_content_hash</span> <span class="op">=</span>
-                        <span class="ident">client_or_base_path</span>.<span class="ident">get_content_hash</span>(<span class="ident">path_for_download</span>);
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">do_move</span> <span class="op">=</span> <span class="bool-val">false</span>;
+                    <span class="comment">// same size and date. if the name is the same, then copy, else check hash (slow)</span>
+                    <span class="kw">if</span> <span class="ident">file_name_for_trash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">file_name_for_download</span> {
+                        <span class="ident">do_move</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                    } <span class="kw">else</span> {
+                        <span class="comment">// same size and date. Let&#39;s check the content_hash to be sure.</span>
+                        <span class="kw">let</span> <span class="ident">local_content_hash</span> <span class="op">=</span> <span class="macro">format!</span>(
+                            <span class="string">&quot;{:x}&quot;</span>,
+                            <span class="macro">unwrap!</span>(<span class="ident">DropboxContentHasher::hash_file</span>(<span class="ident">path_global_path_to_trash</span>))
+                        );
+                        <span class="kw">let</span> <span class="ident">remote_content_hash</span> <span class="op">=</span>
+                            <span class="ident">client_or_base_path</span>.<span class="ident">get_content_hash</span>(<span class="ident">path_for_download</span>);
 
-                    <span class="kw">if</span> <span class="ident">local_content_hash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">remote_content_hash</span> {
+                        <span class="kw">if</span> <span class="ident">local_content_hash</span> <span class="op">=</span><span class="op">=</span> <span class="ident">remote_content_hash</span> {
+                            <span class="ident">do_move</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                        }
+                    }
+                    <span class="kw">if</span> <span class="ident">do_move</span> <span class="op">=</span><span class="op">=</span> <span class="bool-val">true</span> {
                         <span class="kw">let</span> <span class="ident">move_from</span> <span class="op">=</span> <span class="ident">path_global_path_to_trash</span>;
                         <span class="kw">let</span> <span class="ident">move_to</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">to_base_local_path</span>, <span class="ident">path_for_download</span>);
                         <span class="macro">println!</span>(<span class="string">&quot;move {}  -&gt;  {}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">move_from</span>.<span class="ident">to_string_lossy</span>(), <span class="ident">move_to</span>);

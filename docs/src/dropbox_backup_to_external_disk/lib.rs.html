@@ -432,11 +432,11 @@
 <span class="doccomment">//! # dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! **One way sync from dropbox to external disc**  </span>
-<span class="doccomment">//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1625  date: 2021-08-18 authors: Luciano Bestia***  </span>
+<span class="doccomment">//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.1713  date: 2021-08-18 authors: Luciano Bestia***  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1738-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1752-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-248-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-139-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-140-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
@@ -473,13 +473,10 @@
 <span class="doccomment">//! chmod +x dropbox_backup_to_external_disk</span>
 <span class="doccomment">//! alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk</span>
 <span class="doccomment">//! complete -C &quot;dropbox_backup_to_external_disk completion&quot; dropbox_backup_to_external_disk</span>
+<span class="doccomment">//! dropbox_backup_to_external_disk --help</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Run the executable with --help and follow carefully the instructions 1. and 2.  </span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```bash</span>
-<span class="doccomment">//! dropbox_backup_to_external_disk --help</span>
-<span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/screenshot_1.png &quot;screenshot_1&quot;) ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/screenshot_2.png &quot;screenshot_2&quot;) ![list_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_2.png &quot;list_2&quot;) ![list_3](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_3.png &quot;list_3&quot;) ![list_4](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_4.png &quot;list_4&quot;)</span>
 <span class="doccomment">//!</span>
@@ -528,7 +525,7 @@
 <span class="doccomment">//! `list_for_download.csv`  </span>
 <span class="doccomment">//! `list_for_trash.csv`  </span>
 <span class="doccomment">//! With this files the CLI will:  </span>
-<span class="doccomment">//! `move_or_rename_local_files` using the content_hash to be sure they are equal  </span>
+<span class="doccomment">//! `move_or_rename_local_files` if (name, size and file date) are equal, or (size, date and content_hash)</span>
 <span class="doccomment">//! `trash_from_list` will move the obsolete files into a trash folder  </span>
 <span class="doccomment">//! `correct_time_from_list` sometimes it is needed  </span>
 <span class="doccomment">//! `download_from_list` - this can take a lot of time and it can be stopped with ctrl+c</span>
@@ -551,7 +548,10 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## rename or move</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! Often a file is renamed or moved to another folder. I can try to recognize if there is the same file in list_for_trash and list_for download, but I cannot use the file path or name. Instead I use the metadata: size, date modified and content_hash.  </span>
+<span class="doccomment">//! Often a file is renamed or moved to another folder.  </span>
+<span class="doccomment">//! I can try to recognize if there is the same file in list_for_trash and list_for download.  </span>
+<span class="doccomment">//! If the name, size and file date are equal then they are probably the same file.  </span>
+<span class="doccomment">//! If the name is different, then try if content_hash is equal, but that is slow.  </span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## bash auto-completion</span>
 <span class="doccomment">//!</span>
