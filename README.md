@@ -73,11 +73,11 @@ I then restart my Win10 and the problem magically disappears.
 It is wise to have 2 backups on external disks and store them in separate locations. Just to be sure.  
 If you have internet access on both places then you can sync backup_2 just the same way you sync backup_1.  
 
-![workflow_2.png](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png "workflow_2.png")
+![workflow_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png "workflow_2")
 
 But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with `second_backup`.  
 
-![workflow_1.png](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png "workflow_1.png")
+![workflow_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png "workflow_1")
 
 ## Development
 
