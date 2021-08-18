@@ -216,6 +216,8 @@ fn move_or_rename_local_files_internal(
             let file_name_for_trash = unwrap!(file_name_for_trash.last());
 
             // search in list_for_download for possible candidates
+            // first try exact match with name, date, size because it is fast
+            let mut is_moved = false;
             for line_for_download in list_for_download.lines() {
                 let vec_line_for_download: Vec<&str> = line_for_download.split("\t").collect();
                 let path_for_download = vec_line_for_download[0];
@@ -226,12 +228,30 @@ fn move_or_rename_local_files_internal(
 
                 if modified_for_trash == modified_for_download
                     && size_for_trash == size_for_download
+                    && file_name_for_trash == file_name_for_download
                 {
-                    let mut do_move = false;
-                    // same size and date. if the name is the same, then copy, else check hash (slow)
-                    if file_name_for_trash == file_name_for_download {
-                        do_move = true;
-                    } else {
+                    move_internal(
+                        path_global_path_to_trash,
+                        &to_base_local_path,
+                        path_for_download,
+                    );
+                    unwrap!(writeln!(just_downloaded, "{}", line_for_download));
+                    count_moved += 1;
+                    is_moved = true;
+                    break;
+                }
+            }
+            // if the exact match didn't move the file, then check the content_hash (slow)
+            if is_moved == false {
+                for line_for_download in list_for_download.lines() {
+                    let vec_line_for_download: Vec<&str> = line_for_download.split("\t").collect();
+                    let path_for_download = vec_line_for_download[0];
+                    let modified_for_download = vec_line_for_download[1];
+                    let size_for_download = vec_line_for_download[2];
+
+                    if modified_for_trash == modified_for_download
+                        && size_for_trash == size_for_download
+                    {
                         // same size and date. Let's check the content_hash to be sure.
                         let local_content_hash = format!(
                             "{:x}",
@@ -241,43 +261,51 @@ fn move_or_rename_local_files_internal(
                             client_or_base_path.get_content_hash(path_for_download);
 
                         if local_content_hash == remote_content_hash {
-                            do_move = true;
+                            move_internal(
+                                path_global_path_to_trash,
+                                &to_base_local_path,
+                                path_for_download,
+                            );
+                            unwrap!(writeln!(just_downloaded, "{}", line_for_download));
+                            count_moved += 1;
+                            break;
                         }
-                    }
-                    if do_move == true {
-                        let move_from = path_global_path_to_trash;
-                        let move_to = format!("{}{}", to_base_local_path, path_for_download);
-                        println!("move {}  ->  {}", &move_from.to_string_lossy(), move_to);
-                        let parent = unwrap!(path::Path::parent(path::Path::new(&move_to)));
-                        if !parent.exists() {
-                            fs::create_dir_all(&parent).unwrap();
-                        }
-                        // overwrite read-only files
-                        if path::Path::new(&move_to).exists() {
-                            let mut perms = unwrap!(fs::metadata(&move_to)).permissions();
-                            if perms.readonly() == true {
-                                perms.set_readonly(false);
-                                unwrap!(fs::set_permissions(&move_to, perms));
-                            }
-                        }
-                        if path::Path::new(&move_from).exists() {
-                            let mut perms = unwrap!(fs::metadata(&move_from)).permissions();
-                            if perms.readonly() == true {
-                                perms.set_readonly(false);
-                                unwrap!(fs::set_permissions(&move_from, perms));
-                            }
-                        }
-                        unwrap!(fs::rename(&move_from, &move_to));
-                        // append to just_downloaded
-                        unwrap!(writeln!(just_downloaded, "{}", line_for_download));
-                        count_moved += 1;
-                        break;
                     }
                 }
             }
         }
     }
     println!("moved or renamed: {}", count_moved);
+}
+
+/// internal code to move file
+fn move_internal(
+    path_global_path_to_trash: &path::Path,
+    to_base_local_path: &str,
+    path_for_download: &str,
+) {
+    let move_from = path_global_path_to_trash;
+    let move_to = format!("{}{}", to_base_local_path, path_for_download);
+    println!("move {}  ->  {}", &move_from.to_string_lossy(), move_to);
+    let parent = unwrap!(path::Path::parent(path::Path::new(&move_to)));
+    if !parent.exists() {
+        fs::create_dir_all(&parent).unwrap();
+    }
+    if path::Path::new(&move_to).exists() {
+        let mut perms = unwrap!(fs::metadata(&move_to)).permissions();
+        if perms.readonly() == true {
+            perms.set_readonly(false);
+            unwrap!(fs::set_permissions(&move_to, perms));
+        }
+    }
+    if path::Path::new(&move_from).exists() {
+        let mut perms = unwrap!(fs::metadata(&move_from)).permissions();
+        if perms.readonly() == true {
+            perms.set_readonly(false);
+            unwrap!(fs::set_permissions(&move_from, perms));
+        }
+    }
+    unwrap!(fs::rename(&move_from, &move_to));
 }
 
 /// Move to trash folder the files from list_for_trash.  
