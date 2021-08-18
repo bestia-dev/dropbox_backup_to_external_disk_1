@@ -39,7 +39,6 @@
 //! cd ~
 //! mkdir dropbox_backup_to_external_disk
 //! cd dropbox_backup_to_external_disk
-//! TODO: curl from github
 //! chmod +x dropbox_backup_to_external_disk
 //! complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
 //! ```

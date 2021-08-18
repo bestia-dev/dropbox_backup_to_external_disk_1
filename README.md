@@ -45,8 +45,10 @@ Download the latest release from [Github](https://github.com/LucianoBestia/dropb
 cd ~
 mkdir dropbox_backup_to_external_disk
 cd dropbox_backup_to_external_disk
-TODO: curl from github
+curl -L https://github.com/LucianoBestia/dropbox_backup_to_external_disk/releases/latest/download/dropbox_backup_to_external_disk --output dropbox_backup_to_external_disk
+
 chmod +x dropbox_backup_to_external_disk
+alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk
 complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
 ```
 
