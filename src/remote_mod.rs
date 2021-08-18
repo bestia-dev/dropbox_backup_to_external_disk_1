@@ -163,14 +163,16 @@ pub fn list_remote_folder(
                     }
                     Ok(Ok(files::Metadata::File(entry))) => {
                         // write csv tab delimited
-                        file_list.push(format!(
-                            "{}\t{}\t{}",
-                            // path_display is not 100% case accurate. Dropbox is case-insensitive and preserves the casing only for the metadata_name, not path.
-                            entry.path_display.unwrap_or(entry.name),
-                            entry.client_modified,
-                            entry.size
-                        ));
-                        unwrap!(tx_clone.send((None, None, 0, 1)));
+                        // avoid strange files *com.dropbox.attrs
+                        // path_display is not 100% case accurate. Dropbox is case-insensitive and preserves the casing only for the metadata_name, not path.
+                        let file_path = entry.path_display.unwrap_or(entry.name);
+                        if !file_path.ends_with("com.dropbox.attrs") {
+                            file_list.push(format!(
+                                "{}\t{}\t{}",
+                                file_path, entry.client_modified, entry.size
+                            ));
+                            unwrap!(tx_clone.send((None, None, 0, 1)));
+                        }
                     }
                     Ok(Ok(files::Metadata::Deleted(entry))) => {
                         panic!(
@@ -445,9 +447,10 @@ pub fn download_from_list() {
                 for line_path_to_download in list_for_download.lines() {
                     let line: Vec<&str> = line_path_to_download.split("\t").collect();
                     let path_to_download = line[0];
+                    let modified_for_download = line[1];
                     let file_size: i32 = line[2].parse().unwrap();
                     if file_size == 0 {
-                        // create a n empty file, because download empty file causes error 416
+                        // create an empty file, because download empty file causes error 416
                         let local_path = format!("{}{}", base_local_path, path_to_download);
                         let path = path::PathBuf::from(&local_path);
                         let parent = path.parent().unwrap();
@@ -460,6 +463,13 @@ pub fn download_from_list() {
                             .open(&local_path)
                             .unwrap();
                         unwrap!(writeln!(file, "{}", ""));
+                        // change the file date
+                        let system_time = unwrap!(humantime::parse_rfc3339(modified_for_download));
+                        let modified = filetime::FileTime::from_system_time(system_time);
+                        let atime = modified;
+                        let mtime = modified;
+                        unwrap!(filetime::set_file_times(&local_path, atime, mtime));
+
                         // append to list_just_downloaded
                         let list_just_downloaded_or_moved =
                             "temp_data/list_just_downloaded_or_moved.csv";
