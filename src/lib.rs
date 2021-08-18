@@ -188,127 +188,173 @@ pub fn sync_only() {
 
 pub fn compare_lists() {
     add_just_downloaded_to_list_local();
-    let path_list_remote_files = "temp_data/list_remote_files.csv";
-    let path_list_local_files = "temp_data/list_local_files.csv";
+    let path_list_source_files = "temp_data/list_remote_files.csv";
+    let path_list_destination_files = "temp_data/list_local_files.csv";
     let path_list_for_download = "temp_data/list_for_download.csv";
     let path_list_for_trash = "temp_data/list_for_trash.csv";
     let path_list_for_correct_time = "temp_data/list_for_correct_time.csv";
     compare_lists_internal(
-        path_list_remote_files,
-        path_list_local_files,
+        path_list_source_files,
+        path_list_destination_files,
         path_list_for_download,
         path_list_for_trash,
         path_list_for_correct_time,
     );
 }
+
 pub fn compare2_lists() {
     add2_just_downloaded_to_list_local();
-    let path_list_remote_files = "temp_data/list_local_files.csv";
-    let path_list_local_files = "temp_data/list2_local_files.csv";
+    let path_list_source_files = "temp_data/list_local_files.csv";
+    let path_list_destination_files = "temp_data/list2_local_files.csv";
     let path_list_for_download = "temp_data/list2_for_download.csv";
     let path_list_for_trash = "temp_data/list2_for_trash.csv";
     let path_list_for_correct_time = "temp_data/list2_for_correct_time.csv";
     compare_lists_internal(
-        path_list_remote_files,
-        path_list_local_files,
+        path_list_source_files,
+        path_list_destination_files,
         path_list_for_download,
         path_list_for_trash,
         path_list_for_correct_time,
     );
 }
+
 /// compare list: the lists must be already sorted for this to work correctly
 fn compare_lists_internal(
-    path_list_remote_files: &str,
-    path_list_local_files: &str,
+    path_list_source_files: &str,
+    path_list_destination_files: &str,
     path_list_for_download: &str,
     path_list_for_trash: &str,
     path_list_for_correct_time: &str,
 ) {
-    let string_remote = unwrap!(fs::read_to_string(path_list_remote_files));
+    let string_remote = unwrap!(fs::read_to_string(path_list_source_files));
     let vec_remote_lines: Vec<&str> = string_remote.lines().collect();
-    println!("list_remote_files: {}", vec_remote_lines.len());
-    let string_local = unwrap!(fs::read_to_string(path_list_local_files));
-    let vec_local_lines: Vec<&str> = string_local.lines().collect();
-    println!("list_local_files: {}", vec_local_lines.len());
+    println!(
+        "{}: {}",
+        path_list_source_files.split("/").collect::<Vec<&str>>()[1],
+        vec_remote_lines.len()
+    );
+    let string_destination = unwrap!(fs::read_to_string(path_list_destination_files));
+    let vec_destination_lines: Vec<&str> = string_destination.lines().collect();
+    println!(
+        "{}: {}",
+        path_list_destination_files
+            .split("/")
+            .collect::<Vec<&str>>()[1],
+        vec_destination_lines.len()
+    );
 
     let mut vec_for_download: Vec<String> = vec![];
     let mut vec_for_trash: Vec<String> = vec![];
     let mut vec_for_correct_time: Vec<String> = vec![];
-    let mut cursor_remote = 0;
-    let mut cursor_local = 0;
+    let mut cursor_source = 0;
+    let mut cursor_destination = 0;
     //avoid making new allocations or shadowing inside a loop
-    let mut vec_line_local: Vec<&str> = vec![];
-    let mut vec_line_remote: Vec<&str> = vec![];
+    let mut vec_line_destination: Vec<&str> = vec![];
+    let mut vec_line_source: Vec<&str> = vec![];
     //let mut i = 0;
     loop {
-        vec_line_local.truncate(3);
-        vec_line_remote.truncate(3);
+        vec_line_destination.truncate(3);
+        vec_line_source.truncate(3);
 
-        if cursor_remote >= vec_remote_lines.len() && cursor_local >= vec_local_lines.len() {
+        if cursor_source >= vec_remote_lines.len()
+            && cursor_destination >= vec_destination_lines.len()
+        {
             break;
-        } else if cursor_remote >= vec_remote_lines.len() {
+        } else if cursor_source >= vec_remote_lines.len() {
             // final lines
-            vec_for_trash.push(vec_local_lines[cursor_local].to_string());
-            cursor_local += 1;
-        } else if cursor_local >= vec_local_lines.len() {
+            vec_for_trash.push(vec_destination_lines[cursor_destination].to_string());
+            cursor_destination += 1;
+        } else if cursor_destination >= vec_destination_lines.len() {
             // final lines
-            vec_for_download.push(vec_remote_lines[cursor_remote].to_string());
-            cursor_remote += 1;
+            vec_for_download.push(vec_remote_lines[cursor_source].to_string());
+            cursor_source += 1;
         } else {
-            vec_line_remote = vec_remote_lines[cursor_remote].split("\t").collect();
-            vec_line_local = vec_local_lines[cursor_local].split("\t").collect();
+            vec_line_source = vec_remote_lines[cursor_source].split("\t").collect();
+            vec_line_destination = vec_destination_lines[cursor_destination]
+                .split("\t")
+                .collect();
             // UncasedStr preserves the case in the string, but comparison is done case insensitive
-            let path_remote: &UncasedStr = vec_line_remote[0].into();
-            let path_local: &UncasedStr = vec_line_local[0].into();
+            let path_source: &UncasedStr = vec_line_source[0].into();
+            let path_destination: &UncasedStr = vec_line_destination[0].into();
 
-            //println!("{}",path_remote);
-            //println!("{}",path_local);
-            if path_remote.lt(path_local) {
+            //println!("{}",path_source);
+            //println!("{}",path_destination);
+            if path_source.lt(path_destination) {
                 //println!("lt");
-                vec_for_download.push(vec_remote_lines[cursor_remote].to_string());
-                cursor_remote += 1;
-            } else if path_remote.gt(path_local) {
+                vec_for_download.push(vec_remote_lines[cursor_source].to_string());
+                cursor_source += 1;
+            } else if path_source.gt(path_destination) {
                 //println!("gt" );
-                vec_for_trash.push(vec_local_lines[cursor_local].to_string());
-                cursor_local += 1;
+                vec_for_trash.push(vec_destination_lines[cursor_destination].to_string());
+                cursor_destination += 1;
             } else {
                 //println!("eq");
                 // equal names. check date and size
-                // println!("Equal names: {}   {}",path_remote,path_local);
-                // if equal size and time difference only in seconds, then correct local time
-                if vec_line_remote[2] == vec_line_local[2]
-                    && vec_line_remote[1] != vec_line_local[1]
-                    && vec_line_remote[1][0..17] == vec_line_local[1][0..17]
+                // println!("Equal names: {}   {}",path_remote,path_destination);
+                // if equal size and time difference only in seconds, then correct destination time
+                if vec_line_source[2] == vec_line_destination[2]
+                    && vec_line_source[1] != vec_line_destination[1]
+                    && vec_line_source[1][0..17] == vec_line_destination[1][0..17]
                 {
-                    vec_for_correct_time.push(format!("{}\t{}", path_local, vec_line_remote[1]));
-                } else if vec_line_remote[1] != vec_line_local[1]
-                    || vec_line_remote[2] != vec_line_local[2]
+                    vec_for_correct_time
+                        .push(format!("{}\t{}", path_destination, vec_line_source[1]));
+                } else if vec_line_source[1] != vec_line_destination[1]
+                    || vec_line_source[2] != vec_line_destination[2]
                 {
-                    //println!("Equal names: {}   {}", path_remote, path_local);
+                    //println!("Equal names: {}   {}", path_remote, path_destination);
                     //println!(
                     //"Different date or size {} {} {} {}",
-                    //line_remote[1], line_local[1], line_remote[2], line_local[2]
+                    //line_remote[1], line_destination[1], line_remote[2], line_local[2]
                     //);
-                    vec_for_download.push(vec_remote_lines[cursor_remote].to_string());
+                    vec_for_download.push(vec_remote_lines[cursor_source].to_string());
                 }
                 // else the metadata is the same, no action
-                cursor_local += 1;
-                cursor_remote += 1;
+                cursor_destination += 1;
+                cursor_source += 1;
             }
         }
     }
-    println!("list_for_download: {}", vec_for_download.len());
+    println!(
+        "{}: {}",
+        path_list_for_download.split("/").collect::<Vec<&str>>()[1],
+        vec_for_download.len()
+    );
     let string_for_download = vec_for_download.join("\n");
     unwrap!(fs::write(path_list_for_download, string_for_download));
 
-    println!("list_for_trash: {}", vec_for_trash.len());
+    println!(
+        "{}: {}",
+        path_list_for_trash.split("/").collect::<Vec<&str>>()[1],
+        vec_for_trash.len()
+    );
     let string_for_trash = vec_for_trash.join("\n");
     unwrap!(fs::write(path_list_for_trash, string_for_trash));
 
-    println!("list_for_correct_time: {}", vec_for_correct_time.len());
+    println!(
+        "{}: {}",
+        path_list_for_correct_time.split("/").collect::<Vec<&str>>()[1],
+        vec_for_correct_time.len()
+    );
     let string_for_correct_time = vec_for_correct_time.join("\n");
     unwrap!(fs::write(
         path_list_for_correct_time,
         string_for_correct_time
     ));
+}
+
+/// after the first backup from dropbox, we want to make a second backup from the first backup
+/// ideally, we put it somewhere safe in a distant location
+/// having 2 external disks on the same computer, is faster to just copy files then to question for calculating hash
+/// no need to move files or correct time. Just copy it. It is faster.
+pub fn second_backup(base_path: &str) {    
+    list2_local(base_path);
+    // compare list_local_files and list2_local_files
+    compare2_lists();
+    trash2_from_list();
+    // copy instead of download, no multi-thread
+    copy_from_list2_for_download("temp_data/list2_for_download.csv");
+    // just copy also the files for correct time. It is faster then hash.
+    copy_from_list2_for_download("temp_data/list2_for_correct_time.csv");
+    println!("{}compare local and local2 lists{}", *YELLOW, *RESET);
+    compare2_lists();
 }

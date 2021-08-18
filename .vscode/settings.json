@@ -5,8 +5,10 @@
         "filetime",
         "hasher",
         "humantime",
+        "mkdir",
         "nbsp",
         "rclone",
+        "readonly",
         "termion",
         "unhide"
     ]

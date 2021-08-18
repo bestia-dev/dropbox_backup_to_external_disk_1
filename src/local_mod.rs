@@ -18,15 +18,17 @@ pub fn list_local(base_path: &str) {
     let path_list = "temp_data/list_local_files.csv";
     // just_loaded is obsolete once I got the fresh local list
     let path_just_downloaded = "temp_data/list_just_downloaded_or_moved.csv";
+    save_base_path(base_path);
     list_local_internal(base_path, path_list, path_just_downloaded);
 }
 /// for second backup: list all local files and folders. It can take some time.
-pub fn list2_local(base_path: &str) {
+pub fn list2_local(base2_path: &str) {
     // empty the file. I want all or nothing result here if the process is terminated prematurely.
     let path_list = "temp_data/list2_local_files.csv";
     // just_loaded is obsolete once I got the fresh local list
     let path_just_downloaded = "temp_data/list2_just_downloaded_or_moved.csv";
-    list_local_internal(base_path, path_list, path_just_downloaded);
+    save2_base_path(base2_path);
+    list_local_internal(base2_path, path_list, path_just_downloaded);
 }
 
 /// list all local files and folders. It can take some time.
@@ -35,7 +37,6 @@ fn list_local_internal(base_path: &str, path_list: &str, path_just_downloaded: &
     unwrap!(fs::write(path_list, ""));
     // just_loaded is obsolete once I got the fresh local list
     unwrap!(fs::write(path_just_downloaded, ""));
-    save_base_path(base_path);
     // write data to a big string in memory
     let mut output_string = String::with_capacity(1024 * 1024);
     let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
@@ -113,9 +114,18 @@ pub fn save_base_path(base_path: &str) {
     fs::write("temp_data/base_local_path.csv", base_path).unwrap();
 }
 
+/// saves the base local path for later commands like "/mnt/d/DropBoxBackup2"
+pub fn save2_base_path(base2_path: &str) {
+    if !path::Path::new(base2_path).exists() {
+        println!("error: base2_path not exists {}", base2_path);
+        std::process::exit(1);
+    }
+    fs::write("temp_data/base2_local_path.csv", base2_path).unwrap();
+}
+
 /// with this enum I can send a completely different parameter to a function
 /// and then call a method on it, that processes differently depending on the kind. Smart.
-enum RemoteKind {
+pub enum RemoteKind {
     Client {
         client: dropbox_sdk::default_client::UserAuthDefaultClient,
     },
@@ -139,12 +149,16 @@ impl RemoteKind {
                 let global_path_to_download =
                     format!("{}{}", &remote_base_local_path, path_for_download);
                 let path_global_path_to_download = path::Path::new(&global_path_to_download);
-                format!(
-                    "{:x}",
-                    unwrap!(DropboxContentHasher::hash_file(
-                        path_global_path_to_download
-                    ))
-                )
+                if path_global_path_to_download.exists() {
+                    format!(
+                        "{:x}",
+                        unwrap!(DropboxContentHasher::hash_file(
+                            path_global_path_to_download
+                        ))
+                    )
+                } else {
+                    "".to_string()
+                }
             }
         }
     }
@@ -165,23 +179,6 @@ pub fn move_or_rename_local_files() {
     let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
     move_or_rename_local_files_internal(
         RemoteKind::Client { client },
-        &to_base_local_path,
-        path_list_for_trash,
-        path_list_for_download,
-        list_just_downloaded_or_moved,
-    );
-}
-
-pub fn move2_or_rename_local_files() {
-    let to_base_local_path = fs::read_to_string("temp_data/base2_local_path.csv").unwrap();
-    let remote_base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-    let path_list_for_trash = "temp_data/list2_for_trash.csv";
-    let path_list_for_download = "temp_data/list2_for_download.csv";
-    let list_just_downloaded_or_moved = "temp_data/list2_just_downloaded_or_moved.csv";
-    move_or_rename_local_files_internal(
-        RemoteKind::RemoteBasePath {
-            remote_base_local_path,
-        },
         &to_base_local_path,
         path_list_for_trash,
         path_list_for_download,
@@ -246,6 +243,21 @@ fn move_or_rename_local_files_internal(
                         if !parent.exists() {
                             fs::create_dir_all(&parent).unwrap();
                         }
+                        // overwrite read-only files
+                        if path::Path::new(&move_to).exists() {
+                            let mut perms = unwrap!(fs::metadata(&move_to)).permissions();
+                            if perms.readonly() == true {
+                                perms.set_readonly(false);
+                                unwrap!(fs::set_permissions(&move_to, perms));
+                            }
+                        }
+                        if path::Path::new(&move_from).exists() {
+                            let mut perms = unwrap!(fs::metadata(&move_from)).permissions();
+                            if perms.readonly() == true {
+                                perms.set_readonly(false);
+                                unwrap!(fs::set_permissions(&move_from, perms));
+                            }
+                        }
                         unwrap!(fs::rename(&move_from, &move_to));
                         // append to just_downloaded
                         unwrap!(writeln!(just_downloaded, "{}", line_for_download));
@@ -259,27 +271,46 @@ fn move_or_rename_local_files_internal(
     println!("moved or renamed: {}", count_moved);
 }
 
-/// move to trash folder the files from list_for_trash
-/// ignore if the file does not exist anymore
 pub fn trash_from_list() {
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+    let path_list_for_trash = "temp_data/list_for_trash.csv";
+    let path_list_local_files = "temp_data/list_local_files.csv";
+    trash_from_list_internal(&base_local_path, path_list_for_trash, path_list_local_files);
+}
+pub fn trash2_from_list() {
+    let base2_local_path = fs::read_to_string("temp_data/base2_local_path.csv").unwrap();
+    let path2_list_for_trash = "temp_data/list2_for_trash.csv";
+    let path2_list_local_files = "temp_data/list2_local_files.csv";
+    trash_from_list_internal(
+        &base2_local_path,
+        path2_list_for_trash,
+        path2_list_local_files,
+    );
+}
+
+/// move to trash folder the files from list_for_trash
+/// ignore if the file does not exist anymore
+pub fn trash_from_list_internal(
+    base_local_path: &str,
+    path_list_for_trash: &str,
+    path_list_local_files: &str,
+) {
     let now_string = chrono::Local::now()
         .format("trash_%Y-%m-%d_%H-%M-%S")
         .to_string();
-    let base_trash_path = format!("{}_{}", &base_local_path, &now_string);
+    let base_trash_path = format!("{}_{}", base_local_path, &now_string);
     if !path::Path::new(&base_trash_path).exists() {
         fs::create_dir_all(&base_trash_path).unwrap();
     }
     //move the files in the same directory structure
-    let path_list_for_trash = "temp_data/list_for_trash.csv";
     let list_for_trash = fs::read_to_string(path_list_for_trash).unwrap();
     for line_path_for_trash in list_for_trash.lines() {
         let line: Vec<&str> = line_path_for_trash.split("\t").collect();
         let string_path_for_trash = line[0];
-        let path_for_trash = path::Path::new(string_path_for_trash);
+        let move_from = format!("{}{}", base_local_path, string_path_for_trash);
+        let path_move_from = path::Path::new(&move_from);
         // move to trash if file exists. Nothing if it does not exist, maybe is deleted when moved or in a move_to_trash before.
-        if path_for_trash.exists() {
-            let move_from = format!("{}{}", base_local_path, string_path_for_trash);
+        if path_move_from.exists() {
             let move_to = format!("{}{}", base_trash_path, string_path_for_trash);
             println!("{}  ->  {}", move_from, move_to);
             let parent = unwrap!(path::Path::parent(path::Path::new(&move_to)));
@@ -289,12 +320,13 @@ pub fn trash_from_list() {
             unwrap!(fs::rename(&move_from, &move_to));
         }
     }
+
     // remove lines from list_local_files.csv
-    let path_list_local_files = "temp_data/list_local_files.csv";
     let string_local_files = fs::read_to_string(path_list_local_files).unwrap();
     let vec_sorted_local: Vec<&str> = string_local_files.lines().collect();
     // I must create a new vector.
     let mut string_new_local = String::with_capacity(string_local_files.len());
+    println!("sorting local list... It will take a minute or two.");
     for line in vec_sorted_local {
         if !list_for_trash.contains(line) {
             string_new_local.push_str(line);
@@ -309,32 +341,46 @@ pub fn trash_from_list() {
     unwrap!(fs::write(path_list_for_trash, ""));
 }
 
-/// modify the files from list_for_correct_time
 pub fn correct_time_from_list() {
-    let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-    let path_list_for_correct_time = "temp_data/list_for_correct_time.csv";
-    let list_for_correct_time = fs::read_to_string(path_list_for_correct_time).unwrap();
     let token = crate::remote_mod::get_short_lived_access_token();
     let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
+    let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+    let path_list_for_correct_time = "temp_data/list_for_correct_time.csv";
+    correct_time_from_list_internal(
+        RemoteKind::Client { client },
+        &base_local_path,
+        path_list_for_correct_time,
+    );
+}
+
+/// modify the files from list_for_correct_time
+pub fn correct_time_from_list_internal(
+    client_or_base_path: RemoteKind,
+    base_local_path: &str,
+    path_list_for_correct_time: &str,
+) {
+    let list_for_correct_time = fs::read_to_string(path_list_for_correct_time).unwrap();
     for path_to_correct_time in list_for_correct_time.lines() {
         let line: Vec<&str> = path_to_correct_time.split("\t").collect();
         let remote_path = line[0];
-        println!("{}", remote_path);
-        let remote_content_hash = unwrap!(crate::remote_mod::remote_content_hash(
-            &remote_path,
-            &client
-        ));
         let local_path = format!("{}{}", base_local_path, remote_path);
-        let local_content_hash = format!(
-            "{:x}",
-            unwrap!(DropboxContentHasher::hash_file(&local_path))
-        );
-        if local_content_hash == remote_content_hash {
-            let modified =
-                filetime::FileTime::from_system_time(unwrap!(humantime::parse_rfc3339(line[1])));
-            unwrap!(filetime::set_file_mtime(local_path, modified));
-        } else {
-            error!("correct_time content_hash different: {}", remote_path);
+        if path::Path::new(&local_path).exists() {
+            println!("{}", remote_path);
+
+            let remote_content_hash = client_or_base_path.get_content_hash(path_to_correct_time);
+
+            let local_content_hash = format!(
+                "{:x}",
+                unwrap!(DropboxContentHasher::hash_file(&local_path))
+            );
+            if local_content_hash == remote_content_hash {
+                let modified = filetime::FileTime::from_system_time(unwrap!(
+                    humantime::parse_rfc3339(line[1])
+                ));
+                unwrap!(filetime::set_file_mtime(local_path, modified));
+            } else {
+                error!("correct_time content_hash different: {}", remote_path);
+            }
         }
     }
     // empty the list
@@ -348,9 +394,9 @@ pub fn add_just_downloaded_to_list_local() {
 }
 
 pub fn add2_just_downloaded_to_list_local() {
-    let path_list_just_downloaded = "temp_data/list2_just_downloaded_or_moved.csv";
-    let path_list_local_files = "temp_data/list2_local_files.csv";
-    add_just_downloaded_to_list_local_internal(path_list_just_downloaded, path_list_local_files);
+    let path2_list_just_downloaded = "temp_data/list2_just_downloaded_or_moved.csv";
+    let path2_list_local_files = "temp_data/list2_local_files.csv";
+    add_just_downloaded_to_list_local_internal(path2_list_just_downloaded, path2_list_local_files);
 }
 
 /// add lines from just_downloaded to list_local. Only before compare.
@@ -366,7 +412,10 @@ fn add_just_downloaded_to_list_local_internal(
         // It is forbidden to have duplicate lines
         vec_sorted_downloaded.dedup();
         println!(
-            "add_just_downloaded_to_list_local: {}",
+            "{}: {}",
+            path_list_just_downloaded
+            .split("/")
+            .collect::<Vec<&str>>()[1],
             vec_sorted_downloaded.len()
         );
         unwrap!(fs::write(
@@ -433,15 +482,65 @@ fn add_just_downloaded_to_list_local_internal(
     }
 }
 
-/// after the first backup from dropbox, we want to make a second backup from the first one
-/// ideally, we put it somewhere safe in a distant location
-pub fn second_backup(base_path: &str) {
-    // list files
-    list2_local(base_path);
-    // compare list_local_files and list2_local_files
-    compare2_lists();
-    // move rename
-    move2_or_rename_local_files();
-    // trash
-    // copy instead of download
+/// download files from list
+pub fn copy_from_list2_for_download(path_list2_for_download: &str) {
+    let list2_for_download = fs::read_to_string(path_list2_for_download).unwrap();
+    let base_source_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+    let base_local_path = fs::read_to_string("temp_data/base2_local_path.csv").unwrap();
+
+    if !list2_for_download.is_empty() {
+        println!(
+            "{}{}{}copy_from_list2_for_download{}",
+            *CLEAR_ALL,
+            at_line(1),
+            *YELLOW,
+            *RESET
+        );
+        let list_just_downloaded_or_moved = "temp_data/list2_just_downloaded_or_moved.csv";
+        let mut just_downloaded = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(list_just_downloaded_or_moved)
+            .unwrap();
+        for line_path_to_download in list2_for_download.lines() {
+            let line: Vec<&str> = line_path_to_download.split("\t").collect();
+            let path_to_download = line[0];
+            let path_from = format!("{}{}", base_source_path, path_to_download);
+            let path_to = format!("{}{}", base_local_path, path_to_download);
+
+            let parent = unwrap!(path::Path::parent(path::Path::new(&path_to)));
+            if !parent.exists() {
+                fs::create_dir_all(&parent).unwrap();
+            }
+            println!("{} -> {}", &path_from, &path_to);
+            // remove readonly attribute
+            if path::Path::new(&path_to).exists() {
+                let mut perms = unwrap!(fs::metadata(&path_to)).permissions();
+                if perms.readonly() == true {
+                    perms.set_readonly(false);
+                    unwrap!(fs::set_permissions(&path_to, perms));
+                }
+            }
+            unwrap!(fs::copy(&path_from, &path_to));
+            // copy also the modified file date time
+            use chrono::offset::Utc;
+            use chrono::DateTime;
+            let modified_system_time = unwrap!( unwrap!(fs::metadata(&path_from)).modified());
+            let modified_date_time_utc: DateTime<Utc> = modified_system_time.into();            
+            let modified_file_time = filetime::FileTime::from_system_time(modified_system_time);
+            unwrap!(filetime::set_file_times(&path_to, modified_file_time, modified_file_time));
+
+            // write to file list2_just_downloaded_or_moved.
+            let line_to_append = format!(
+                "{}\t{}\t{}",
+                path_to_download,
+                modified_date_time_utc.format("%Y-%m-%dT%TZ"),
+                unwrap!(fs::metadata(&path_to)).len()
+            );
+            println!("{}", &line_to_append);
+            unwrap!(writeln!(just_downloaded, "{}", line_to_append));
+        }
+    } else {
+        println!("list2_for_download: 0");
+    }
 }

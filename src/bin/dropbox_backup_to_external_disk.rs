@@ -14,7 +14,7 @@ fn main() {
     let cargo_pkg_name = env!("CARGO_PKG_NAME");
 
     match env::args().nth(1).as_deref() {
-        None | Some("--help") | Some("-h") => print_help(&cargo_pkg_name),
+        None | Some("--help") | Some("-h") => print_help(),
         Some("completion") => completion(),
         Some("test") => {
             let ns_started = ns_start("test");
@@ -164,7 +164,7 @@ fn completion() {
     */
 }
 
-fn print_help(cargo_pkg_name: &str) {
+fn print_help() {
     println!("");
     println!(
         "{}1. Before first use, create your private Dropbox app:{}",
@@ -173,7 +173,7 @@ fn print_help(cargo_pkg_name: &str) {
     println!( "- open browser on {}<https://www.dropbox.com/developers/apps?_tk=pilot_lp&_ad=topbar4&_camp=myapps>{}", *GREEN, *RESET );
     println!("- click Create app, choose Scoped access, choose Full dropbox");
     println!(
-        "- choose a unique app name like {}`backup_{}`{}",
+        "- choose a globally unique app name like {}`backup_{}`{}",
         *GREEN,
         chrono::offset::Utc::now()
             .format("%Y%m%dT%H%M%SZ")
@@ -206,68 +206,75 @@ fn print_help(cargo_pkg_name: &str) {
         "$ {}export DBX_OAUTH_TOKEN={}here paste the access token",
         *GREEN, *RESET
     );
-    println!("- create an alias for easy of use:");
-    println!(
-        "$ {}alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk{}",
-        *GREEN, *RESET
-    );
+
     println!("- test if the authentication works: ");
     println!("$ {}dropbox_backup_to_external_disk test{}", *GREEN, *RESET);
     println!("");
 
     println!("{}Commands:{}", *YELLOW, *RESET);
-    println!("Full list and sync - from dropbox to external disk.");
+
+    println!("Full list and sync - from dropbox to external disk
+This command has 2 phases. 
+1. First it lists all remote and local files. That can take a lot of time if you have lot of files.
+For faster work it uses concurrent threads. 
+If you interrupt the execution with Ctrl+c in this phase, before the lists are completed, the lists are empty.
+You will need to rerun the command and wait for the lists to be fully completed.
+2. The second phase is the same as the command `sync_only`. 
+It can be interrupted with crl+c. The next `sync_only` will continue where it was interrupted. 
+");
     println!(
-        "It lists remote and local files (that takes a lot of time) and then starts the sync."
+        "$ {}dropbox_backup_to_external_disk list_and_sync /mnt/d/DropBoxBackup1{}",
+        *GREEN, *RESET
     );
+
+    println!("Sync only - one-way sync from dropbox to external disk
+It starts the sync only. Does NOT list again the remote and local files, the lists must already be completed 
+from the first command `list_and_sync`.
+It can be interrupted with crl+c. The next `sync_only` will continue where it was interrupted.
+");
+    println!("$ {}dropbox_backup_to_external_disk sync_only{}", *GREEN, *RESET);
+
+    println!("Second backup");
+    println!("One-way sync from backup_1 external disk to backup_2 external disks.");
     println!(
-        "$ {}{} list_and_sync /mnt/d/DropBoxBackup2{}",
-        *GREEN, cargo_pkg_name, *RESET
+        "$ {}dropbox_backup_to_external_disk second_backup /mnt/f/DropBoxBackup2{}",
+        *GREEN, *RESET
     );
-    println!("Sync only - from dropbox to external disk.");
-    println!("It starts the sync only. Does NOT list again the remote and local files, because it takes a lot of time.");
-    println!("It continues where the previous sync has finished.");
-    println!("$ {}{} sync_only{}", *GREEN, cargo_pkg_name, *RESET);
     println!("");
 
     println!(
-        "{}For debugging purpose, you can run every step separately.{}",
+        "{}Just for debugging purpose, you can run every step separately.{}",
         *YELLOW, *RESET
     );
     println!("Test connection and authorization:");
-    println!("$ {}{} test{}", *GREEN, cargo_pkg_name, *RESET);
-    println!("List all files in your remote Dropbox to list_remote_files.csv:");
-    println!("$ {}{} list_remote{}", *GREEN, cargo_pkg_name, *RESET);
-    println!("List local files to list_local_files.csv:");
+    println!("$ {}dropbox_backup_to_external_disk test{}", *GREEN, *RESET);
+    println!("List all files in your remote Dropbox to `list_remote_files.csv`:");
+    println!("$ {}dropbox_backup_to_external_disk list_remote{}", *GREEN, *RESET);
+    println!("List local files to `list_local_files.csv`:");
     println!(
-        "$ {}{} list_local /mnt/d/DropBoxBackup2{}",
-        *GREEN, cargo_pkg_name, *RESET
+        "$ {}dropbox_backup_to_external_disk list_local /mnt/d/DropBoxBackup1{}",
+        *GREEN, *RESET
     );
-    println!("Compare lists and create list_for_download.csv, list_for_trash.csv and list_for_correct_time.csv:");
-    println!("$ {}{} compare_lists{}", *GREEN, cargo_pkg_name, *RESET);
-    println!("move_or_rename_local_files:");
+    println!("Compare lists and create `list_for_download.csv`, `list_for_trash.csv` and `list_for_correct_time.csv`:");
+    println!("$ {}dropbox_backup_to_external_disk compare_lists{}", *GREEN, *RESET);
+    println!("Move or rename local files (check with content_hash that they are equal):");
     println!(
-        "$ {}{} move_or_rename_local_files{}",
-        *GREEN, cargo_pkg_name, *RESET
+        "$ {}dropbox_backup_to_external_disk move_or_rename_local_files{}",
+        *GREEN, *RESET
     );
-    println!("Move to trash folder from list_for_trash.csv:");
-    println!("$ {}{} trash_from_list{}", *GREEN, cargo_pkg_name, *RESET);
-    println!("Correct time of files from list_for_correct_time.csv:");
+    println!("Move to trash folder from `list_for_trash.csv`:");
+    println!("$ {}dropbox_backup_to_external_disk trash_from_list{}", *GREEN, *RESET);
+    println!("Correct time of files from `list_for_correct_time.csv`:");
     println!(
-        "$ {}{} correct_time_from_list{}",
-        *GREEN, cargo_pkg_name, *RESET
+        "$ {}dropbox_backup_to_external_disk correct_time_from_list{}",
+        *GREEN, *RESET
     );
-    println!("Download files from list_for_download.csv:");
+    println!("Download files from `list_for_download.csv`:");
     println!(
-        "$ {}{} download_from_list{}",
-        *GREEN, cargo_pkg_name, *RESET
+        "$ {}dropbox_backup_to_external_disk download_from_list{}",
+        *GREEN, *RESET
     );
     println!("Download one single file:");
-    println!("$ {}{} download <path>{}", *GREEN, cargo_pkg_name, *RESET);
+    println!("$ {}dropbox_backup_to_external_disk download <path>{}", *GREEN, *RESET);
 
-    println!("Second backup:");
-    println!(
-        "$ {}{} second_backup <path>{}",
-        *GREEN, cargo_pkg_name, *RESET
-    );
 }

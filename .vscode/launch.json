@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "lldb",
             "request": "launch",
@@ -19,7 +20,7 @@
                     "kind": "bin"
                 }
             },
-            "args": ["download_from_list"],
+            "args": ["second_backup", "/mnt/d/DropBoxBackup2"],
             "cwd": "${workspaceFolder}", 
             "env":{
                 "DBX_OAUTH_TOKEN":""
