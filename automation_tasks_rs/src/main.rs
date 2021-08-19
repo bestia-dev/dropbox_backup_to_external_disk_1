@@ -156,7 +156,7 @@ fn task_docs() {
     println!(
         r#"
 After `cargo auto doc`, check `docs/index.html`. If ok, then `git commit -am"message"` and `git push`,
-then create release on Github"#);
+then manually create release on Github"#);
 }
 
 
