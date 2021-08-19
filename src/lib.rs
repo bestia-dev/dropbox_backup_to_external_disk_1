@@ -162,14 +162,23 @@
 //! After using some small crates to help me with Linux tty terminal ansi codes, I am happy to finally use only the `termion` crate.  
 //! It has all I need.  
 //!
+//! ### how to invert black-white in paint.net for dark theme
+//!
+//! This is not same as `invert color`.  
+//! Invert only black and white is for image transformation to `dark theme`.
+//!
+//! 1. Open image in PdN.
+//! 2. Duplicate layer.
+//! 3. Convert bottom layer to B/W.
+//! 4. Invert Colors bottom layer.
+//! 5. Adjust Contrast to 0 on top layer.
+//! 6. Change top layer blending mode to overlay.
+//!
 //! ## TODO
 //!
 //! Can I recognize that a directory is moved or renamed? This is common and should be super fast.  
 //! If most of the files in the directory are equal it means, that it is moved/renamed.  
-//! Then a new `compare` will show if there are smaller differences.  
-//! When full list and sync, the termion return error for the download task.
-//! If I use sync_only, there is no error.
-//! I think that something is set in termion and later when it sets again the same it errors.
+//! Then a new `compare_lists` will generate a new list if there are smaller differences.  
 //!
 //! ## cargo crev reviews and advisory
 //!

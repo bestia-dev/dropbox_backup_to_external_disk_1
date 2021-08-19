@@ -184,10 +184,7 @@ Invert only black and white is for image transformation to `dark theme`.
 
 Can I recognize that a directory is moved or renamed? This is common and should be super fast.  
 If most of the files in the directory are equal it means, that it is moved/renamed.  
-Then a new `compare` will show if there are smaller differences.  
-When full list and sync, the termion return error for the download task.
-If I use sync_only, there is no error.
-I think that something is set in termion and later when it sets again the same it errors.
+Then a new `compare_lists` will generate a new list if there are smaller differences.  
 
 ## cargo crev reviews and advisory
 
