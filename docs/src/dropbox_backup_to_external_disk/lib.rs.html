@@ -431,6 +431,20 @@
 <span id="429">429</span>
 <span id="430">430</span>
 <span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
 </pre><pre class="rust">
 <span class="doccomment">//! dropbox_backup_to_external_disk lib.rs</span>
 
@@ -438,10 +452,10 @@
 <span class="doccomment">//! # dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! **One way sync from dropbox to external disc**  </span>
-<span class="doccomment">//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.2015  date: 2021-08-18 authors: Luciano Bestia***  </span>
+<span class="doccomment">//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.819.813  date: 2021-08-19 authors: Luciano Bestia***  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1790-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-249-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1745-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-256-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-141-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
@@ -500,7 +514,11 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ![workflow_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png &quot;workflow_2&quot;)</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with `second_backup`.  </span>
+<span class="doccomment">//! But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with  </span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ```bash</span>
+<span class="doccomment">//! dropbox_backup_to_external_disk second_backup /mnt/f/DropBoxBackup2</span>
+<span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ![workflow_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png &quot;workflow_1&quot;)</span>
 <span class="doccomment">//!</span>
@@ -518,10 +536,12 @@
 <span class="doccomment">//! cargo auto</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! I use WSL2 on Win10 to develope and execute this CLI in Debian Linux.  </span>
-<span class="doccomment">//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  </span>
-<span class="doccomment">//! CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  </span>
-<span class="doccomment">//! Save the list all the files metadata from the remote Dropbox to the file `temp_data/list_remote_files.csv`.</span>
+<span class="doccomment">//! ![cargo_auto_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/cargo_auto_1.png &quot;cargo_auto_1&quot;)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! I use WSL2 (Debian) on Win10 to develope and execute this CLI in Debian Linux.  </span>
+<span class="doccomment">//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  Or for the second backup on my system `/mnt/f/DropBoxBackup2`.  </span>
+<span class="doccomment">//! The CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  </span>
+<span class="doccomment">//! And the list of the files metadata from the remote Dropbox to in `temp_data/list_remote_files.csv`.</span>
 <span class="doccomment">//! Tab delimited with metadata: path (with name), datetime modified, size.</span>
 <span class="doccomment">//! The remote path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random-case.</span>
 <span class="doccomment">//! For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads in a ThreadPool to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.  </span>
@@ -595,6 +615,9 @@
 <span class="doccomment">//! Can I recognize that a directory is moved or renamed? This is common and should be super fast.  </span>
 <span class="doccomment">//! If most of the files in the directory are equal it means, that it is moved/renamed.  </span>
 <span class="doccomment">//! Then a new `compare` will show if there are smaller differences.  </span>
+<span class="doccomment">//! When full list and sync, the termion return error for the download task.</span>
+<span class="doccomment">//! If I use sync_only, there is no error.</span>
+<span class="doccomment">//! I think that something is set in termion and later when it sets again the same it errors.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## cargo crev reviews and advisory</span>
 <span class="doccomment">//!</span>
@@ -631,6 +654,13 @@
 
 <span class="doccomment">/// list and sync is the complete process for backup in one command</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">list_and_sync</span>(<span class="ident">base_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
+    <span class="ident">all_list_remote_and_local</span>(<span class="ident">base_path</span>);
+    <span class="ident">press_enter_to_continue_timeout_5_sec</span>();
+    <span class="ident">sync_only</span>();
+}
+
+<span class="doccomment">/// all list remote and local</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">all_list_remote_and_local</span>(<span class="ident">base_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
     <span class="kw">let</span> <span class="ident">_hide_cursor_terminal</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::start_hide_cursor_terminal</span>();
     <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">*</span><span class="ident">CLEAR_ALL</span>);
     <span class="macro">println!</span>(
@@ -670,8 +700,6 @@
     <span class="ident">handle_1</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
     <span class="ident">handle_2</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
     <span class="macro">println!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">at_line</span>(<span class="number">20</span>), <span class="kw-2">*</span><span class="ident">CLEAR_LINE</span>);
-    <span class="ident">press_enter_to_continue_timeout_5_sec</span>();
-    <span class="ident">sync_only</span>();
 }
 
 <span class="doccomment">/// sync_only can be stopped with ctrl+c and then restarted if downloading takes lots of time.  </span>

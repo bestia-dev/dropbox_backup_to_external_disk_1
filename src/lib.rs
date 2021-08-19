@@ -4,10 +4,10 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **One way sync from dropbox to external disc**  
-//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.818.2015  date: 2021-08-18 authors: Luciano Bestia***  
+//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.819.813  date: 2021-08-19 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1790-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-249-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1745-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-256-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-141-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
@@ -66,7 +66,11 @@
 //!
 //! ![workflow_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png "workflow_2")
 //!
-//! But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with `second_backup`.  
+//! But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with  
+//!
+//! ```bash
+//! dropbox_backup_to_external_disk second_backup /mnt/f/DropBoxBackup2
+//! ```
 //!
 //! ![workflow_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png "workflow_1")
 //!
@@ -84,10 +88,12 @@
 //! cargo auto
 //! ```
 //!
-//! I use WSL2 on Win10 to develope and execute this CLI in Debian Linux.  
-//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  
-//! CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  
-//! Save the list all the files metadata from the remote Dropbox to the file `temp_data/list_remote_files.csv`.
+//! ![cargo_auto_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/cargo_auto_1.png "cargo_auto_1")
+//!
+//! I use WSL2 (Debian) on Win10 to develope and execute this CLI in Debian Linux.  
+//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  Or for the second backup on my system `/mnt/f/DropBoxBackup2`.  
+//! The CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  
+//! And the list of the files metadata from the remote Dropbox to in `temp_data/list_remote_files.csv`.
 //! Tab delimited with metadata: path (with name), datetime modified, size.
 //! The remote path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random-case.
 //! For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads in a ThreadPool to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.  
@@ -161,6 +167,9 @@
 //! Can I recognize that a directory is moved or renamed? This is common and should be super fast.  
 //! If most of the files in the directory are equal it means, that it is moved/renamed.  
 //! Then a new `compare` will show if there are smaller differences.  
+//! When full list and sync, the termion return error for the download task.
+//! If I use sync_only, there is no error.
+//! I think that something is set in termion and later when it sets again the same it errors.
 //!
 //! ## cargo crev reviews and advisory
 //!
@@ -197,6 +206,13 @@ use unwrap::unwrap;
 
 /// list and sync is the complete process for backup in one command
 pub fn list_and_sync(base_path: &str) {
+    all_list_remote_and_local(base_path);
+    press_enter_to_continue_timeout_5_sec();
+    sync_only();
+}
+
+/// all list remote and local
+pub fn all_list_remote_and_local(base_path: &str) {
     let _hide_cursor_terminal = crate::start_hide_cursor_terminal();
     print!("{}", *CLEAR_ALL);
     println!(
@@ -236,8 +252,6 @@ pub fn list_and_sync(base_path: &str) {
     handle_1.join().unwrap();
     handle_2.join().unwrap();
     println!("{}{}", at_line(20), *CLEAR_LINE);
-    press_enter_to_continue_timeout_5_sec();
-    sync_only();
 }
 
 /// sync_only can be stopped with ctrl+c and then restarted if downloading takes lots of time.  
