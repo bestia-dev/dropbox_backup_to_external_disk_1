@@ -5,7 +5,7 @@
 [comment]: # (auto_cargo_toml_to_md start)
 
 **One way sync from dropbox to external disc**  
-***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.819.1056  date: 2021-08-19 authors: Luciano Bestia***  
+***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.819.1503  date: 2021-08-19 authors: Luciano Bestia***  
 
 [comment]: # (auto_cargo_toml_to_md end)
 

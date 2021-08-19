@@ -4,7 +4,7 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **One way sync from dropbox to external disc**  
-//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.819.1056  date: 2021-08-19 authors: Luciano Bestia***  
+//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.819.1503  date: 2021-08-19 authors: Luciano Bestia***  
 //!
 //! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1748-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-274-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)

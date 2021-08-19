@@ -1,6 +1,7 @@
 //! automation_tasks_rs with_lib
 
 use cargo_auto_lib::*;
+use unwrap::unwrap;
 
 /// automation_tasks_rs with_lib
 fn main() {
@@ -32,6 +33,8 @@ fn match_arguments_and_call_tasks(mut args: std::env::Args) {
                     task_release();
                 } else if &task == "docs" || &task == "doc" || &task == "d" {
                     task_docs();
+                } else if &task == "github_new_release" {
+                    task_github_new_release();
                 } else {
                     println!("Task {} is unknown.", &task);
                     print_help();
@@ -48,14 +51,17 @@ fn print_help() {
 User defined tasks in automation_tasks_rs:
 cargo auto build - builds the crate in debug mode, fmt
 cargo auto release - builds the crate in release mode, version from date, fmt, strip
-cargo auto docs - builds the docs, copy to docs directory
-    
+cargo auto doc - builds the docs, copy to docs directory
+cargo auto github_new_release - creates new release on github
+  this task needs PAT (personal access token from github) in the env variable: `export GITHUB_TOKEN=paste_token_here`
+
 Create alias for easy use when developing:
-  $ alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk
+  $ alias {package_name}=target/debug/{package_name}
 Create auto-completion:
-  $ complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
-dropbox_backup_to_external_disk --help - instructions especially for first use because of authentication
-"#
+  $ complete -C "{package_name} completion" {package_name}
+  {package_name} --help - instructions especially for first use because of authentication
+"#,
+        package_name = package_name()
     );
 }
 
@@ -66,7 +72,7 @@ fn completion() {
     let last_word = args[3].as_str();
 
     if last_word == "cargo-auto" || last_word == "auto" {
-        let sub_commands = vec!["build", "release", "doc"];
+        let sub_commands = vec!["build", "release", "doc", "github_new_release"];
         completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
     }
     /*
@@ -89,18 +95,19 @@ fn task_build() {
     let shell_commands = [
         "cargo fmt", 
         "cargo build",
-        "target/debug/dropbox_backup_to_external_disk --help",
+        &format!("target/debug/{package_name} --help" , package_name = package_name()),
         ];
     run_shell_commands(shell_commands.to_vec());
     println!(
         r#"
 Create alias for easy use when developing:
-  $  alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk
+  $  alias {package_name}=target/debug/{package_name}
 Create auto-completion:
-  $  complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
+  $  complete -C "{package_name} completion" {package_name}
 
 After `cargo auto build`, run the tests and the code. If ok, then `cargo auto release`
-"#
+"#,
+        package_name = package_name()
     );
 }
 
@@ -112,17 +119,24 @@ fn task_release() {
 
     run_shell_command("cargo fmt");
     run_shell_command("cargo build --release");
-    run_shell_command("strip target/release/dropbox_backup_to_external_disk");
-    run_shell_command("target/release/dropbox_backup_to_external_disk --help");
+    run_shell_command(&format!(
+        "strip target/release/{package_name}",
+        package_name = package_name()
+    ));
+    run_shell_command(&format!(
+        "target/release/{package_name} --help",
+        package_name = package_name()
+    ));
     println!(
         r#"
 Create alias for easy use when developing:
-    $  alias dropbox_backup_to_external_disk=target/release/dropbox_backup_to_external_disk
+    $  alias {package_name}=target/release/{package_name}
 Create auto-completion:
-    $  complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
+    $  complete -C "{package_name} completion" {package_name}
 
 After `cargo auto release`, run the tests and the code. If ok, then `cargo auto doc`
-"#
+"#,
+        package_name = package_name()
     );
 }
 
@@ -147,6 +161,75 @@ After `cargo auto doc`, check `docs/index.html`. If ok, then `git commit -am"mes
 then manually create release on Github
 "#
     );
+}
+
+/// create a new release on github with octocrab
+/// the env variable GITHUB_TOKEN must be set `export GITHUB_TOKEN=paste_token_here`
+fn task_github_new_release() {
+    // async block with tokio and reqwest (octocrab choice)
+    tokio::spawn(async move {
+        use octocrab::Octocrab;
+
+        let token = std::env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN env variable is required");
+        let octocrab = unwrap!(Octocrab::builder().personal_token(token).build());
+
+        let body_md_text = &format!(
+            r#"
+From the [README.md]({package_repository}) instructions to install:
+```bash
+cd ~
+mkdir {package_name}
+cd {package_name}
+
+curl -L https://github.com/{github_owner}/{package_name}/releases/latest/download/{package_name} --output {package_name}
+
+chmod +x {package_name}
+alias {package_name}=./{package_name}
+complete -C "{package_name} completion" {package_name}
+{package_name} --help
+            ```            
+            "#,
+            package_repository = unwrap!(package_repository()),
+            package_name = package_name(),
+            github_owner = github_owner()
+        );
+        let _page = unwrap!(
+            octocrab
+                .repos(github_owner(), package_name())
+                .releases()
+                .create(&format!("v{}", package_version()))
+                .target_commitish("main")
+                .name(&format!("Version {}", package_version()))
+                .body(body_md_text)
+                .draft(false)
+                .prerelease(false)
+                // Send the request
+                .send()
+                .await
+        );
+
+        // upload asset
+        let path_to_file = format!(
+            "target/release/{package_name}",
+            package_name = package_name()
+        );
+        let file = std::path::Path::new(&path_to_file);
+        let file_name = file.file_name().unwrap().to_str().unwrap();
+        let mut new_url = octocrab.base_url.clone();
+        new_url.set_query(Some(format!("{}={}", "name", file_name).as_str()));
+
+        let file_size = unwrap!(std::fs::metadata(file)).len();
+        let file = unwrap!(tokio::fs::File::open(file).await);
+        let stream = tokio_util::codec::FramedRead::new(file, tokio_util::codec::BytesCodec::new());
+        let body = reqwest::Body::wrap_stream(stream);
+
+        let builder = octocrab
+            .request_builder(new_url.as_str(), reqwest::Method::POST)
+            .header("Content-Type", "application/octet-stream")
+            .header("Content-Length", file_size.to_string());
+
+        let _response = unwrap!(builder.body(body).send().await);
+    });
 }
 
 // endregion: tasks
@@ -183,4 +266,12 @@ fn completion_return_one_or_more_sub_commands(sub_commands: Vec<&str>, word_bein
     }
 }
 
+fn github_owner() -> String {
+    match package_repository() {
+        Some(repository) => {
+            unwrap!(repository.trim_start_matches("https://").split("/").next()).to_string()
+        }
+        None => "".to_string(),
+    }
+}
 // endregion: helper functions
