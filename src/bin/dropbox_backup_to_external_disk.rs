@@ -174,13 +174,14 @@ fn completion() {
         ];
         completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
     }
-    /*
     // the second level if needed
-    else if last_word == "new" {
-        let sub_commands = vec!["with_lib"];
+    else if last_word == "list_and_sync" || last_word == "local_list" || last_word == "all_list" {
+        let sub_commands = vec!["/mnt/d/DropboxBackup1"];
+        completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
+    } else if last_word == "second_backup" {
+        let sub_commands = vec!["/mnt/f/DropboxBackup2"];
         completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
     }
-    */
 }
 
 fn print_help() {

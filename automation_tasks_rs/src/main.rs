@@ -4,11 +4,7 @@ use cargo_auto_lib::*;
 
 /// automation_tasks_rs with_lib
 fn main() {
-    if is_not_run_in_rust_project_root_directory() {
-        println!("Error: automation_tasks_rs must be called in the root directory of the rust project beside the Cargo.toml file and automation_tasks_rs directory.");
-        // early exit
-        std::process::exit(0);
-    }
+    exit_if_not_run_in_rust_project_root_directory();
 
     // get CLI arguments
     let mut args = std::env::args();
@@ -16,6 +12,8 @@ fn main() {
     let _arg_0 = args.next();
     match_arguments_and_call_tasks(args);
 }
+
+// region: match, help and completion. Take care to keep them in sync with the changes.
 
 /// match arguments and call tasks functions
 fn match_arguments_and_call_tasks(mut args: std::env::Args) {
@@ -45,10 +43,11 @@ fn match_arguments_and_call_tasks(mut args: std::env::Args) {
 
 /// write a comprehensible help for user defined tasks
 fn print_help() {
-    println!(r#"
+    println!(
+        r#"
 User defined tasks in automation_tasks_rs:
 cargo auto build - builds the crate in debug mode, fmt
-cargo auto release - builds the crate in release mode, version from date, fmt
+cargo auto release - builds the crate in release mode, version from date, fmt, strip
 cargo auto docs - builds the docs, copy to docs directory
     
 Create alias for easy use when developing:
@@ -56,36 +55,18 @@ Create alias for easy use when developing:
 Create auto-completion:
   $ complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
 dropbox_backup_to_external_disk --help - instructions especially for first use because of authentication
-"#);
+"#
+    );
 }
 
 /// sub-command for bash auto-completion of `cargo auto` using the crate `dev_bestia_cargo_completion`
 fn completion() {
-    /// println one, more or all sub_commands
-    fn completion_return_one_or_more_sub_commands(sub_commands: Vec<&str>, word_being_completed: &str) {
-        let mut sub_found = false;
-        for sub_command in sub_commands.iter() {
-            if sub_command.starts_with(word_being_completed) {
-                println!("{}", sub_command);
-                sub_found = true;
-            }
-        }
-        if sub_found == false {
-            // print all sub-commands
-            for sub_command in sub_commands.iter() {
-                println!("{}", sub_command);
-            }
-        }
-    }
-
     let args: Vec<String> = std::env::args().collect();
-    let last_word = args[2].as_str();
-    let mut word_being_completed = " ";
-    if args.len() > 3 {
-        word_being_completed = args[3].as_str();
-    }
+    let word_being_completed = args[2].as_str();
+    let last_word = args[3].as_str();
+
     if last_word == "cargo-auto" || last_word == "auto" {
-        let sub_commands = vec!["build", "release", "doc", "publish_to_crates_io"];
+        let sub_commands = vec!["build", "release", "doc"];
         completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
     }
     /*
@@ -96,6 +77,8 @@ fn completion() {
     }
     */
 }
+
+// endregion: match, help and completion.
 
 // region: tasks
 
@@ -109,33 +92,38 @@ fn task_build() {
         "target/debug/dropbox_backup_to_external_disk --help",
         ];
     run_shell_commands(shell_commands.to_vec());
-    println!(r#"
+    println!(
+        r#"
 Create alias for easy use when developing:
   $  alias dropbox_backup_to_external_disk=target/debug/dropbox_backup_to_external_disk
 Create auto-completion:
   $  complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
 
 After `cargo auto build`, run the tests and the code. If ok, then `cargo auto release`
-"#);
+"#
+    );
 }
 
 /// example how to call one shell command and combine with rust code
-fn task_release() {    
+fn task_release() {
     auto_version_from_date();
     auto_cargo_toml_to_md();
     auto_lines_of_code("");
 
     run_shell_command("cargo fmt");
     run_shell_command("cargo build --release");
+    run_shell_command("strip target/release/dropbox_backup_to_external_disk");
     run_shell_command("target/release/dropbox_backup_to_external_disk --help");
-    println!(r#"
+    println!(
+        r#"
 Create alias for easy use when developing:
     $  alias dropbox_backup_to_external_disk=target/release/dropbox_backup_to_external_disk
 Create auto-completion:
     $  complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
 
 After `cargo auto release`, run the tests and the code. If ok, then `cargo auto doc`
-"#);
+"#
+    );
 }
 
 /// example how to call a list of shell commands and combine with rust code
@@ -156,10 +144,10 @@ fn task_docs() {
     println!(
         r#"
 After `cargo auto doc`, check `docs/index.html`. If ok, then `git commit -am"message"` and `git push`,
-then manually create release on Github"#);
+then manually create release on Github
+"#
+    );
 }
-
-
 
 // endregion: tasks
 
@@ -167,11 +155,32 @@ then manually create release on Github"#);
 
 /// check if run in rust project root directory error
 /// there must be Cargo.toml and the directory automation_tasks_rs
-fn is_not_run_in_rust_project_root_directory() -> bool {
-    // return negation of exists
-    !(std::path::Path::new("automation_tasks_rs").exists() && std::path::Path::new("Cargo.toml").exists())
+/// exit with error message if not
+fn exit_if_not_run_in_rust_project_root_directory() {
+    if !(std::path::Path::new("automation_tasks_rs").exists()
+        && std::path::Path::new("Cargo.toml").exists())
+    {
+        println!("Error: automation_tasks_rs must be called in the root directory of the rust project beside the Cargo.toml file and automation_tasks_rs directory.");
+        // early exit
+        std::process::exit(0);
+    }
+}
+
+/// println one, more or all sub_commands
+fn completion_return_one_or_more_sub_commands(sub_commands: Vec<&str>, word_being_completed: &str) {
+    let mut sub_found = false;
+    for sub_command in sub_commands.iter() {
+        if sub_command.starts_with(word_being_completed) {
+            println!("{}", sub_command);
+            sub_found = true;
+        }
+    }
+    if sub_found == false {
+        // print all sub-commands
+        for sub_command in sub_commands.iter() {
+            println!("{}", sub_command);
+        }
+    }
 }
 
 // endregion: helper functions
-
-    
