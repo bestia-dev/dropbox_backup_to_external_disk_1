@@ -20,10 +20,10 @@
                     "kind": "bin"
                 }
             },
-            "args": ["download_from_list"],
+            "args": ["list_and_sync","/mnt/d/DropboxBackup1"],
             "cwd": "${workspaceFolder}", 
             "env":{
-                "DBX_OAUTH_TOKEN":""
+                "DBX_OAUTH_TOKEN":"sl.A26-c92ILU4TIRk9O5GavOivA1x2_mSg2wpUYbCBD59scfBpOU7Xvs0fVU9b0z3d0ehRP1w1M7P0PJDC9ffoGvFdomVJTHfYC18STN6dXoN8dYBYyCcTVzAWiBj9nJKPdzNIyWA"
               },
         }
     ]

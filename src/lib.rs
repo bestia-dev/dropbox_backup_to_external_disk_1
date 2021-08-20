@@ -223,11 +223,9 @@ pub fn list_and_sync(base_path: &str) {
 /// all list remote and local
 pub fn all_list_remote_and_local(base_path: &str) {
     let _hide_cursor_terminal = crate::start_hide_cursor_terminal();
-    print!("{}", *CLEAR_ALL);
     println!(
-        "{}{}{}dropbox_backup_to_external_disk list_and_sync{}",
+        "{}{}dropbox_backup_to_external_disk list_and_sync{}",
         at_line(1),
-        *CLEAR_LINE,
         *YELLOW,
         *RESET
     );
@@ -237,9 +235,8 @@ pub fn all_list_remote_and_local(base_path: &str) {
     let base_path = base_path.to_string();
     let handle_2 = thread::spawn(move || {
         println!(
-            "{}{}{}Threads for remote:{}",
+            "{}{}Threads for remote:{}",
             at_line(3),
-            *CLEAR_LINE,
             *GREEN,
             *RESET
         );
@@ -248,9 +245,8 @@ pub fn all_list_remote_and_local(base_path: &str) {
     });
     let handle_1 = thread::spawn(move || {
         println!(
-            "{}{}{}Thread for local:{}",
+            "{}{}Thread for local:{}",
             at_line(12),
-            *CLEAR_LINE,
             *GREEN,
             *RESET
         );
@@ -260,6 +256,7 @@ pub fn all_list_remote_and_local(base_path: &str) {
     // wait for both threads to finish
     handle_1.join().unwrap();
     handle_2.join().unwrap();
+
     println!("{}{}", at_line(20), *CLEAR_LINE);
 }
 

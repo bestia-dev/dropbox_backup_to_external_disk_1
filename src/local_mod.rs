@@ -336,50 +336,54 @@ pub fn trash_from_list_internal(
     path_list_for_trash: &str,
     path_list_local_files: &str,
 ) {
-    let now_string = chrono::Local::now()
-        .format("trash_%Y-%m-%d_%H-%M-%S")
-        .to_string();
-    let base_trash_path = format!("{}_{}", base_local_path, &now_string);
-    if !path::Path::new(&base_trash_path).exists() {
-        fs::create_dir_all(&base_trash_path).unwrap();
-    }
-    //move the files in the same directory structure
     let list_for_trash = fs::read_to_string(path_list_for_trash).unwrap();
-    for line_path_for_trash in list_for_trash.lines() {
-        let line: Vec<&str> = line_path_for_trash.split("\t").collect();
-        let string_path_for_trash = line[0];
-        let move_from = format!("{}{}", base_local_path, string_path_for_trash);
-        let path_move_from = path::Path::new(&move_from);
-        // move to trash if file exists. Nothing if it does not exist, maybe is deleted when moved or in a move_to_trash before.
-        if path_move_from.exists() {
-            let move_to = format!("{}{}", base_trash_path, string_path_for_trash);
-            println!("{}  ->  {}", move_from, move_to);
-            let parent = unwrap!(path::Path::parent(path::Path::new(&move_to)));
-            if !parent.exists() {
-                fs::create_dir_all(&parent).unwrap();
+    if list_for_trash.is_empty() {
+        println!("{}: 0", path_list_for_trash);
+    } else {
+        let now_string = chrono::Local::now()
+            .format("trash_%Y-%m-%d_%H-%M-%S")
+            .to_string();
+        let base_trash_path = format!("{}_{}", base_local_path, &now_string);
+        if !path::Path::new(&base_trash_path).exists() {
+            fs::create_dir_all(&base_trash_path).unwrap();
+        }
+        //move the files in the same directory structure
+        for line_path_for_trash in list_for_trash.lines() {
+            let line: Vec<&str> = line_path_for_trash.split("\t").collect();
+            let string_path_for_trash = line[0];
+            let move_from = format!("{}{}", base_local_path, string_path_for_trash);
+            let path_move_from = path::Path::new(&move_from);
+            // move to trash if file exists. Nothing if it does not exist, maybe is deleted when moved or in a move_to_trash before.
+            if path_move_from.exists() {
+                let move_to = format!("{}{}", base_trash_path, string_path_for_trash);
+                println!("{}  ->  {}", move_from, move_to);
+                let parent = unwrap!(path::Path::parent(path::Path::new(&move_to)));
+                if !parent.exists() {
+                    fs::create_dir_all(&parent).unwrap();
+                }
+                unwrap!(fs::rename(&move_from, &move_to));
             }
-            unwrap!(fs::rename(&move_from, &move_to));
         }
-    }
 
-    // remove lines from list_local_files.csv
-    let string_local_files = fs::read_to_string(path_list_local_files).unwrap();
-    let vec_sorted_local: Vec<&str> = string_local_files.lines().collect();
-    // I must create a new vector.
-    let mut string_new_local = String::with_capacity(string_local_files.len());
-    println!("sorting local list... It will take a minute or two.");
-    for line in vec_sorted_local {
-        if !list_for_trash.contains(line) {
-            string_new_local.push_str(line);
-            string_new_local.push_str("\n");
+        // remove lines from list_local_files.csv
+        let string_local_files = fs::read_to_string(path_list_local_files).unwrap();
+        let vec_sorted_local: Vec<&str> = string_local_files.lines().collect();
+        // I must create a new vector.
+        let mut string_new_local = String::with_capacity(string_local_files.len());
+        println!("sorting local list... It will take a minute or two.");
+        for line in vec_sorted_local {
+            if !list_for_trash.contains(line) {
+                string_new_local.push_str(line);
+                string_new_local.push_str("\n");
+            }
         }
-    }
-    // save the new local
-    unwrap!(fs::write(path_list_local_files, &string_new_local));
+        // save the new local
+        unwrap!(fs::write(path_list_local_files, &string_new_local));
 
-    // empty the list if all is successful
-    println!("empty the list if all is successful");
-    unwrap!(fs::write(path_list_for_trash, ""));
+        // empty the list if all is successful
+        // println!("empty the list if all is successful");
+        unwrap!(fs::write(path_list_for_trash, ""));
+    }
 }
 
 /// modify the date od files from list_for_correct_time
@@ -532,8 +536,7 @@ pub fn copy_from_list2_for_download(path_list2_for_download: &str) {
 
     if !list2_for_download.is_empty() {
         println!(
-            "{}{}{}copy_from_list2_for_download{}",
-            *CLEAR_ALL,
+            "{}{}copy_from_list2_for_download{}",
             at_line(1),
             *YELLOW,
             *RESET

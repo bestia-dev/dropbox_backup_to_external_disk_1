@@ -153,7 +153,6 @@ use std::time;
 
 use termion;
 use termion::input::TermRead;
-use termion::raw::IntoRawMode;
 
 /// waits 5 seconds for the user to press any key then continues  
 /// It is usable to make visible some data before going to the next step where the screen is cleaned.  
@@ -161,14 +160,20 @@ pub fn press_enter_to_continue_timeout_5_sec() {
     print!("press any key or wait 5 seconds to continue. 5..");
     let started = Utc::now();
     // Set terminal to raw mode to allow reading stdin one key at a time
-    let raw_stdout = std::io::stdout().into_raw_mode().unwrap();
+    let mut hide_cursor_terminal = crate::start_hide_cursor_terminal();
+    unwrap!(hide_cursor_terminal.activate_raw_mode());
 
     // Use asynchronous stdin
-    let mut stdin = termion::async_stdin().keys();
+    // The async_stdin opens a channel and then a thread with a loop to send keys to the receiver AsyncReader - async_stdin().
+    // The thread stops when it tries to send a key, but the receiver does not exist any more: `send.send(i).is_err()`
+    // Until there is no key in stdin it will not try to send and will not know that the receiver is dropped and the thread will live forever.
+    // And that will create a panic on the next get_pos, that uses the same async_stdin. There cn be only one.
+    let stdin = termion::async_stdin();
+    let mut async_stdin_keys_receiver = stdin.keys();
     let mut count_seconds = 0;
     loop {
         // Read input (if any)
-        let input = stdin.next();
+        let input = async_stdin_keys_receiver.next();
 
         // If any key was pressed
         if let Some(Ok(_key)) = input {
@@ -179,19 +184,23 @@ pub fn press_enter_to_continue_timeout_5_sec() {
         if passed > Duration::seconds(1) && count_seconds < 1 {
             count_seconds += 1;
             print!("4..");
-            raw_stdout.lock().flush().unwrap();
+            hide_cursor_terminal.flush().unwrap();
+            //raw_stdout.lock().flush().unwrap();
         } else if passed > Duration::seconds(2) && count_seconds < 2 {
             count_seconds += 1;
             print!("3..");
-            raw_stdout.lock().flush().unwrap();
+            hide_cursor_terminal.flush().unwrap();
+            //raw_stdout.lock().flush().unwrap();
         } else if passed > Duration::seconds(3) && count_seconds < 3 {
             count_seconds += 1;
             print!("2..");
-            raw_stdout.lock().flush().unwrap();
+            hide_cursor_terminal.flush().unwrap();
+            //raw_stdout.lock().flush().unwrap();
         } else if passed > Duration::seconds(4) && count_seconds < 4 {
             count_seconds += 1;
             print!("1..");
-            raw_stdout.lock().flush().unwrap();
+            hide_cursor_terminal.flush().unwrap();
+            //raw_stdout.lock().flush().unwrap();
         } else if passed > Duration::seconds(5) {
             print!("0",);
             break;
@@ -199,6 +208,24 @@ pub fn press_enter_to_continue_timeout_5_sec() {
         // to avoid CPU overuse because of loop
         thread::sleep(time::Duration::from_millis(50));
     }
-    unwrap!(raw_stdout.suspend_raw_mode());
+    // drop the AsyncReader (receiver), so the sender inside the thread will got an error on next send.
+    // But sometimes there is no next send ! I need a way to write to stdin without the user and keyboard.
+    // This ansi code on stdout "\x1B[6n" is:  Where is the cursor?
+    // The reply goes to stdin.
+    // This should end the loop and the thread waiting for stdin.
+    drop(async_stdin_keys_receiver);
+    print!("\x1B[6n");
+    hide_cursor_terminal.flush().unwrap();
+    // the thread will exit, but now the reply of our ansi code is written on the screen: ^[[48;25R
+    // now I need to silently empty the stdin until R
+    for x in std::io::stdin().keys() {
+        if let Ok(y) = x {
+            if let termion::event::Key::Char('R') = y {
+                break;
+            }
+        }
+    }
+
+    unwrap!(hide_cursor_terminal.suspend_raw_mode());
     println!("");
 }

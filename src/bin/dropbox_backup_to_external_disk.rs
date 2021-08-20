@@ -25,6 +25,7 @@ fn main() {
         Some("list_and_sync") => match env::args().nth(2).as_deref() {
             Some(path) => {
                 let ns_started = ns_start("list_and_sync");
+                print!("{}", *CLEAR_ALL);
                 list_and_sync(path);
                 ns_print_ms("list_and_sync", ns_started);
             }
@@ -32,6 +33,7 @@ fn main() {
         },
         Some("sync_only") => {
             let ns_started = ns_start("sync_only");
+            print!("{}", *CLEAR_ALL);
             sync_only();
             ns_print_ms("sync_only", ns_started);
         }
@@ -45,6 +47,7 @@ fn main() {
                 *RESET
             );
             let ns_started = ns_start("");
+            test_connection();
             list_remote();
             ns_print_ms("remote_list", ns_started);
         }
@@ -75,6 +78,7 @@ fn main() {
                     *RESET
                 );
                 let ns_started = ns_start("");
+                test_connection();
                 all_list_remote_and_local(path);
                 ns_print_ms("all_list", ns_started);
             }
@@ -113,7 +117,10 @@ fn main() {
             _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
         },
         Some("second_backup") => match env::args().nth(2).as_deref() {
-            Some(path) => second_backup(path),
+            Some(path) => {
+                print!("{}", *CLEAR_ALL);
+                second_backup(path)
+            }
             _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
         },
         _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),

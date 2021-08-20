@@ -23,8 +23,8 @@ pub fn test_connection() {
     let client = UserAuthDefaultClient::new(token);
     match files::list_folder(&client, &files::ListFolderArg::new("".to_string())) {
         Ok(Ok(_result)) => println!("{}test connection and authorization: ok{}", *GREEN, *RESET),
-        Ok(Err(e)) => println!("error: {}", e),
-        Err(e) => println!("error: {}", e),
+        Ok(Err(e)) => panic!("error: {}", e),
+        Err(e) => panic!("error: {}", e),
     }
 }
 
@@ -417,18 +417,15 @@ fn download_internal(
 pub fn download_from_list() {
     let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
     let list_for_download = fs::read_to_string("temp_data/list_for_download.csv").unwrap();
-    let mut hide_cursor_terminal = crate::start_hide_cursor_terminal();
-    let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
 
     if !list_for_download.is_empty() {
-        println!(
-            "{}{}{}download_from_list{}",
-            *CLEAR_ALL,
-            at_line(1),
-            *YELLOW,
-            *RESET
-        );
-        print!("{}", at_line(7));
+        let mut hide_cursor_terminal = crate::start_hide_cursor_terminal();
+        let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
+        let (_x, y) = get_pos(&mut hide_cursor_terminal);
+
+        println!("{}{}download_from_list{}", at_line(1), *YELLOW, *RESET);
+        print!("{}", at_line(y));
+
         let token = get_short_lived_access_token();
         let client = UserAuthDefaultClient::new(token);
         // channel for inter-thread communication.
@@ -523,20 +520,14 @@ pub fn download_from_list() {
                 let (_x, y) = get_pos(&mut hide_cursor_terminal);
                 // there is annoying jumping because of scrolling
                 // let clear first and write second
-                println!("{}{}", at_line(7), termion::clear::CurrentLine);
+                println!("{}{}", at_line(7), termion::clear::BeforeCursor);
                 print!("{}", at_line(y));
 
                 println!("{}", &string_to_print);
 
                 let (_x, y) = get_pos(&mut hide_cursor_terminal);
                 // print the first 6 lines, because of scrolling
-                println!(
-                    "{}{}{}download_from_list{}",
-                    *CLEAR_LINE,
-                    at_line(1),
-                    *YELLOW,
-                    *RESET
-                );
+                println!("{}{}download_from_list{}", at_line(1), *YELLOW, *RESET);
                 println!("{}", *CLEAR_LINE);
                 println!("{}", &string_to_print_1);
                 println!("{}", &string_to_print_2);

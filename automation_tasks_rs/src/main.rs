@@ -158,7 +158,7 @@ fn task_docs() {
     println!(
         r#"
 After `cargo auto doc`, check `docs/index.html`. If ok, then `git commit -am"message"` and `git push`,
-then manually create release on Github
+then create new release with `cargo auto github_new_release`
 "#
     );
 }
@@ -166,13 +166,15 @@ then manually create release on Github
 /// create a new release on github with octocrab
 /// the env variable GITHUB_TOKEN must be set `export GITHUB_TOKEN=paste_token_here`
 fn task_github_new_release() {
-    // async block with tokio and reqwest (octocrab choice)
-    tokio::spawn(async move {
-        use octocrab::Octocrab;
-
-        let token = std::env::var("GITHUB_TOKEN").expect("GITHUB_TOKEN env variable is required");
-        let octocrab = unwrap!(Octocrab::builder().personal_token(token).build());
-
+    // async block inside sync code with tokio
+    use tokio::runtime::Runtime;
+    let rt = Runtime::new().unwrap();
+    rt.block_on(async move {
+        let owner = github_owner();
+        let repo = package_name();
+        let version = package_version();
+        let name = format!("Version {}", &package_version());
+        let branch = "main";
         let body_md_text = &format!(
             r#"
 From the [README.md]({package_repository}) instructions to install:
@@ -181,97 +183,31 @@ cd ~
 mkdir {package_name}
 cd {package_name}
 
-curl -L https://github.com/{github_owner}/{package_name}/releases/latest/download/{package_name} --output {package_name}
+curl -L https://github.com/{owner}/{package_name}/releases/latest/download/{package_name} --output {package_name}
 
 chmod +x {package_name}
 alias {package_name}=./{package_name}
 complete -C "{package_name} completion" {package_name}
 {package_name} --help
-            ```            
+```            
             "#,
             package_repository = unwrap!(package_repository()),
             package_name = package_name(),
-            github_owner = github_owner()
+            owner = owner
         );
-        let _page = unwrap!(
-            octocrab
-                .repos(github_owner(), package_name())
-                .releases()
-                .create(&format!("v{}", package_version()))
-                .target_commitish("main")
-                .name(&format!("Version {}", package_version()))
-                .body(body_md_text)
-                .draft(false)
-                .prerelease(false)
-                // Send the request
-                .send()
-                .await
-        );
+
+        let release_id =  github_create_new_release(&owner, &repo, &version, &name, branch, body_md_text).await;
+        println!("New release created, now uploading release asset. This can take some time if the files are big. Wait...");
 
         // upload asset
         let path_to_file = format!(
             "target/release/{package_name}",
             package_name = package_name()
         );
-        let file = std::path::Path::new(&path_to_file);
-        let file_name = file.file_name().unwrap().to_str().unwrap();
-        let mut new_url = octocrab.base_url.clone();
-        new_url.set_query(Some(format!("{}={}", "name", file_name).as_str()));
 
-        let file_size = unwrap!(std::fs::metadata(file)).len();
-        let file = unwrap!(tokio::fs::File::open(file).await);
-        let stream = tokio_util::codec::FramedRead::new(file, tokio_util::codec::BytesCodec::new());
-        let body = reqwest::Body::wrap_stream(stream);
-
-        let builder = octocrab
-            .request_builder(new_url.as_str(), reqwest::Method::POST)
-            .header("Content-Type", "application/octet-stream")
-            .header("Content-Length", file_size.to_string());
-
-        let _response = unwrap!(builder.body(body).send().await);
+        github_upload_asset_to_release(&owner, &repo, &release_id, &path_to_file).await;
+        println!("Asset uploaded.");
     });
 }
 
 // endregion: tasks
-
-// region: helper functions
-
-/// check if run in rust project root directory error
-/// there must be Cargo.toml and the directory automation_tasks_rs
-/// exit with error message if not
-fn exit_if_not_run_in_rust_project_root_directory() {
-    if !(std::path::Path::new("automation_tasks_rs").exists()
-        && std::path::Path::new("Cargo.toml").exists())
-    {
-        println!("Error: automation_tasks_rs must be called in the root directory of the rust project beside the Cargo.toml file and automation_tasks_rs directory.");
-        // early exit
-        std::process::exit(0);
-    }
-}
-
-/// println one, more or all sub_commands
-fn completion_return_one_or_more_sub_commands(sub_commands: Vec<&str>, word_being_completed: &str) {
-    let mut sub_found = false;
-    for sub_command in sub_commands.iter() {
-        if sub_command.starts_with(word_being_completed) {
-            println!("{}", sub_command);
-            sub_found = true;
-        }
-    }
-    if sub_found == false {
-        // print all sub-commands
-        for sub_command in sub_commands.iter() {
-            println!("{}", sub_command);
-        }
-    }
-}
-
-fn github_owner() -> String {
-    match package_repository() {
-        Some(repository) => {
-            unwrap!(repository.trim_start_matches("https://").split("/").next()).to_string()
-        }
-        None => "".to_string(),
-    }
-}
-// endregion: helper functions
