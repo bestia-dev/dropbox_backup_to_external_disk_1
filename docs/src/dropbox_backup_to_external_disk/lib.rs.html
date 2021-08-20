@@ -441,19 +441,6 @@
 <span id="439">439</span>
 <span id="440">440</span>
 <span id="441">441</span>
-<span id="442">442</span>
-<span id="443">443</span>
-<span id="444">444</span>
-<span id="445">445</span>
-<span id="446">446</span>
-<span id="447">447</span>
-<span id="448">448</span>
-<span id="449">449</span>
-<span id="450">450</span>
-<span id="451">451</span>
-<span id="452">452</span>
-<span id="453">453</span>
-<span id="454">454</span>
 </pre><pre class="rust">
 <span class="doccomment">//! dropbox_backup_to_external_disk lib.rs</span>
 
@@ -461,11 +448,11 @@
 <span class="doccomment">//! # dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! **One way sync from dropbox to external disc**  </span>
-<span class="doccomment">//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.819.1503  date: 2021-08-19 authors: Luciano Bestia***  </span>
+<span class="doccomment">//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.820.1330  date: 2021-08-20 authors: Luciano Bestia***  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1748-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1747-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-274-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-141-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-157-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
@@ -578,7 +565,7 @@
 <span class="doccomment">//! For commercial programs they probably embed them into the binary code somehow. But for OpenSource projects it is not possible to keep a secret. So the workaround is: every user must create a new `dropbox app` exclusive only to him. Creating a new app is simple. This app will stay forever in `development status` in dropbox, to be more private and secure. The  </span>
 <span class="doccomment">//! `$ dropbox_backup_to_external_disk --help`  </span>
 <span class="doccomment">//! has the detailed instructions.  </span>
-<span class="doccomment">//! Then every time before use we need generate the &quot;short-lived access token&quot; for security reasons.  </span>
+<span class="doccomment">//! Then every time before use we need generate the &quot;short-lived access token&quot; for security reasons. There is the possibility to choose &quot;no expiration&quot; token, but I don&#39;t like it. Dropbox backup is used rarely and it is not super frustrating to make few clicks for security of your precious files. Having a &quot;no expiration&quot; token is like having another password for the hackers to try to hack. I like more the &quot;short-lived&quot; token. When I&#39;m not using this backup program, there is no access token at all.  </span>
 <span class="doccomment">//! ![dropbox_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/dropbox_2.png &quot;dropbox_2&quot;) ![dropbox_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/dropbox_1.png &quot;dropbox_1&quot;)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## rename or move</span>
@@ -680,11 +667,9 @@
 <span class="doccomment">/// all list remote and local</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">all_list_remote_and_local</span>(<span class="ident">base_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
     <span class="kw">let</span> <span class="ident">_hide_cursor_terminal</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::start_hide_cursor_terminal</span>();
-    <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="kw-2">*</span><span class="ident">CLEAR_ALL</span>);
     <span class="macro">println!</span>(
-        <span class="string">&quot;{}{}{}dropbox_backup_to_external_disk list_and_sync{}&quot;</span>,
+        <span class="string">&quot;{}{}dropbox_backup_to_external_disk list_and_sync{}&quot;</span>,
         <span class="ident">at_line</span>(<span class="number">1</span>),
-        <span class="kw-2">*</span><span class="ident">CLEAR_LINE</span>,
         <span class="kw-2">*</span><span class="ident">YELLOW</span>,
         <span class="kw-2">*</span><span class="ident">RESET</span>
     );
@@ -693,30 +678,19 @@
     <span class="kw">use</span> <span class="ident">std::thread</span>;
     <span class="kw">let</span> <span class="ident">base_path</span> <span class="op">=</span> <span class="ident">base_path</span>.<span class="ident">to_string</span>();
     <span class="kw">let</span> <span class="ident">handle_2</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-        <span class="macro">println!</span>(
-            <span class="string">&quot;{}{}{}Threads for remote:{}&quot;</span>,
-            <span class="ident">at_line</span>(<span class="number">3</span>),
-            <span class="kw-2">*</span><span class="ident">CLEAR_LINE</span>,
-            <span class="kw-2">*</span><span class="ident">GREEN</span>,
-            <span class="kw-2">*</span><span class="ident">RESET</span>
-        );
+        <span class="macro">println!</span>(<span class="string">&quot;{}{}Threads for remote:{}&quot;</span>, <span class="ident">at_line</span>(<span class="number">3</span>), <span class="kw-2">*</span><span class="ident">GREEN</span>, <span class="kw-2">*</span><span class="ident">RESET</span>);
         <span class="comment">// prints at rows 4,5,6 and 7,8,9</span>
         <span class="ident">list_remote</span>();
     });
     <span class="kw">let</span> <span class="ident">handle_1</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
-        <span class="macro">println!</span>(
-            <span class="string">&quot;{}{}{}Thread for local:{}&quot;</span>,
-            <span class="ident">at_line</span>(<span class="number">12</span>),
-            <span class="kw-2">*</span><span class="ident">CLEAR_LINE</span>,
-            <span class="kw-2">*</span><span class="ident">GREEN</span>,
-            <span class="kw-2">*</span><span class="ident">RESET</span>
-        );
+        <span class="macro">println!</span>(<span class="string">&quot;{}{}Thread for local:{}&quot;</span>, <span class="ident">at_line</span>(<span class="number">12</span>), <span class="kw-2">*</span><span class="ident">GREEN</span>, <span class="kw-2">*</span><span class="ident">RESET</span>);
         <span class="comment">// prints at rows 13,14,15,16</span>
         <span class="ident">list_local</span>(<span class="kw-2">&amp;</span><span class="ident">base_path</span>);
     });
     <span class="comment">// wait for both threads to finish</span>
     <span class="ident">handle_1</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
     <span class="ident">handle_2</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
+
     <span class="macro">println!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">at_line</span>(<span class="number">20</span>), <span class="kw-2">*</span><span class="ident">CLEAR_LINE</span>);
 }
 

@@ -4,11 +4,11 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **One way sync from dropbox to external disc**  
-//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.819.1503  date: 2021-08-19 authors: Luciano Bestia***  
+//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.820.1330  date: 2021-08-20 authors: Luciano Bestia***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1748-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1747-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-274-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
-//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-141-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
+//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-157-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)
 //!
@@ -121,7 +121,7 @@
 //! For commercial programs they probably embed them into the binary code somehow. But for OpenSource projects it is not possible to keep a secret. So the workaround is: every user must create a new `dropbox app` exclusive only to him. Creating a new app is simple. This app will stay forever in `development status` in dropbox, to be more private and secure. The  
 //! `$ dropbox_backup_to_external_disk --help`  
 //! has the detailed instructions.  
-//! Then every time before use we need generate the "short-lived access token" for security reasons.  
+//! Then every time before use we need generate the "short-lived access token" for security reasons. There is the possibility to choose "no expiration" token, but I don't like it. Dropbox backup is used rarely and it is not super frustrating to make few clicks for security of your precious files. Having a "no expiration" token is like having another password for the hackers to try to hack. I like more the "short-lived" token. When I'm not using this backup program, there is no access token at all.  
 //! ![dropbox_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/dropbox_2.png "dropbox_2") ![dropbox_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/dropbox_1.png "dropbox_1")
 //!
 //! ## rename or move
@@ -234,22 +234,12 @@ pub fn all_list_remote_and_local(base_path: &str) {
     use std::thread;
     let base_path = base_path.to_string();
     let handle_2 = thread::spawn(move || {
-        println!(
-            "{}{}Threads for remote:{}",
-            at_line(3),
-            *GREEN,
-            *RESET
-        );
+        println!("{}{}Threads for remote:{}", at_line(3), *GREEN, *RESET);
         // prints at rows 4,5,6 and 7,8,9
         list_remote();
     });
     let handle_1 = thread::spawn(move || {
-        println!(
-            "{}{}Thread for local:{}",
-            at_line(12),
-            *GREEN,
-            *RESET
-        );
+        println!("{}{}Thread for local:{}", at_line(12), *GREEN, *RESET);
         // prints at rows 13,14,15,16
         list_local(&base_path);
     });
