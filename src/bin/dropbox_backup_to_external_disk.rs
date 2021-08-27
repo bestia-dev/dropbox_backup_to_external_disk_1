@@ -191,6 +191,7 @@ fn completion() {
     }
 }
 
+/// print help
 fn print_help() {
     println!(
         r#"

@@ -1,6 +1,7 @@
 //! automation_tasks_rs with_lib
 
 use cargo_auto_lib::*;
+use cargo_auto_github_lib::*;
 use unwrap::unwrap;
 
 /// automation_tasks_rs with_lib
@@ -196,7 +197,7 @@ complete -C "{package_name} completion" {package_name}
             owner = owner
         );
 
-        let release_id =  github_create_new_release(&owner, &repo, &version, &name, branch, body_md_text).await;
+        let release_id =  auto_github_create_new_release(&owner, &repo, &version, &name, branch, body_md_text).await;
         println!("New release created, now uploading release asset. This can take some time if the files are big. Wait...");
 
         // upload asset
@@ -205,7 +206,7 @@ complete -C "{package_name} completion" {package_name}
             package_name = package_name()
         );
 
-        github_upload_asset_to_release(&owner, &repo, &release_id, &path_to_file).await;
+        auto_github_upload_asset_to_release(&owner, &repo, &release_id, &path_to_file).await;
         println!("Asset uploaded.");
     });
 }
