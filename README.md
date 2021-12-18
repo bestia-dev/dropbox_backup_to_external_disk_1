@@ -80,6 +80,13 @@ dropbox_backup_to_external_disk second_backup /mnt/f/DropBoxBackup2
 
 ![workflow_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png "workflow_1")
 
+## remove empty folders
+
+In powershell if you give the same folder twice like this:  
+`robocopy "f:\DropBoxBackup2" "f:\DropBoxBackup2" /S /move`  
+it will remove empty folders.  
+Warning: the folders must be identical !  
+
 ## Development
 
 I use [cargo-auto](https://crates.io/crates/cargo-auto) for automation tasks in rust language. Install it:
@@ -188,7 +195,7 @@ Then a new `compare_lists` will generate a new list if there are smaller differe
 
 ## cargo crev reviews and advisory
 
-We leave in times of danger with `supply chain attacks`.  
+We leave in times of danger with [supply chain attacks](https://en.wikipedia.org/wiki/Supply_chain_attack).  
 It is recommended to always use [cargo-crev](https://github.com/crev-dev/cargo-crev)  
 to verify the trustworthiness of each of your dependencies.  
 Please, spread this info.  
@@ -199,7 +206,9 @@ You can also read reviews quickly on the web. Example for the crate `num-traits`
 
 My open-source projects are free and free as a beer (MIT license).  
 I just love programming.  
-But I need also to drink. If you find my projects and tutorials helpful, please buy me a beer or two donating on my [paypal](https://www.paypal.com/paypalme/LucianoBestia). You know the price of a beer in your local bar ;-)  
+But I need also to drink. If you find my projects and tutorials helpful,  
+please buy me a beer or two donating on my [paypal](https://www.paypal.com/paypalme/LucianoBestia).  
+You know the price of a beer in your local bar ;-)  
 So I can drink a free beer for your health :-)  
 [Na zdravje](https://translate.google.com/?hl=en&sl=sl&tl=en&text=Na%20zdravje&op=translate) !
 

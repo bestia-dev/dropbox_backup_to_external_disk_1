@@ -10,6 +10,7 @@
         "paypal",
         "rclone",
         "readonly",
+        "robocopy",
         "termion",
         "unhide",
         "zdravje"
