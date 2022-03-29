@@ -256,7 +256,7 @@ One single file download:
 Run in `~/dropbox_backup_to_external_disk` directory to gain auto-completion:
   $ alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk
   $ complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
-open-source: https://github.com/LucianoBestia/dropbox_backup_to_external_disk
+open-source: https://github.com/bestia-dev/dropbox_backup_to_external_disk
     "#,
         g = *GREEN,
         y = *YELLOW,

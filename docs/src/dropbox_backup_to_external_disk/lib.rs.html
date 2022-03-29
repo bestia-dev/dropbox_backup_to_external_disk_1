@@ -448,15 +448,15 @@
 <span class="doccomment">//! # dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! **One way sync from dropbox to external disc**  </span>
-<span class="doccomment">//! ***[repository](https://github.com/lucianobestia/dropbox_backup_to_external_disk/); version: 2021.820.1330  date: 2021-08-20 authors: Luciano Bestia***  </span>
+<span class="doccomment">//! ***[repository](https://github.com/bestia-dev/dropbox_backup_to_external_disk/); version: 2021.820.1330  date: 2021-08-20 authors: bestia.dev***  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1747-green.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-274-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-157-purple.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1747-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-274-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-157-purple.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Licence](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/blob/main/LICENSE) [![Rust](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Licence](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/blob/main/LICENSE) [![Rust](https://github.com/bestia-dev/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Motivation</span>
 <span class="doccomment">//!</span>
@@ -477,14 +477,14 @@
 <span class="doccomment">//! There are a few manual steps for the security of you files on Dropbox. Authentication on internet is a complex topic.  </span>
 <span class="doccomment">//! You should be logged in Linux terminal (also in WSL2) with your account. So things you do, are not visible to others. You will set some local environment variables that are private/secret to your linux Session.  After you logout from you Linux session these local environment variables will be deleted.  </span>
 <span class="doccomment">//! The executable will create a sub-directory `temp_data` in the current directory. Maybe it is best if you create a dedicated directory `~/dropbox_backup_to_external_disk/` just for this executable.</span>
-<span class="doccomment">//! Download the latest release from [Github](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/releases) and make the file executable and enable auto-completion:</span>
+<span class="doccomment">//! Download the latest release from [Github](https://github.com/bestia-dev/dropbox_backup_to_external_disk/releases) and make the file executable and enable auto-completion:</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```bash</span>
 <span class="doccomment">//! cd ~</span>
 <span class="doccomment">//! mkdir dropbox_backup_to_external_disk</span>
 <span class="doccomment">//! cd dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! curl -L https://github.com/LucianoBestia/dropbox_backup_to_external_disk/releases/latest/download/dropbox_backup_to_external_disk --output dropbox_backup_to_external_disk</span>
+<span class="doccomment">//! curl -L https://github.com/bestia-dev/dropbox_backup_to_external_disk/releases/latest/download/dropbox_backup_to_external_disk --output dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! chmod +x dropbox_backup_to_external_disk</span>
 <span class="doccomment">//! alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk</span>
@@ -494,7 +494,7 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! Run the executable with --help and follow carefully the instructions 1. and 2.  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! ![screenshot_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/screenshot_1.png &quot;screenshot_1&quot;) ![screenshot_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/screenshot_2.png &quot;screenshot_2&quot;) ![list_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_2.png &quot;list_2&quot;) ![list_3](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_3.png &quot;list_3&quot;) ![list_4](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/list_4.png &quot;list_4&quot;)</span>
+<span class="doccomment">//! ![screenshot_1](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/screenshot_1.png &quot;screenshot_1&quot;) ![screenshot_2](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/screenshot_2.png &quot;screenshot_2&quot;) ![list_2](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/list_2.png &quot;list_2&quot;) ![list_3](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/list_3.png &quot;list_3&quot;) ![list_4](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/list_4.png &quot;list_4&quot;)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Warning</span>
 <span class="doccomment">//!</span>
@@ -508,7 +508,7 @@
 <span class="doccomment">//! It is wise to have 2 backups on external disks and store them in separate locations. Just to be sure.  </span>
 <span class="doccomment">//! If you have internet access on both places then you can sync backup_2 just the same way you sync backup_1.  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! ![workflow_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png &quot;workflow_2&quot;)</span>
+<span class="doccomment">//! ![workflow_2](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png &quot;workflow_2&quot;)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with  </span>
 <span class="doccomment">//!</span>
@@ -516,7 +516,7 @@
 <span class="doccomment">//! dropbox_backup_to_external_disk second_backup /mnt/f/DropBoxBackup2</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! ![workflow_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png &quot;workflow_1&quot;)</span>
+<span class="doccomment">//! ![workflow_1](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png &quot;workflow_1&quot;)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Development</span>
 <span class="doccomment">//!</span>
@@ -532,7 +532,7 @@
 <span class="doccomment">//! cargo auto</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! ![cargo_auto_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/cargo_auto_1.png &quot;cargo_auto_1&quot;)</span>
+<span class="doccomment">//! ![cargo_auto_1](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/cargo_auto_1.png &quot;cargo_auto_1&quot;)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! I use WSL2 (Debian) on Win10 to develope and execute this CLI in Debian Linux.  </span>
 <span class="doccomment">//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  Or for the second backup on my system `/mnt/f/DropBoxBackup2`.  </span>
@@ -566,7 +566,7 @@
 <span class="doccomment">//! `$ dropbox_backup_to_external_disk --help`  </span>
 <span class="doccomment">//! has the detailed instructions.  </span>
 <span class="doccomment">//! Then every time before use we need generate the &quot;short-lived access token&quot; for security reasons. There is the possibility to choose &quot;no expiration&quot; token, but I don&#39;t like it. Dropbox backup is used rarely and it is not super frustrating to make few clicks for security of your precious files. Having a &quot;no expiration&quot; token is like having another password for the hackers to try to hack. I like more the &quot;short-lived&quot; token. When I&#39;m not using this backup program, there is no access token at all.  </span>
-<span class="doccomment">//! ![dropbox_2](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/dropbox_2.png &quot;dropbox_2&quot;) ![dropbox_1](https://github.com/LucianoBestia/dropbox_backup_to_external_disk/raw/main/images/dropbox_1.png &quot;dropbox_1&quot;)</span>
+<span class="doccomment">//! ![dropbox_2](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/dropbox_2.png &quot;dropbox_2&quot;) ![dropbox_1](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/dropbox_1.png &quot;dropbox_1&quot;)</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## rename or move</span>
 <span class="doccomment">//!</span>
@@ -637,7 +637,7 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! My open-source projects are free and free as a beer (MIT license).  </span>
 <span class="doccomment">//! I just love programming.  </span>
-<span class="doccomment">//! But I need also to drink. If you find my projects and tutorials helpful, please buy me a beer or two donating on my [paypal](https://www.paypal.com/paypalme/LucianoBestia). You know the price of a beer in your local bar ;-)  </span>
+<span class="doccomment">//! But I need also to drink. If you find my projects and tutorials helpful, please buy me a beer or two donating on my [paypal](https://paypal.me/LucianoBestia). You know the price of a beer in your local bar ;-)  </span>
 <span class="doccomment">//! So I can drink a free beer for your health :-)  </span>
 <span class="doccomment">//! [Na zdravje](https://translate.google.com/?hl=en&amp;sl=sl&amp;tl=en&amp;text=Na%20zdravje&amp;op=translate) !</span>
 <span class="doccomment">//!</span>

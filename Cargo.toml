@@ -2,11 +2,11 @@
 name = "dropbox_backup_to_external_disk"
 version = "2021.820.1330"
 description = "One way sync from dropbox to external disc"
-authors = ["Luciano Bestia"]
+authors = ["bestia.dev"]
 edition = "2018"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/lucianobestia/dropbox_backup_to_external_disk/"
+repository = "https://github.com/bestia-dev/dropbox_backup_to_external_disk/"
 categories = ["programming"]
 keywords = ["dropbox"]
 publish = false
