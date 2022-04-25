@@ -3,6 +3,7 @@ name = "dropbox_backup_to_external_disk"
 version = "2021.820.1330"
 description = "One way sync from dropbox to external disc"
 authors = ["bestia.dev"]
+homepage = "https://bestia.dev"
 edition = "2018"
 license = "MIT"
 readme = "README.md"
