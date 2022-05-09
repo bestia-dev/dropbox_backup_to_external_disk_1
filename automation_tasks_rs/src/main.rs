@@ -1,10 +1,10 @@
-//! automation_tasks_rs with_lib
+//! automation_tasks_rs for dropbox_backup_to_external_disk
 
 use cargo_auto_lib::*;
 use cargo_auto_github_lib::*;
 use unwrap::unwrap;
 
-/// automation_tasks_rs with_lib
+/// automation_tasks_rs for dropbox_backup_to_external_disk
 fn main() {
     exit_if_not_run_in_rust_project_root_directory();
 
@@ -79,7 +79,7 @@ fn completion() {
     /*
     // the second level if needed
     else if last_word == "new" {
-        let sub_commands = vec!["with_lib"];
+        let sub_commands = vec!["x"];
         completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
     }
     */
