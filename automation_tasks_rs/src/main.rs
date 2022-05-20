@@ -204,7 +204,7 @@ fn task_commit_and_push(arg_2: Option<String>) {
             println!(
                 r#"
    After `cargo auto commit_and_push "message"`
-cargo auto publish_to_crates_io
+cargo auto github_new_release
 "#
             );
         }
