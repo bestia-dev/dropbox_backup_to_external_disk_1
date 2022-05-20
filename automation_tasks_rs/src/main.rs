@@ -52,7 +52,6 @@ fn match_arguments_and_call_tasks(mut args: std::env::Args) {
 
 /// write a comprehensible help for user defined tasks
 fn print_help() {
-    let cargo_toml = CargoToml::read();
     println!(
         r#"
 User defined tasks in automation_tasks_rs:
@@ -64,8 +63,7 @@ cargo auto commit_and_push "message" - commits with message and push with mandat
       (If you use SSH, it is easy to start the ssh-agent in the background and ssh-add your credentials for git.)
 cargo auto github_new_release - creates new release on github
   this task needs PAT (personal access token from github) in the env variable: ` export GITHUB_TOKEN=paste_token_here`
-"#,
-        package_name = cargo_toml.package_name()
+"#
     );
     print_examples_cmd();
 }
@@ -110,11 +108,12 @@ fn task_build() {
     run_shell_command("cargo build");
     println!(
         r#"
-After `cargo auto build`, run the compiled binary, examples and/or tests
-Create auto-completion (only once):
-run `complete -C "./target/debug/{package_name} completion" {package_name}`
+  After `cargo auto build`, run the compiled binary, examples and/or tests
+  Create auto-completion (only once):
+alias dropbox_backup_to_external_disk=./target/debug/{package_name}
+run `complete -C "{package_name} completion" {package_name}`
 
-run `./target/debug/{package_name} --help`
+run `{package_name} --help`
 
 run `cargo auto test`, if ok, then,
 run `cargo auto release`
@@ -137,15 +136,14 @@ fn task_release() {
         "strip target/release/{package_name}",
         package_name = cargo_toml.package_name()
     ));
-    run_shell_command(&format!(
-        "target/release/{package_name} --help",
-        package_name = cargo_toml.package_name()
-    ));
     println!(
         r#"
-After `cargo auto release`, run the compiled binary, examples and/or tests
-Create auto-completion (only once):
-run `complete -C "./target/release/{package_name} completion" {package_name}`
+  After `cargo auto release`, run the compiled binary, examples and/or tests
+  Create auto-completion (only once):
+alias dropbox_backup_to_external_disk=./target/release/{package_name}
+run `complete -C "{package_name} completion" {package_name}`
+
+run `{package_name} --help`
 
 run `cargo auto test`, if ok, then,
 run `cargo auto doc`
