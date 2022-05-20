@@ -15,7 +15,7 @@ fn main() {
     match_arguments_and_call_tasks(args);
 }
 
-// region: match, help and completion. Take care to keep them in sync with the changes.
+// region: match, help and completion
 
 /// match arguments and call tasks functions
 fn match_arguments_and_call_tasks(mut args: std::env::Args) {
@@ -28,12 +28,17 @@ fn match_arguments_and_call_tasks(mut args: std::env::Args) {
                 completion();
             } else {
                 println!("Running automation task: {}", &task);
-                if &task == "build" || &task == "b" {
+                if &task == "build" {
                     task_build();
-                } else if &task == "release" || &task == "r" {
+                } else if &task == "release" {
                     task_release();
-                } else if &task == "docs" || &task == "doc" || &task == "d" {
-                    task_docs();
+                } else if &task == "doc" {
+                    task_doc();
+                } else if &task == "test" {
+                    task_test();
+                } else if &task == "commit_and_push" {
+                    let arg_2 = args.next();
+                    task_commit_and_push(arg_2);
                 } else if &task == "github_new_release" {
                     task_github_new_release();
                 } else {
@@ -47,23 +52,31 @@ fn match_arguments_and_call_tasks(mut args: std::env::Args) {
 
 /// write a comprehensible help for user defined tasks
 fn print_help() {
+    let cargo_toml = CargoToml::read();
     println!(
         r#"
 User defined tasks in automation_tasks_rs:
-cargo auto build - builds the crate in debug mode, fmt
-cargo auto release - builds the crate in release mode, version from date, fmt, strip
+cargo auto build - builds the crate in debug mode, fmt, increment version
+cargo auto release - builds the crate in release mode, fmt, increment version
 cargo auto doc - builds the docs, copy to docs directory
+cargo auto test - runs all the tests
+cargo auto commit_and_push "message" - commits with message and push with mandatory message
+      (If you use SSH, it is easy to start the ssh-agent in the background and ssh-add your credentials for git.)
 cargo auto github_new_release - creates new release on github
-  this task needs PAT (personal access token from github) in the env variable: `export GITHUB_TOKEN=paste_token_here`
-
-Create alias for easy use when developing:
-  $ alias {package_name}=target/debug/{package_name}
-Create auto-completion:
-  $ complete -C "{package_name} completion" {package_name}
-  {package_name} --help - instructions especially for first use because of authentication
+  this task needs PAT (personal access token from github) in the env variable: ` export GITHUB_TOKEN=paste_token_here`
 "#,
-        package_name = package_name()
+        package_name = cargo_toml.package_name()
     );
+    print_examples_cmd();
+}
+
+/// all example commands in one place
+fn print_examples_cmd(){
+/*
+    println!(r#"run examples:
+cargo run --example example1
+"#);
+*/
 }
 
 /// sub-command for bash auto-completion of `cargo auto` using the crate `dev_bestia_cargo_completion`
@@ -73,7 +86,7 @@ fn completion() {
     let last_word = args[3].as_str();
 
     if last_word == "cargo-auto" || last_word == "auto" {
-        let sub_commands = vec!["build", "release", "doc", "github_new_release"];
+        let sub_commands = vec!["build", "release", "doc", "test", "commit_and_push", "github_new_release"];
         completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
     }
     /*
@@ -85,36 +98,36 @@ fn completion() {
     */
 }
 
-// endregion: match, help and completion.
+// endregion: match, help and completion
 
 // region: tasks
 
-/// example how to call a list of shell commands
+/// cargo build
 fn task_build() {
-    auto_version_from_date();
-    #[rustfmt::skip]
-    let shell_commands = [
-        "cargo fmt", 
-        "cargo build",
-        &format!("target/debug/{package_name} --help" , package_name = package_name()),
-        ];
-    run_shell_commands(shell_commands.to_vec());
+    let cargo_toml = CargoToml::read();
+    auto_version_increment_semver_or_date();
+    run_shell_command("cargo fmt");
+    run_shell_command("cargo build");
     println!(
         r#"
-Create alias for easy use when developing:
-  $  alias {package_name}=target/debug/{package_name}
-Create auto-completion:
-  $  complete -C "{package_name} completion" {package_name}
+After `cargo auto build`, run the compiled binary, examples and/or tests
+Create auto-completion (only once):
+run `complete -C "./target/debug/{package_name} completion" {package_name}`
 
-After `cargo auto build`, run the tests and the code. If ok, then `cargo auto release`
+run `./target/debug/{package_name} --help`
+
+run `cargo auto test`, if ok, then,
+run `cargo auto release`
 "#,
-        package_name = package_name()
+package_name = cargo_toml.package_name(),
     );
+    print_examples_cmd();
 }
 
-/// example how to call one shell command and combine with rust code
+/// cargo build --release
 fn task_release() {
-    auto_version_from_date();
+    let cargo_toml = CargoToml::read();
+    auto_version_increment_semver_or_date();
     auto_cargo_toml_to_md();
     auto_lines_of_code("");
 
@@ -122,59 +135,89 @@ fn task_release() {
     run_shell_command("cargo build --release");
     run_shell_command(&format!(
         "strip target/release/{package_name}",
-        package_name = package_name()
+        package_name = cargo_toml.package_name()
     ));
     run_shell_command(&format!(
         "target/release/{package_name} --help",
-        package_name = package_name()
+        package_name = cargo_toml.package_name()
     ));
     println!(
         r#"
-Create alias for easy use when developing:
-    $  alias {package_name}=target/release/{package_name}
-Create auto-completion:
-    $  complete -C "{package_name} completion" {package_name}
+After `cargo auto release`, run the compiled binary, examples and/or tests
+Create auto-completion (only once):
+run `complete -C "./target/release/{package_name} completion" {package_name}`
 
-After `cargo auto release`, run the tests and the code. If ok, then `cargo auto doc`
+run `cargo auto test`, if ok, then,
+run `cargo auto doc`
 "#,
-        package_name = package_name()
+package_name = cargo_toml.package_name(),
     );
+    print_examples_cmd();
 }
 
-/// example how to call a list of shell commands and combine with rust code
-fn task_docs() {
+/// cargo doc, then copies to /docs/ folder, because this is a github standard folder
+fn task_doc() {
+    let cargo_toml = CargoToml::read();
     auto_cargo_toml_to_md();
     auto_lines_of_code("");
+    auto_plantuml(&cargo_toml.package_repository().unwrap());
     auto_md_to_doc_comments();
-    #[rustfmt::skip]
-    let shell_commands = [
-        "cargo doc --no-deps --document-private-items",
-        // copy target/doc into docs/ because it is github standard
-        "rsync -a --info=progress2 --delete-after target/doc/ docs/",
-        "echo Create simple index.html file in docs directory",
-        &format!("echo \"<meta http-equiv=\\\"refresh\\\" content=\\\"0; url={}/index.html\\\" />\" > docs/index.html",package_name().replace("-","_")) ,
-    ];
-    run_shell_commands(shell_commands.to_vec());
+
+    run_shell_command("cargo doc --no-deps --document-private-items");
+    // copy target/doc into docs/ because it is github standard
+    run_shell_command("rsync -a --info=progress2 --delete-after target/doc/ docs/");
+    // Create simple index.html file in docs directory
+    run_shell_command(&format!("echo \"<meta http-equiv=\\\"refresh\\\" content=\\\"0; url={}/index.html\\\" />\" > docs/index.html",cargo_toml.package_name().replace("-","_")));    
+    run_shell_command("cargo fmt");
     // message to help user with next move
     println!(
         r#"
-After `cargo auto doc`, check `docs/index.html`. If ok, then `git commit -am"message"` and `git push`,
-then create new release with `cargo auto github_new_release`
+After `cargo auto doc`, check `docs/index.html`. If ok, then test the documentation code examples
+run `cargo auto test`
 "#
     );
 }
 
+/// cargo test
+fn task_test() {
+    run_shell_command("cargo test");
+    println!(
+        r#"
+After `cargo auto test`. If ok, then 
+run `cargo auto commit_and_push "message"` with mandatory commit message
+"#
+    );
+}
+
+/// commit and push
+fn task_commit_and_push(arg_2: Option<String>) {
+    match arg_2 {
+        None => println!("Error: message for commit is mandatory"),
+        Some(message) => {
+            run_shell_command(&format!(r#"git add -A && git commit --allow-empty -m "{}""#, message));
+            run_shell_command("git push");
+            println!(
+                r#"
+After `cargo auto commit_and_push "message"`
+run `cargo auto publish_to_crates_io`
+"#
+            );
+        }
+    }
+}
+
 /// create a new release on github with octocrab
-/// the env variable GITHUB_TOKEN must be set `export GITHUB_TOKEN=paste_token_here`
 fn task_github_new_release() {
+    let cargo_toml = CargoToml::read();
+    println!("The env variable GITHUB_TOKEN must be set: ` export GITHUB_TOKEN=paste_token_here`");
     // async block inside sync code with tokio
     use tokio::runtime::Runtime;
     let rt = Runtime::new().unwrap();
     rt.block_on(async move {
-        let owner = github_owner();
-        let repo = package_name();
-        let version = package_version();
-        let name = format!("Version {}", &package_version());
+        let owner = cargo_auto_github_lib::github_owner();
+        let repo = cargo_toml.package_name();
+        let version = cargo_toml.package_version();
+        let name = format!("Version {}", cargo_toml.package_version());
         let branch = "main";
         let body_md_text = &format!(
             r#"
@@ -192,8 +235,8 @@ complete -C "{package_name} completion" {package_name}
 {package_name} --help
 ```            
             "#,
-            package_repository = unwrap!(package_repository()),
-            package_name = package_name(),
+            package_repository = unwrap!(cargo_toml.package_repository()),
+            package_name = cargo_toml.package_name(),
             owner = owner
         );
 
@@ -203,7 +246,7 @@ complete -C "{package_name} completion" {package_name}
         // upload asset
         let path_to_file = format!(
             "target/release/{package_name}",
-            package_name = package_name()
+            package_name = cargo_toml.package_name()
         );
 
         auto_github_upload_asset_to_release(&owner, &repo, &release_id, &path_to_file).await;

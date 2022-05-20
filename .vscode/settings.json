@@ -1,19 +1,32 @@
 {
     "cSpell.words": [
+        "bestia",
+        "chrono",
+        "cpufeatures",
+        "crev",
+        "datetime",
+        "deps",
         "Deque",
+        "endregion",
         "exitcode",
         "filetime",
         "hasher",
         "humantime",
         "mkdir",
         "nbsp",
+        "octocrab",
         "paypal",
+        "plantuml",
         "rclone",
         "readonly",
         "robocopy",
+        "rustdevuser",
+        "rustfmt",
         "rustlang",
+        "rustprojects",
         "termion",
         "unhide",
+        "walkdir",
         "zdravje"
     ]
 }

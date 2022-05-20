@@ -129,6 +129,8 @@ fn main() {
 
 /// sub-command for bash auto-completion of `cargo auto` using the crate `dev_bestia_cargo_completion`
 /// `complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk`
+/// `complete -p`  - shows all the completion commands
+/// `complete -r xxx` - deletes a completion command
 fn completion() {
     /// println one, more or all sub_commands
     fn completion_return_one_or_more_sub_commands(
@@ -161,7 +163,7 @@ fn completion() {
     let word_being_completed = args[3].as_str();
     let last_word = args[4].as_str();
 
-    if last_word == "dropbox_backup_to_external_disk" {
+    if last_word.ends_with("dropbox_backup_to_external_disk") {
         let sub_commands = vec![
             "--help",
             "-h",
