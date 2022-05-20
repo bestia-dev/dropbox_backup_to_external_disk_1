@@ -1,6 +1,9 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../dropbox_backup_to_external_disk/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../dropbox_backup_to_external_disk/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a><h2 class="location"></h2>
+    </nav>
+    <nav class="sidebar"><a class="sidebar-logo" href="../../dropbox_backup_to_external_disk/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../dropbox_backup_to_external_disk/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><div class="theme-picker hidden"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="22" height="22" alt="Pick another theme!" src="../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -441,22 +444,39 @@
 <span id="439">439</span>
 <span id="440">440</span>
 <span id="441">441</span>
-</pre><pre class="rust">
-<span class="doccomment">//! dropbox_backup_to_external_disk lib.rs</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+</pre><pre class="rust"><code><span class="doccomment">//! dropbox_backup_to_external_disk lib.rs</span>
 
 <span class="comment">// region: auto_md_to_doc_comments include README.md A //!</span>
 <span class="doccomment">//! # dropbox_backup_to_external_disk</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! **One way sync from dropbox to external disc**  </span>
-<span class="doccomment">//! ***[repository](https://github.com/bestia-dev/dropbox_backup_to_external_disk/); version: 2021.820.1330  date: 2021-08-20 authors: bestia.dev***  </span>
+<span class="doccomment">//! ***version: 2022.520.1022 date: 2022-05-20 author: [bestia.dev](https://bestia.dev) repository: [Github](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)***  </span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1747-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
-<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-274-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1750-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-277-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-157-purple.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! [![Licence](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/blob/main/LICENSE) [![Rust](https://github.com/bestia-dev/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/blob/main/LICENSE)</span>
+<span class="doccomment">//! [![Rust](https://github.com/bestia-dev/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)</span>
+<span class="doccomment">//! [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fbestia-dev%2Fdropbox_backup_to_external_disk&amp;count_bg=%2379C83D&amp;title_bg=%23555555&amp;icon=&amp;icon_color=%23E7E7E7&amp;title=hits&amp;edge_flat=false)](https://hits.seeyoufarm.com)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! Hashtags: #rustlang #tutorial #dropbox #cli</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Motivation</span>
 <span class="doccomment">//!</span>
@@ -517,6 +537,13 @@
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ![workflow_1](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png &quot;workflow_1&quot;)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! ## remove empty folders</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! In powershell if you give the same folder twice like this:  </span>
+<span class="doccomment">//! `robocopy &quot;f:\DropBoxBackup2&quot; &quot;f:\DropBoxBackup2&quot; /S /move`  </span>
+<span class="doccomment">//! it will remove empty folders.  </span>
+<span class="doccomment">//! Warning: the folders must be identical !  </span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## Development</span>
 <span class="doccomment">//!</span>
@@ -581,6 +608,7 @@
 <span class="doccomment">//! Run this command to define auto-completion in bash for the current session:  </span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ```bash</span>
+<span class="doccomment">//! alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk</span>
 <span class="doccomment">//! complete -C &quot;dropbox_backup_to_external_disk completion&quot; dropbox_backup_to_external_disk</span>
 <span class="doccomment">//! ```</span>
 <span class="doccomment">//!</span>
@@ -626,7 +654,7 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! ## cargo crev reviews and advisory</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! We leave in times of danger with `supply chain attacks`.  </span>
+<span class="doccomment">//! We leave in times of danger with [supply chain attacks](https://en.wikipedia.org/wiki/Supply_chain_attack).  </span>
 <span class="doccomment">//! It is recommended to always use [cargo-crev](https://github.com/crev-dev/cargo-crev)  </span>
 <span class="doccomment">//! to verify the trustworthiness of each of your dependencies.  </span>
 <span class="doccomment">//! Please, spread this info.  </span>
@@ -637,7 +665,9 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! My open-source projects are free and free as a beer (MIT license).  </span>
 <span class="doccomment">//! I just love programming.  </span>
-<span class="doccomment">//! But I need also to drink. If you find my projects and tutorials helpful, please buy me a beer or two donating on my [paypal](https://paypal.me/LucianoBestia). You know the price of a beer in your local bar ;-)  </span>
+<span class="doccomment">//! But I need also to drink. If you find my projects and tutorials helpful,  </span>
+<span class="doccomment">//! please buy me a beer or two donating on my [paypal](https://paypal.me/LucianoBestia).  </span>
+<span class="doccomment">//! You know the price of a beer in your local bar ;-)  </span>
 <span class="doccomment">//! So I can drink a free beer for your health :-)  </span>
 <span class="doccomment">//! [Na zdravje](https://translate.google.com/?hl=en&amp;sl=sl&amp;tl=en&amp;text=Na%20zdravje&amp;op=translate) !</span>
 <span class="doccomment">//!</span>
@@ -666,7 +696,7 @@
 
 <span class="doccomment">/// all list remote and local</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">all_list_remote_and_local</span>(<span class="ident">base_path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-    <span class="kw">let</span> <span class="ident">_hide_cursor_terminal</span> <span class="op">=</span> <span class="kw">crate</span><span class="ident">::start_hide_cursor_terminal</span>();
+    <span class="kw">let</span> <span class="ident">_hide_cursor_terminal</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::start_hide_cursor_terminal</span>();
     <span class="macro">println!</span>(
         <span class="string">&quot;{}{}dropbox_backup_to_external_disk list_and_sync{}&quot;</span>,
         <span class="ident">at_line</span>(<span class="number">1</span>),
@@ -817,9 +847,9 @@
                 <span class="comment">// equal names. check date and size</span>
                 <span class="comment">// println!(&quot;Equal names: {}   {}&quot;,path_remote,path_destination);</span>
                 <span class="comment">// if equal size and time difference only in seconds, then correct destination time</span>
-                <span class="kw">if</span> <span class="ident">vec_line_source</span>[<span class="number">2</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">vec_line_destination</span>[<span class="number">2</span>]
+                <span class="kw">if</span> <span class="ident">vec_line_source</span>[<span class="number">2</span>] <span class="op">==</span> <span class="ident">vec_line_destination</span>[<span class="number">2</span>]
                     <span class="op">&amp;&amp;</span> <span class="ident">vec_line_source</span>[<span class="number">1</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">vec_line_destination</span>[<span class="number">1</span>]
-                    <span class="op">&amp;&amp;</span> <span class="ident">vec_line_source</span>[<span class="number">1</span>][<span class="number">0</span>..<span class="number">17</span>] <span class="op">=</span><span class="op">=</span> <span class="ident">vec_line_destination</span>[<span class="number">1</span>][<span class="number">0</span>..<span class="number">17</span>]
+                    <span class="op">&amp;&amp;</span> <span class="ident">vec_line_source</span>[<span class="number">1</span>][<span class="number">0</span>..<span class="number">17</span>] <span class="op">==</span> <span class="ident">vec_line_destination</span>[<span class="number">1</span>][<span class="number">0</span>..<span class="number">17</span>]
                 {
                     <span class="ident">vec_for_correct_time</span>
                         .<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{}\t{}&quot;</span>, <span class="ident">path_destination</span>, <span class="ident">vec_line_source</span>[<span class="number">1</span>]));
@@ -883,5 +913,6 @@
     <span class="macro">println!</span>(<span class="string">&quot;{}compare local and local2 lists{}&quot;</span>, <span class="kw-2">*</span><span class="ident">YELLOW</span>, <span class="kw-2">*</span><span class="ident">RESET</span>);
     <span class="ident">compare2_lists</span>();
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="dropbox_backup_to_external_disk" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="dropbox_backup_to_external_disk" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0 (7737e0b5c 2022-04-04)" ></div>
+</body></html>

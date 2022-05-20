@@ -54,15 +54,15 @@ fn match_arguments_and_call_tasks(mut args: std::env::Args) {
 fn print_help() {
     println!(
         r#"
-User defined tasks in automation_tasks_rs:
+   User defined tasks in automation_tasks_rs:
 cargo auto build - builds the crate in debug mode, fmt, increment version
 cargo auto release - builds the crate in release mode, fmt, increment version
 cargo auto doc - builds the docs, copy to docs directory
 cargo auto test - runs all the tests
 cargo auto commit_and_push "message" - commits with message and push with mandatory message
-      (If you use SSH, it is easy to start the ssh-agent in the background and ssh-add your credentials for git.)
+     (If you use SSH, it is easy to start the ssh-agent in the background and ssh-add your credentials for git.)
 cargo auto github_new_release - creates new release on github
-  this task needs PAT (personal access token from github) in the env variable: ` export GITHUB_TOKEN=paste_token_here`
+     This task needs PAT (personal access token from github) in the env variable: ` export GITHUB_TOKEN=paste_token_here`
 "#
     );
     print_examples_cmd();
@@ -108,15 +108,18 @@ fn task_build() {
     run_shell_command("cargo build");
     println!(
         r#"
-  After `cargo auto build`, run the compiled binary, examples and/or tests
-  Create auto-completion (only once):
+   After `cargo auto build`
+   Create auto-completion (only once):
 alias dropbox_backup_to_external_disk=./target/debug/{package_name}
-run `complete -C "{package_name} completion" {package_name}`
+complete -C "{package_name} completion" {package_name}
 
-run `{package_name} --help`
+   Execute binary:
+{package_name} --help
 
-run `cargo auto test`, if ok, then,
-run `cargo auto release`
+   Run tests:
+cargo auto test
+   If ok, then:
+cargo auto release
 "#,
 package_name = cargo_toml.package_name(),
     );
@@ -138,15 +141,18 @@ fn task_release() {
     ));
     println!(
         r#"
-  After `cargo auto release`, run the compiled binary, examples and/or tests
-  Create auto-completion (only once):
+   After `cargo auto release`
+   Create auto-completion (only once):
 alias dropbox_backup_to_external_disk=./target/release/{package_name}
-run `complete -C "{package_name} completion" {package_name}`
+complete -C "{package_name} completion" {package_name}
 
-run `{package_name} --help`
+   Execute binary:
+{package_name} --help
 
-run `cargo auto test`, if ok, then,
-run `cargo auto doc`
+   Run tests:
+cargo auto test
+   If ok, then create docs:
+cargo auto doc
 "#,
 package_name = cargo_toml.package_name(),
     );
@@ -170,8 +176,9 @@ fn task_doc() {
     // message to help user with next move
     println!(
         r#"
-After `cargo auto doc`, check `docs/index.html`. If ok, then test the documentation code examples
-run `cargo auto test`
+   After `cargo auto doc`, check `docs/index.html`. 
+If ok, then test the documentation code examples:
+cargo auto test
 "#
     );
 }
@@ -181,8 +188,8 @@ fn task_test() {
     run_shell_command("cargo test");
     println!(
         r#"
-After `cargo auto test`. If ok, then 
-run `cargo auto commit_and_push "message"` with mandatory commit message
+   After `cargo auto test`. If ok, then commit with message
+cargo auto commit_and_push "message"
 "#
     );
 }
@@ -196,8 +203,8 @@ fn task_commit_and_push(arg_2: Option<String>) {
             run_shell_command("git push");
             println!(
                 r#"
-After `cargo auto commit_and_push "message"`
-run `cargo auto publish_to_crates_io`
+   After `cargo auto commit_and_push "message"`
+cargo auto publish_to_crates_io
 "#
             );
         }

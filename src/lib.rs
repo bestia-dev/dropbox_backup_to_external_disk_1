@@ -4,15 +4,19 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **One way sync from dropbox to external disc**  
-//! ***[repository](https://github.com/bestia-dev/dropbox_backup_to_external_disk/); version: 2021.820.1330  date: 2021-08-20 authors: bestia.dev***  
+//! ***version: 2022.520.1022 date: 2022-05-20 author: [bestia.dev](https://bestia.dev) repository: [Github](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1747-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
-//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-274-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1750-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-277-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 //! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-157-purple.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 //!
-//! [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/blob/main/LICENSE) [![Rust](https://github.com/bestia-dev/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+//! [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/blob/main/LICENSE)
+//! [![Rust](https://github.com/bestia-dev/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+//! [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fbestia-dev%2Fdropbox_backup_to_external_disk&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+//!
+//! Hashtags: #rustlang #tutorial #dropbox #cli
 //!
 //! ## Motivation
 //!
@@ -73,6 +77,13 @@
 //! ```
 //!
 //! ![workflow_1](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png "workflow_1")
+//!
+//! ## remove empty folders
+//!
+//! In powershell if you give the same folder twice like this:  
+//! `robocopy "f:\DropBoxBackup2" "f:\DropBoxBackup2" /S /move`  
+//! it will remove empty folders.  
+//! Warning: the folders must be identical !  
 //!
 //! ## Development
 //!
@@ -137,6 +148,7 @@
 //! Run this command to define auto-completion in bash for the current session:  
 //!
 //! ```bash
+//! alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk
 //! complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
 //! ```
 //!
@@ -182,7 +194,7 @@
 //!
 //! ## cargo crev reviews and advisory
 //!
-//! We leave in times of danger with `supply chain attacks`.  
+//! We leave in times of danger with [supply chain attacks](https://en.wikipedia.org/wiki/Supply_chain_attack).  
 //! It is recommended to always use [cargo-crev](https://github.com/crev-dev/cargo-crev)  
 //! to verify the trustworthiness of each of your dependencies.  
 //! Please, spread this info.  
@@ -193,7 +205,9 @@
 //!
 //! My open-source projects are free and free as a beer (MIT license).  
 //! I just love programming.  
-//! But I need also to drink. If you find my projects and tutorials helpful, please buy me a beer or two donating on my [paypal](https://paypal.me/LucianoBestia). You know the price of a beer in your local bar ;-)  
+//! But I need also to drink. If you find my projects and tutorials helpful,  
+//! please buy me a beer or two donating on my [paypal](https://paypal.me/LucianoBestia).  
+//! You know the price of a beer in your local bar ;-)  
 //! So I can drink a free beer for your health :-)  
 //! [Na zdravje](https://translate.google.com/?hl=en&sl=sl&tl=en&text=Na%20zdravje&op=translate) !
 //!
