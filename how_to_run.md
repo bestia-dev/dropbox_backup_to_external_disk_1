@@ -3,6 +3,11 @@
 ## how to run
 
 ```bash
-cd ~/rustprojects/dropbox_backup_to_external_disk --help
+mkdir ~/rustprojects/dropbox_backup_to_external_disk
+# copy the file dropbox_backup_to_external_disk
+cd ~/rustprojects/dropbox_backup_to_external_disk
+chmod +x dropbox_backup_to_external_disk
+alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk
+complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
 dropbox_backup_to_external_disk --help
 ```
