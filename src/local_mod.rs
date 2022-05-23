@@ -138,10 +138,12 @@ impl RemoteKind {
     /// it depends if the file is on the remote dropbox or on the local disk
     fn get_content_hash(&self, path_for_download: &str) -> String {
         match self {
-            RemoteKind::Client { client } => unwrap!(crate::remote_mod::remote_content_hash(
-                path_for_download,
-                &client
-            )),
+            RemoteKind::Client { client } => {
+                unwrap!(crate::remote_mod::remote_content_hash(
+                    path_for_download,
+                    &client
+                ))
+            }
             RemoteKind::RemoteBasePath {
                 remote_base_local_path,
             } => {
@@ -411,10 +413,7 @@ fn correct_time_from_list_internal(
         let remote_path = line[0];
         let local_path = format!("{}{}", base_local_path, remote_path);
         if path::Path::new(&local_path).exists() {
-            println!("{}", remote_path);
-
-            let remote_content_hash = client_or_base_path.get_content_hash(path_to_correct_time);
-
+            let remote_content_hash = client_or_base_path.get_content_hash(remote_path);
             let local_content_hash = format!(
                 "{:x}",
                 unwrap!(DropboxContentHasher::hash_file(&local_path))

@@ -1,6 +1,6 @@
 [package]
 name = "dropbox_backup_to_external_disk"
-version = "2022.520.1022"
+version = "2022.523.1634"
 description = "One way sync from dropbox to external disc"
 authors = ["bestia.dev"]
 homepage = "https://bestia.dev"
@@ -18,7 +18,7 @@ pretty_env_logger="0.4.0"
 chrono = "0.4.15"
 unwrap = "1.2.1"
 walkdir = "2.3.1"
-filetime = "0.2"
+filetime = "0.2.16"
 humantime = "2.1.0"
 rayon = "1.5.1"
 uncased = "0.9"

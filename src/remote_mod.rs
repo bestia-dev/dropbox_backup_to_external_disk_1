@@ -308,8 +308,8 @@ fn download_internal(
     log::trace!("download_arg: {}", &download_arg.path);
     let local_path = format!("{}{}", base_local_path, download_path);
     // create folder if it does not exist
-    let path = path::PathBuf::from(&local_path);
-    let parent = path.parent().unwrap();
+    let path_of_local_path = path::PathBuf::from(&local_path);
+    let parent = path_of_local_path.parent().unwrap();
     if !path::Path::new(&parent).exists() {
         fs::create_dir_all(parent).unwrap();
     }
@@ -391,14 +391,36 @@ fn download_internal(
                 unwrap!(tx_clone.send((string_to_print, -1)));
             }
         }
-
         break 'download;
     }
     let atime = unwrap!(modified);
     let mtime = unwrap!(modified);
     unwrap!(filetime::set_file_times(&temp_local_path, atime, mtime));
-    // move-rename the completed download file o his final folder
+
+    //Some files are read-only. For example .git files.
+    //Check the attribute, remember it and remove the read-only.
+    let mut is_read_only = false;
+    if path_of_local_path.exists() {
+        let mut perms = unwrap!(fs::metadata(&path_of_local_path)).permissions();
+        if perms.readonly() == true {
+            is_read_only = true;
+            perms.set_readonly(false);
+            unwrap!(fs::set_permissions(&path_of_local_path, perms));
+        }
+    }
+
+    // move-rename the completed download file to his final folder
     unwrap!(fs::rename(&temp_local_path, &local_path));
+
+    // revert to the original read-only attribute
+    if is_read_only == true {
+        let mut perms = unwrap!(fs::metadata(&path_of_local_path)).permissions();
+        if perms.readonly() == false {
+            perms.set_readonly(true);
+            unwrap!(fs::set_permissions(&path_of_local_path, perms));
+        }
+    }
+
     // write to file list_just_downloaded_or_moved.
     // multi-thread no problem: append is atomic on most OS <https://doc.rust-lang.org/std/fs/struct.OpenOptions.html#method.create>
     let list_just_downloaded_or_moved = "temp_data/list_just_downloaded_or_moved.csv";
