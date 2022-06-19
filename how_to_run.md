@@ -11,3 +11,5 @@ alias dropbox_backup_to_external_disk=./dropbox_backup_to_external_disk
 complete -C "dropbox_backup_to_external_disk completion" dropbox_backup_to_external_disk
 dropbox_backup_to_external_disk --help
 ```
+
+In the help text there is detailed instructions how to create and use the dropbox authentication token.
