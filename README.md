@@ -20,7 +20,7 @@
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/blob/main/LICENSE)
 [![Rust](https://github.com/bestia-dev/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
-![Hits](https://bestia.dev/webpage_hit_counter/get_svg_image/584868797)
+![Hits](https://bestia.dev/webpage_hit_counter/get_svg_image/584868797.svg)
 
 Hashtags: #rustlang #tutorial #dropbox #cli  
 My projects on Github are more like a tutorial than a finished product: [bestia-dev tutorials](https://github.com/bestia-dev/tutorials_rust_wasm).
