@@ -4,12 +4,12 @@ name = "automation_tasks_rs"
 version = "0.1.1"
 authors = ["bestia.dev"]
 homepage = "https://bestia.dev"
-edition = "2018"
+edition = "2021"
 description = "cargo auto - automation tasks written in Rust language"
 publish = false
 
 [dependencies]
-cargo_auto_lib = "0.7.42"
-cargo_auto_github_lib = "0.1.5"
+cargo_auto_lib = "0.8.60"
+cargo_auto_github_lib = "0.1.24"
 unwrap="1.2.1"
-tokio = {version = "1.10.0", features = ["rt","rt-multi-thread","fs"]}
+tokio = {version = "1.28.2", features = ["rt","rt-multi-thread","fs"]}

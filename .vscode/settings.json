@@ -27,6 +27,7 @@
         "termion",
         "unhide",
         "walkdir",
+        "zcvf",
         "zdravje"
     ]
 }

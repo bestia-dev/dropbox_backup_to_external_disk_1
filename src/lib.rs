@@ -4,11 +4,11 @@
 //! # dropbox_backup_to_external_disk
 //!
 //! **One way sync from dropbox to external disc**  
-//! ***version: 2022.520.1022 date: 2022-05-20 author: [bestia.dev](https://bestia.dev) repository: [Github](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)***  
+//! ***version: 2023.531.1149 date: 2023-05-31 author: [bestia.dev](https://bestia.dev) repository: [Github](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)***  
 //!
-//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1750-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
-//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-277-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
-//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-157-purple.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+//! [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1758-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+//! [![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-291-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+//! [![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-161-purple.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 //! [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 //! [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 //!
@@ -16,7 +16,8 @@
 //! [![Rust](https://github.com/bestia-dev/dropbox_backup_to_external_disk/workflows/RustAction/badge.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 //! ![Hits](https://bestia.dev/webpage_hit_counter/get_svg_image/584868797.svg)
 //!
-//! Hashtags: #rustlang #tutorial #dropbox #cli
+//! Hashtags: #rustlang #tutorial #dropbox #cli  
+//! My projects on Github are more like a tutorial than a finished product: [bestia-dev tutorials](https://github.com/bestia-dev/tutorials_rust_wasm).
 //!
 //! ## Motivation
 //!
@@ -201,15 +202,19 @@
 //! You can also read reviews quickly on the web. Example for the crate `num-traits`:  
 //! <https://web.crev.dev/rust-reviews/crate/num-traits/>  
 //!
-//! ## open-source free and free as a beer
+//! ## Open-source and free as a beer
 //!
-//! My open-source projects are free and free as a beer (MIT license).  
+//! My open-source projects are free as a beer (MIT license).  
 //! I just love programming.  
-//! But I need also to drink. If you find my projects and tutorials helpful,  
-//! please buy me a beer or two donating on my [paypal](https://paypal.me/LucianoBestia).  
+//! But I need also to drink. If you find my projects and tutorials helpful, please buy me a beer by donating to my [PayPal](https://paypal.me/LucianoBestia).  
 //! You know the price of a beer in your local bar ;-)  
 //! So I can drink a free beer for your health :-)  
-//! [Na zdravje](https://translate.google.com/?hl=en&sl=sl&tl=en&text=Na%20zdravje&op=translate) !
+//! [Na zdravje!](https://translate.google.com/?hl=en&sl=sl&tl=en&text=Na%20zdravje&op=translate) [Alla salute!](https://dictionary.cambridge.org/dictionary/italian-english/alla-salute) [Prost!](https://dictionary.cambridge.org/dictionary/german-english/prost) [Nazdravlje!](https://matadornetwork.com/nights/how-to-say-cheers-in-50-languages/) 🍻
+//!
+//! [//bestia.dev](https://bestia.dev)  
+//! [//github.com/bestia-dev](https://github.com/bestia-dev)  
+//! [//bestiadev.substack.com](https://bestiadev.substack.com)  
+//! [//youtube.com/@bestia-dev-tutorials](https://youtube.com/@bestia-dev-tutorials)  
 //!
 // endregion: auto_md_to_doc_comments include README.md A //!
 
