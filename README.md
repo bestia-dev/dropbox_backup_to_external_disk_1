@@ -198,6 +198,7 @@ Invert only black and white is for image transformation to `dark theme`.
 Can I recognize that a directory is moved or renamed? This is common and should be super fast.  
 If most of the files in the directory are equal it means, that it is moved/renamed.  
 Then a new `compare_lists` will generate a new list if there are smaller differences.  
+Is there a limit in the api for file size bigger than 2GB? Why the program crashes without an error?
 
 ## cargo crev reviews and advisory
 
