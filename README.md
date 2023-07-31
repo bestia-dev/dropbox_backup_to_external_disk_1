@@ -199,6 +199,9 @@ Can I recognize that a directory is moved or renamed? This is common and should 
 If most of the files in the directory are equal it means, that it is moved/renamed.  
 Then a new `compare_lists` will generate a new list if there are smaller differences.  
 Is there a limit in the api for file size bigger than 2GB? Why the program crashes without an error?
+Files with size 0 are not downloaded.
+Solve empty folders in the program.
+Make a command inside the program to save the oauth_token. 
 
 ## cargo crev reviews and advisory
 
