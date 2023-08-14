@@ -25,6 +25,7 @@
         "rustlang",
         "rustprojects",
         "termion",
+        "threadpool",
         "unhide",
         "walkdir",
         "zcvf",

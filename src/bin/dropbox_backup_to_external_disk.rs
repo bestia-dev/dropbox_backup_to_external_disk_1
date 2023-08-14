@@ -3,6 +3,26 @@
 use dropbox_backup_to_external_disk::*;
 use std::env;
 
+// define paths in bin, not in lib
+static APP_CONFIG: AppConfig = AppConfig {
+    path_list_base_local_path: "temp_data/base_local_path.csv",
+    path_list_source_files: "temp_data/list_remote_files.csv",
+    path_list_destination_files: "temp_data/list_local_files.csv",
+    path_list_source_folders: "temp_data/list_remote_folders.csv",
+    path_list_destination_folders: "temp_data/list_local_folders.csv",
+    path_list_for_download: "temp_data/list_for_download.csv",
+    path_list_for_trash: "temp_data/list_for_trash.csv",
+    path_list_for_correct_time: "temp_data/list_for_correct_time.csv",
+    path_list_just_downloaded_or_moved: "temp_data/list_just_downloaded_or_moved.csv",
+
+    path_list2_for_download: "temp_data/list2_for_download.csv",
+    path_list2_for_correct_time: "temp_data/list2_for_correct_time.csv",
+    path_list2_local_files: "temp_data/list2_local_files.csv",
+    path_list2_just_downloaded_or_moved: "temp_data/list2_just_downloaded_or_moved.csv",
+    path_list2_base2_local_path: "temp_data/base2_local_path.csv",
+    path_list2_for_trash: "temp_data/list2_for_trash.csv",
+};
+
 fn main() {
     pretty_env_logger::init();
     ctrlc::set_handler(move || {
@@ -26,7 +46,7 @@ fn main() {
             Some(path) => {
                 let ns_started = ns_start("list_and_sync");
                 print!("{}", *CLEAR_ALL);
-                list_and_sync(path);
+                list_and_sync(path, &APP_CONFIG);
                 ns_print_ms("list_and_sync", ns_started);
             }
             _ => println!("Unrecognized arguments. Try dropbox_backup_to_external_disk --help"),
@@ -34,35 +54,37 @@ fn main() {
         Some("sync_only") => {
             let ns_started = ns_start("sync_only");
             print!("{}", *CLEAR_ALL);
-            sync_only();
+            sync_only(&APP_CONFIG);
             ns_print_ms("sync_only", ns_started);
         }
         Some("remote_list") => {
             print!("{}", *CLEAR_ALL);
             println!(
-                "{}{}{}remote_list into temp_data/list_remote_files.csv{}",
+                "{}{}{}remote_list into {}{}",
                 at_line(1),
                 *CLEAR_LINE,
                 *YELLOW,
-                *RESET
+                APP_CONFIG.path_list_source_files,
+                *RESET,
             );
             let ns_started = ns_start("");
             test_connection();
-            list_remote();
+            list_remote(&APP_CONFIG);
             ns_print_ms("remote_list", ns_started);
         }
         Some("local_list") => match env::args().nth(2).as_deref() {
             Some(path) => {
                 print!("{}", *CLEAR_ALL);
                 println!(
-                    "{}{}{}local_list into temp_data/list_local_files.csv{}",
+                    "{}{}{}local_list into {}{}",
                     at_line(1),
                     *CLEAR_LINE,
                     *YELLOW,
-                    *RESET
+                    APP_CONFIG.path_list_destination_files,
+                    *RESET,
                 );
                 let ns_started = ns_start("");
-                list_local(path);
+                list_local(path, &APP_CONFIG);
                 ns_print_ms("local_list", ns_started);
             }
             _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
@@ -79,7 +101,7 @@ fn main() {
                 );
                 let ns_started = ns_start("");
                 test_connection();
-                all_list_remote_and_local(path);
+                all_list_remote_and_local(path, &APP_CONFIG);
                 ns_print_ms("all_list", ns_started);
             }
             _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
@@ -88,38 +110,43 @@ fn main() {
         Some("compare_lists") => {
             let ns_started = ns_start("compare lists");
             println!("{}compare remote and local lists{}", *YELLOW, *RESET);
-            compare_lists();
+            compare_lists(&APP_CONFIG);
             ns_print_ms("compare_lists", ns_started);
         }
         Some("move_or_rename_local_files") => {
             let ns_started = ns_start("move_or_rename_local_files");
-            move_or_rename_local_files();
+            move_or_rename_local_files(&APP_CONFIG);
             ns_print_ms("move_or_rename_local_files", ns_started);
         }
         Some("trash_from_list") => {
-            let ns_started = ns_start("trash from temp_data/list_for_trash.csv");
-            trash_from_list();
+            let ns_started = ns_start(&format!("trash from {}", APP_CONFIG.path_list_for_trash));
+            trash_from_list(&APP_CONFIG);
             ns_print_ms("trash_from_list", ns_started);
         }
         Some("correct_time_from_list") => {
-            let ns_started =
-                ns_start("correct time of files from temp_data/list_for_correct_time.csv");
-            correct_time_from_list();
+            let ns_started = ns_start(&format!(
+                "correct time of files from {}",
+                APP_CONFIG.path_list_for_correct_time
+            ));
+            correct_time_from_list(&APP_CONFIG);
             ns_print_ms("correct_time_from_list", ns_started);
         }
         Some("download_from_list") => {
-            let ns_started = ns_start("download from temp_data/list_for_download.csv");
-            download_from_list();
+            let ns_started = ns_start(&format!(
+                "download from {}",
+                APP_CONFIG.path_list_for_download
+            ));
+            download_from_list(&APP_CONFIG);
             ns_print_ms("download_from_list", ns_started);
         }
         Some("one_file_download") => match env::args().nth(2).as_deref() {
-            Some(path) => download_one_file(path),
+            Some(path) => download_one_file(path, &APP_CONFIG),
             _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
         },
         Some("second_backup") => match env::args().nth(2).as_deref() {
             Some(path) => {
                 print!("{}", *CLEAR_ALL);
-                second_backup(path)
+                second_backup(path, &APP_CONFIG)
             }
             _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
         },

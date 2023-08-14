@@ -232,15 +232,34 @@ pub use utils_mod::*;
 use uncased::UncasedStr;
 use unwrap::unwrap;
 
+pub struct AppConfig {
+    pub path_list_base_local_path: &'static str,
+    pub path_list_source_files: &'static str,
+    pub path_list_destination_files: &'static str,
+    pub path_list_source_folders: &'static str,
+    pub path_list_destination_folders: &'static str,
+    pub path_list_for_download: &'static str,
+    pub path_list_for_trash: &'static str,
+    pub path_list_for_correct_time: &'static str,
+    pub path_list_just_downloaded_or_moved: &'static str,
+
+    pub path_list2_for_download: &'static str,
+    pub path_list2_for_correct_time: &'static str,
+    pub path_list2_local_files: &'static str,
+    pub path_list2_just_downloaded_or_moved: &'static str,
+    pub path_list2_base2_local_path: &'static str,
+    pub path_list2_for_trash: &'static str,
+}
+
 /// list and sync is the complete process for backup in one command
-pub fn list_and_sync(base_path: &str) {
-    all_list_remote_and_local(base_path);
+pub fn list_and_sync(base_path: &str, app_config: &'static AppConfig) {
+    all_list_remote_and_local(base_path, app_config);
     press_enter_to_continue_timeout_5_sec();
-    sync_only();
+    sync_only(app_config);
 }
 
 /// all list remote and local
-pub fn all_list_remote_and_local(base_path: &str) {
+pub fn all_list_remote_and_local(base_path: &str, app_config: &'static AppConfig) {
     let _hide_cursor_terminal = crate::start_hide_cursor_terminal();
     println!(
         "{}{}dropbox_backup_to_external_disk list_and_sync{}",
@@ -255,12 +274,12 @@ pub fn all_list_remote_and_local(base_path: &str) {
     let handle_2 = thread::spawn(move || {
         println!("{}{}Threads for remote:{}", at_line(3), *GREEN, *RESET);
         // prints at rows 4,5,6 and 7,8,9
-        list_remote();
+        list_remote(app_config);
     });
     let handle_1 = thread::spawn(move || {
         println!("{}{}Thread for local:{}", at_line(12), *GREEN, *RESET);
         // prints at rows 13,14,15,16
-        list_local(&base_path);
+        list_local(&base_path, app_config);
     });
     // wait for both threads to finish
     handle_1.join().unwrap();
@@ -271,50 +290,40 @@ pub fn all_list_remote_and_local(base_path: &str) {
 
 /// sync_only can be stopped with ctrl+c and then restarted if downloading takes lots of time.  
 /// No need to repeat the "list" that takes lots of times.  
-pub fn sync_only() {
+pub fn sync_only(app_config: &'static AppConfig) {
     println!("{}compare remote and local lists{}", *YELLOW, *RESET);
-    compare_lists();
+    compare_lists(app_config);
     println!("{}rename or move equal files{}", *YELLOW, *RESET);
-    move_or_rename_local_files();
+    move_or_rename_local_files(app_config);
     println!("{}move to trash from list{}", *YELLOW, *RESET);
-    trash_from_list();
+    trash_from_list(app_config);
     println!("{}correct time from list{}", *YELLOW, *RESET);
-    correct_time_from_list();
+    correct_time_from_list(app_config);
     press_enter_to_continue_timeout_5_sec();
-    download_from_list();
+    download_from_list(app_config);
 }
 
 /// compare list: the lists and produce list_for_download, list_for_trash, list_for_correct_time
-pub fn compare_lists() {
-    add_just_downloaded_to_list_local();
-    let path_list_source_files = "temp_data/list_remote_files.csv";
-    let path_list_destination_files = "temp_data/list_local_files.csv";
-    let path_list_for_download = "temp_data/list_for_download.csv";
-    let path_list_for_trash = "temp_data/list_for_trash.csv";
-    let path_list_for_correct_time = "temp_data/list_for_correct_time.csv";
+pub fn compare_lists(app_config: &'static AppConfig) {
+    add_just_downloaded_to_list_local(app_config);
     compare_lists_internal(
-        path_list_source_files,
-        path_list_destination_files,
-        path_list_for_download,
-        path_list_for_trash,
-        path_list_for_correct_time,
+        app_config.path_list_source_files,
+        app_config.path_list_destination_files,
+        app_config.path_list_for_download,
+        app_config.path_list_for_trash,
+        app_config.path_list_for_correct_time,
     );
 }
 
 /// compare list: the lists and produce list2_for_download, list2_for_trash, list2_for_correct_time
-pub fn compare2_lists() {
-    add2_just_downloaded_to_list_local();
-    let path_list_source_files = "temp_data/list_local_files.csv";
-    let path_list_destination_files = "temp_data/list2_local_files.csv";
-    let path_list_for_download = "temp_data/list2_for_download.csv";
-    let path_list_for_trash = "temp_data/list2_for_trash.csv";
-    let path_list_for_correct_time = "temp_data/list2_for_correct_time.csv";
+pub fn compare2_lists(app_config: &'static AppConfig) {
+    add2_just_downloaded_to_list_local(app_config);
     compare_lists_internal(
-        path_list_source_files,
-        path_list_destination_files,
-        path_list_for_download,
-        path_list_for_trash,
-        path_list_for_correct_time,
+        app_config.path_list_source_files,
+        app_config.path_list_destination_files,
+        app_config.path_list_for_download,
+        app_config.path_list_for_trash,
+        app_config.path_list_for_correct_time,
     );
 }
 
@@ -446,15 +455,15 @@ fn compare_lists_internal(
 /// Ideally, we put it somewhere safe in a distant location.  
 /// Having 2 external disks on the same computer, it is faster to just copy files then to question for calculating hash.  
 /// No need to move files or correct time. Just copy it. It is faster.  
-pub fn second_backup(base_path: &str) {
-    list2_local(base_path);
+pub fn second_backup(base_path: &str, app_config: &'static AppConfig) {
+    list2_local(base_path, app_config);
     // compare list_local_files and list2_local_files
-    compare2_lists();
-    trash2_from_list();
+    compare2_lists(app_config);
+    trash2_from_list(app_config);
     // copy instead of download, no multi-thread
-    copy_from_list2_for_download("temp_data/list2_for_download.csv");
+    copy_from_list2_for_download(app_config.path_list2_for_download, app_config);
     // just copy also the files for correct time. It is faster then hash.
-    copy_from_list2_for_download("temp_data/list2_for_correct_time.csv");
+    copy_from_list2_for_download(app_config.path_list2_for_correct_time, app_config);
     println!("{}compare local and local2 lists{}", *YELLOW, *RESET);
-    compare2_lists();
+    compare2_lists(app_config);
 }

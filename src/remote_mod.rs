@@ -46,9 +46,9 @@ pub fn get_short_lived_access_token() -> dropbox_sdk::oauth2::Authorization {
 
 /// get remote list in parallel
 /// first get the first level of folders and then request in parallel sub-folders recursively
-pub fn list_remote() {
+pub fn list_remote(app_config: &'static AppConfig) {
     // empty the file. I want all or nothing result here if the process is terminated prematurely.
-    unwrap!(fs::write("temp_data/list_remote_files.csv", ""));
+    unwrap!(fs::write("{}", app_config.path_list_source_files));
 
     let token = get_short_lived_access_token();
     let token_clone2 = token.to_owned().clone();
@@ -128,7 +128,7 @@ pub fn list_remote() {
         );
     }
 
-    sort_remote_list_and_write_to_file(file_list_all);
+    sort_remote_list_and_write_to_file(file_list_all, app_config);
 }
 
 /// list remote folder
@@ -235,7 +235,10 @@ pub fn list_remote_folder(
 }
 
 /// sort and write to file
-pub fn sort_remote_list_and_write_to_file(mut file_list_all: Vec<String>) {
+pub fn sort_remote_list_and_write_to_file(
+    mut file_list_all: Vec<String>,
+    app_config: &'static AppConfig,
+) {
     print!("{}remote list sort", at_line(9));
 
     use rayon::prelude::*;
@@ -252,16 +255,16 @@ pub fn sort_remote_list_and_write_to_file(mut file_list_all: Vec<String>) {
     );
     let string_file_list_all = file_list_all.join("\n");
     unwrap!(fs::write(
-        "temp_data/list_remote_files.csv",
+        app_config.path_list_source_files,
         string_file_list_all
     ));
 }
 
 /// download one file
-pub fn download_one_file(path_to_download: &str) {
+pub fn download_one_file(path_to_download: &str, app_config: &'static AppConfig) {
     let token = get_short_lived_access_token();
     let client = UserAuthDefaultClient::new(token);
-    let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+    let base_local_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
     let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
     // channel for inter-thread communication.
     let (tx, rx) = mpsc::channel();
@@ -278,6 +281,7 @@ pub fn download_one_file(path_to_download: &str) {
             thread_num,
             tx_clone2,
             x_screen_len,
+            app_config,
         );
         drop(tx);
     });
@@ -301,6 +305,7 @@ fn download_internal(
     thread_num: i32,
     tx_clone: mpsc::Sender<(String, i32)>,
     x_screen_len: u16,
+    app_config: &'static AppConfig,
 ) {
     //log::trace!("download_with_client: {}",download_path);
     let mut bytes_out = 0u64;
@@ -414,22 +419,21 @@ fn download_internal(
 
     // write to file list_just_downloaded_or_moved.
     // multi-thread no problem: append is atomic on most OS <https://doc.rust-lang.org/std/fs/struct.OpenOptions.html#method.create>
-    let list_just_downloaded_or_moved = "temp_data/list_just_downloaded_or_moved.csv";
     let line_to_append = format!("{}\t{}\t{}", download_path, s_modified, bytes_out);
     let string_to_print = format!("{}", &line_to_append);
     unwrap!(tx_clone.send((string_to_print, -1)));
     let mut just_downloaded = fs::OpenOptions::new()
         .create(true)
         .append(true)
-        .open(list_just_downloaded_or_moved)
+        .open(app_config.path_list_just_downloaded_or_moved)
         .unwrap();
     unwrap!(writeln!(just_downloaded, "{}", line_to_append));
 }
 
 /// download files from list
-pub fn download_from_list() {
-    let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-    let list_for_download = fs::read_to_string("temp_data/list_for_download.csv").unwrap();
+pub fn download_from_list(app_config: &'static AppConfig) {
+    let base_local_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
+    let list_for_download = fs::read_to_string(app_config.path_list_for_download).unwrap();
 
     if !list_for_download.is_empty() {
         let mut hide_cursor_terminal = crate::start_hide_cursor_terminal();
@@ -483,12 +487,10 @@ pub fn download_from_list() {
                         unwrap!(tx.send((format!("{}", &local_path), -1)));
 
                         // append to list_just_downloaded
-                        let list_just_downloaded_or_moved =
-                            "temp_data/list_just_downloaded_or_moved.csv";
                         let mut just_downloaded = fs::OpenOptions::new()
                             .create(true)
                             .append(true)
-                            .open(list_just_downloaded_or_moved)
+                            .open(app_config.path_list_just_downloaded_or_moved)
                             .unwrap();
                         unwrap!(writeln!(just_downloaded, "{}", line_path_to_download));
                     } else {
@@ -503,6 +505,7 @@ pub fn download_from_list() {
                                 thread_num,
                                 tx_clone2,
                                 x_screen_len,
+                                app_config,
                             );
                         });
                     }
@@ -550,14 +553,14 @@ pub fn download_from_list() {
             }
         }
         // delete the temp folder
-        let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
+        let base_local_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
         let base_temp_download_path = format!("{}_temp_download", &base_local_path);
         fs::remove_dir_all(base_temp_download_path).unwrap_or(());
     } else {
         println!("list_for_download: 0");
     }
     println!("{}compare remote and local lists{}", *YELLOW, *RESET);
-    compare_lists();
+    compare_lists(app_config);
 }
 
 /// list directory

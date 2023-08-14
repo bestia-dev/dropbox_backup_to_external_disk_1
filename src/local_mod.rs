@@ -13,22 +13,27 @@ use unwrap::unwrap;
 use crate::*;
 
 /// list all local files and folders. It can take some time.
-pub fn list_local(base_path: &str) {
+pub fn list_local(base_path: &str, app_config: &'static AppConfig) {
     // empty the file. I want all or nothing result here if the process is terminated prematurely.
-    let path_list = "temp_data/list_local_files.csv";
+    let path_list = app_config.path_list_destination_files;
     // just_loaded is obsolete once I got the fresh local list
-    let path_just_downloaded = "temp_data/list_just_downloaded_or_moved.csv";
-    save_base_path(base_path);
-    list_local_internal(base_path, path_list, path_just_downloaded);
+    save_base_path(base_path, app_config);
+    list_local_internal(
+        base_path,
+        path_list,
+        app_config.path_list_just_downloaded_or_moved,
+    );
 }
 /// for second backup: list all local files and folders. It can take some time.
-pub fn list2_local(base2_path: &str) {
+pub fn list2_local(base2_path: &str, app_config: &'static AppConfig) {
     // empty the file. I want all or nothing result here if the process is terminated prematurely.
-    let path_list = "temp_data/list2_local_files.csv";
     // just_loaded is obsolete once I got the fresh local list
-    let path_just_downloaded = "temp_data/list2_just_downloaded_or_moved.csv";
-    save2_base_path(base2_path);
-    list_local_internal(base2_path, path_list, path_just_downloaded);
+    save2_base_path(base2_path, app_config);
+    list_local_internal(
+        base2_path,
+        app_config.path_list2_local_files,
+        app_config.path_list2_just_downloaded_or_moved,
+    );
 }
 
 /// list all local files and folders. It can take some time.
@@ -106,21 +111,21 @@ fn list_local_internal(base_path: &str, path_list: &str, path_just_downloaded: &
 }
 
 /// saves the base local path for later use like "/mnt/d/DropBoxBackup1"
-pub fn save_base_path(base_path: &str) {
+pub fn save_base_path(base_path: &str, app_config: &'static AppConfig) {
     if !path::Path::new(base_path).exists() {
         println!("error: base_path not exists {}", base_path);
         std::process::exit(1);
     }
-    fs::write("temp_data/base_local_path.csv", base_path).unwrap();
+    fs::write(app_config.path_list_base_local_path, base_path).unwrap();
 }
 
 /// saves the base local path for later use like "/mnt/f/DropBoxBackup2"
-pub fn save2_base_path(base2_path: &str) {
+pub fn save2_base_path(base2_path: &str, app_config: &'static AppConfig) {
     if !path::Path::new(base2_path).exists() {
         println!("error: base2_path not exists {}", base2_path);
         std::process::exit(1);
     }
-    fs::write("temp_data/base2_local_path.csv", base2_path).unwrap();
+    fs::write(app_config.path_list2_base2_local_path, base2_path).unwrap();
 }
 
 /// The source file can be on dropbox or on external disk Backup_1
@@ -171,19 +176,16 @@ impl RemoteKind {
 /// If found, get the remote_metadata with content_hash and calculate local_content_hash.  
 /// If they are equal move or rename, else nothing: it will be trashed and downloaded eventually.  
 /// Remove also the lines in files list_for_trash and list_for_download.  
-pub fn move_or_rename_local_files() {
-    let to_base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-    let path_list_for_trash = "temp_data/list_for_trash.csv";
-    let path_list_for_download = "temp_data/list_for_download.csv";
-    let list_just_downloaded_or_moved = "temp_data/list_just_downloaded_or_moved.csv";
+pub fn move_or_rename_local_files(app_config: &'static AppConfig) {
+    let to_base_local_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
     let token = crate::remote_mod::get_short_lived_access_token();
     let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
     move_or_rename_local_files_internal(
         RemoteKind::Client { client },
         &to_base_local_path,
-        path_list_for_trash,
-        path_list_for_download,
-        list_just_downloaded_or_moved,
+        app_config.path_list_for_trash,
+        app_config.path_list_for_download,
+        app_config.path_list_just_downloaded_or_moved,
     );
 }
 
@@ -312,23 +314,24 @@ fn move_internal(
 
 /// Move to trash folder the files from list_for_trash.  
 /// Ignore if the file does not exist anymore.  
-pub fn trash_from_list() {
-    let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-    let path_list_for_trash = "temp_data/list_for_trash.csv";
-    let path_list_local_files = "temp_data/list_local_files.csv";
-    trash_from_list_internal(&base_local_path, path_list_for_trash, path_list_local_files);
+pub fn trash_from_list(app_config: &'static AppConfig) {
+    let base_local_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
+    let path_list_local_files = app_config.path_list_destination_files;
+    trash_from_list_internal(
+        &base_local_path,
+        app_config.path_list_for_trash,
+        path_list_local_files,
+    );
 }
 
 /// Move to trash folder the files from list_for_trash.  
 /// Ignore if the file does not exist anymore.  
-pub fn trash2_from_list() {
-    let base2_local_path = fs::read_to_string("temp_data/base2_local_path.csv").unwrap();
-    let path2_list_for_trash = "temp_data/list2_for_trash.csv";
-    let path2_list_local_files = "temp_data/list2_local_files.csv";
+pub fn trash2_from_list(app_config: &'static AppConfig) {
+    let base2_local_path = fs::read_to_string(app_config.path_list2_base2_local_path).unwrap();
     trash_from_list_internal(
         &base2_local_path,
-        path2_list_for_trash,
-        path2_list_local_files,
+        app_config.path_list2_for_trash,
+        app_config.path_list2_local_files,
     );
 }
 
@@ -389,15 +392,14 @@ pub fn trash_from_list_internal(
 }
 
 /// modify the date od files from list_for_correct_time
-pub fn correct_time_from_list() {
+pub fn correct_time_from_list(app_config: &'static AppConfig) {
     let token = crate::remote_mod::get_short_lived_access_token();
     let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
-    let base_local_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-    let path_list_for_correct_time = "temp_data/list_for_correct_time.csv";
+    let base_local_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
     correct_time_from_list_internal(
         RemoteKind::Client { client },
         &base_local_path,
-        path_list_for_correct_time,
+        app_config.path_list_for_correct_time,
     );
 }
 
@@ -433,17 +435,20 @@ fn correct_time_from_list_internal(
 }
 
 /// add just downloaded files to list_local (from dropbox remote)
-pub fn add_just_downloaded_to_list_local() {
-    let path_list_just_downloaded = "temp_data/list_just_downloaded_or_moved.csv";
-    let path_list_local_files = "temp_data/list_local_files.csv";
-    add_just_downloaded_to_list_local_internal(path_list_just_downloaded, path_list_local_files);
+pub fn add_just_downloaded_to_list_local(app_config: &'static AppConfig) {
+    let path_list_local_files = app_config.path_list_destination_files;
+    add_just_downloaded_to_list_local_internal(
+        app_config.path_list_just_downloaded_or_moved,
+        path_list_local_files,
+    );
 }
 
 /// add just downloaded files to list_local (from external disk)
-pub fn add2_just_downloaded_to_list_local() {
-    let path2_list_just_downloaded = "temp_data/list2_just_downloaded_or_moved.csv";
-    let path2_list_local_files = "temp_data/list2_local_files.csv";
-    add_just_downloaded_to_list_local_internal(path2_list_just_downloaded, path2_list_local_files);
+pub fn add2_just_downloaded_to_list_local(app_config: &'static AppConfig) {
+    add_just_downloaded_to_list_local_internal(
+        app_config.path_list2_just_downloaded_or_moved,
+        app_config.path_list2_local_files,
+    );
 }
 
 /// add lines from just_downloaded to list_local. Only before compare.
@@ -528,10 +533,10 @@ fn add_just_downloaded_to_list_local_internal(
 }
 
 /// copies files from external disk backup_1 to backup_2
-pub fn copy_from_list2_for_download(path_list2_for_download: &str) {
+pub fn copy_from_list2_for_download(path_list2_for_download: &str, app_config: &'static AppConfig) {
     let list2_for_download = fs::read_to_string(path_list2_for_download).unwrap();
-    let base_source_path = fs::read_to_string("temp_data/base_local_path.csv").unwrap();
-    let base_local_path = fs::read_to_string("temp_data/base2_local_path.csv").unwrap();
+    let base_source_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
+    let base_local_path = fs::read_to_string(app_config.path_list2_base2_local_path).unwrap();
 
     if !list2_for_download.is_empty() {
         println!(
@@ -540,11 +545,11 @@ pub fn copy_from_list2_for_download(path_list2_for_download: &str) {
             *YELLOW,
             *RESET
         );
-        let list_just_downloaded_or_moved = "temp_data/list2_just_downloaded_or_moved.csv";
+
         let mut just_downloaded = fs::OpenOptions::new()
             .create(true)
             .append(true)
-            .open(list_just_downloaded_or_moved)
+            .open(app_config.path_list2_just_downloaded_or_moved)
             .unwrap();
         for line_path_to_download in list2_for_download.lines() {
             let line: Vec<&str> = line_path_to_download.split("\t").collect();
