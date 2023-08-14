@@ -5,11 +5,11 @@ use std::env;
 
 // define paths in bin, not in lib
 static APP_CONFIG: AppConfig = AppConfig {
-    path_list_base_local_path: "temp_data/base_local_path.csv",
-    path_list_source_files: "temp_data/list_remote_files.csv",
-    path_list_destination_files: "temp_data/list_local_files.csv",
-    path_list_source_folders: "temp_data/list_remote_folders.csv",
-    path_list_destination_folders: "temp_data/list_local_folders.csv",
+    path_list_base_local_path: "temp_data/list_base_local_path.csv",
+    path_list_source_files: "temp_data/list_source_files.csv",
+    path_list_destination_files: "temp_data/list_destination_files.csv",
+    path_list_source_folders: "temp_data/list_source_folders.csv",
+    path_list_destination_folders: "temp_data/list_destination_folders.csv",
     path_list_for_download: "temp_data/list_for_download.csv",
     path_list_for_trash: "temp_data/list_for_trash.csv",
     path_list_for_correct_time: "temp_data/list_for_correct_time.csv",
@@ -19,7 +19,7 @@ static APP_CONFIG: AppConfig = AppConfig {
     path_list2_for_correct_time: "temp_data/list2_for_correct_time.csv",
     path_list2_local_files: "temp_data/list2_local_files.csv",
     path_list2_just_downloaded_or_moved: "temp_data/list2_just_downloaded_or_moved.csv",
-    path_list2_base2_local_path: "temp_data/base2_local_path.csv",
+    path_list2_base2_local_path: "temp_data/list2_base2_local_path.csv",
     path_list2_for_trash: "temp_data/list2_for_trash.csv",
 };
 
@@ -265,9 +265,9 @@ fn print_help() {
   {y}Just for debugging purpose, you can run every step separately.{rs}
   Test connection and authorization:
 {g}dropbox_backup_to_external_disk test{rs}
-  List remote files from Dropbox to `list_remote_files.csv`:
+  List remote files from Dropbox to `list_source_files.csv`:
 {g}dropbox_backup_to_external_disk remote_list{rs}
-  List local files to `list_local_files.csv`:
+  List local files to `list_destination_files.csv`:
 {g}dropbox_backup_to_external_disk local_list /mnt/d/DropBoxBackup1{rs}
   List all - both remote and local files to `temp_date/`:
 {g}dropbox_backup_to_external_disk all_list /mnt/d/DropBoxBackup1{rs}  

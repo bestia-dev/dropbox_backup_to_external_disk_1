@@ -102,7 +102,7 @@ fn list_local_internal(base_path: &str, path_list: &str, path_just_downloaded: &
     println!("{}local list sort...", at_line(16));
     let sorted_string = crate::sort_string_lines(&output_string);
     println!(
-        "{}list_local_files sorted lines: {}",
+        "{}list_destination_files sorted lines: {}",
         at_line(16),
         sorted_string.lines().count()
     );
@@ -200,7 +200,7 @@ fn move_or_rename_local_files_internal(
     let list_for_trash = fs::read_to_string(path_list_for_trash).unwrap();
     let list_for_download = fs::read_to_string(path_list_for_download).unwrap();
 
-    // write the renamed files to list_just_downloaded_or_moved, later they will be added to list_local_files.csv
+    // write the renamed files to list_just_downloaded_or_moved, later they will be added to list_destination_files.csv
     let mut just_downloaded = fs::OpenOptions::new()
         .create(true)
         .append(true)
@@ -370,7 +370,7 @@ pub fn trash_from_list_internal(
             }
         }
 
-        // remove lines from list_local_files.csv
+        // remove lines from list_destination_files.csv
         let string_local_files = fs::read_to_string(path_list_local_files).unwrap();
         let vec_sorted_local: Vec<&str> = string_local_files.lines().collect();
         // I must create a new vector.

@@ -104,8 +104,8 @@
 //!
 //! I use WSL2 (Debian) on Win10 to develope and execute this CLI in Debian Linux.  
 //! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  Or for the second backup on my system `/mnt/f/DropBoxBackup2`.  
-//! The CLI saves the list of the local files metadata in `temp_data/list_local_files.csv`.  
-//! And the list of the files metadata from the remote Dropbox to in `temp_data/list_remote_files.csv`.
+//! The CLI saves the list of the local files metadata in `temp_data/list_destination_files.csv`.  
+//! And the list of the files metadata from the remote Dropbox to in `temp_data/list_source_files.csv`.
 //! Tab delimited with metadata: path (with name), datetime modified, size.
 //! The remote path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random-case.
 //! For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads in a ThreadPool to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.  
@@ -168,7 +168,7 @@
 //! Simple text files are a terrible way to store data that needs to be changed. It is ok for write once and then read. But there is not a good way to modify only one line inside a big text file. The recommended approach is read all, modify, save all. If the memory is not big enough then use a buffer to read a segment, modify, save a segment, repeat to end.  
 //! There is another approach called memory map to file, but everybody is trying to avoid it because some other process could modify the file when in use and make it garbage.  
 //! Sounds like a database is always a better choice for more agile development.  
-//! In this project I will create additional files that only append lines. Some kind of journal. And later use this to modify the big text files in one go. For example: list_just_downloaded_or_moved.csv is added to list_local_files.csv.  
+//! In this project I will create additional files that only append lines. Some kind of journal. And later use this to modify the big text files in one go. For example: list_just_downloaded_or_moved.csv is added to list_destination_files.csv.  
 //!
 //! ### termion
 //!
@@ -457,7 +457,7 @@ fn compare_lists_internal(
 /// No need to move files or correct time. Just copy it. It is faster.  
 pub fn second_backup(base_path: &str, app_config: &'static AppConfig) {
     list2_local(base_path, app_config);
-    // compare list_local_files and list2_local_files
+    // compare list_destination_files and list2_local_files
     compare2_lists(app_config);
     trash2_from_list(app_config);
     // copy instead of download, no multi-thread

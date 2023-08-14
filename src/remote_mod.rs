@@ -249,7 +249,7 @@ pub fn sort_remote_list_and_write_to_file(
     });
     // join to string and write to file
     println!(
-        "{}list_remote_files sorted lines: {}",
+        "{}list_source_files sorted lines: {}",
         at_line(9),
         file_list_all.len()
     );
