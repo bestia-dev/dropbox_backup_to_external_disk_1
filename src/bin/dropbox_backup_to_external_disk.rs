@@ -265,21 +265,21 @@ fn print_help() {
   {y}Just for debugging purpose, you can run every step separately.{rs}
   Test connection and authorization:
 {g}dropbox_backup_to_external_disk test{rs}
-  List remote files from Dropbox to `list_source_files.csv`:
+  List remote files from Dropbox to `{path_list_source_files}`:
 {g}dropbox_backup_to_external_disk remote_list{rs}
-  List local files to `list_destination_files.csv`:
+  List local files to `{path_list_destination_files}`:
 {g}dropbox_backup_to_external_disk local_list /mnt/d/DropBoxBackup1{rs}
   List all - both remote and local files to `temp_date/`:
 {g}dropbox_backup_to_external_disk all_list /mnt/d/DropBoxBackup1{rs}  
-  Compare lists and generate `list_for_download.csv`, `list_for_trash.csv` and `list_for_correct_time.csv`:
+  Compare lists and generate `{path_list_for_download}`, `{path_list_for_trash}` and `{path_list_for_correct_time}`:
 {g}dropbox_backup_to_external_disk compare_lists{rs}
   Move or rename local files if they are equal in trash_from_list and download_from_list:
 {g}dropbox_backup_to_external_disk move_or_rename_local_files{rs}
-  Move to trash folder from `list_for_trash.csv`:
+  Move to trash folder from `{path_list_for_trash}`:
 {g}dropbox_backup_to_external_disk trash_from_list{rs}
-  Correct time of files from `list_for_correct_time.csv`:
+  Correct time of files from `{path_list_for_correct_time}`:
 {g}dropbox_backup_to_external_disk correct_time_from_list{rs}
-  Download files from `list_for_download.csv`:
+  Download files from `{path_list_for_download}`:
 {g}dropbox_backup_to_external_disk download_from_list{rs}
   One single file download:
 {g}dropbox_backup_to_external_disk one_file_download <path>{rs}
@@ -293,6 +293,12 @@ fn print_help() {
         g = *GREEN,
         y = *YELLOW,
         rs = *RESET,
+        path_list_source_files = APP_CONFIG.path_list_source_files,
+        path_list_destination_files = APP_CONFIG.path_list_destination_files,
+        path_list_for_download = APP_CONFIG.path_list_for_download,
+        path_list_for_correct_time = APP_CONFIG.path_list_for_correct_time,
+        path_list_for_trash = APP_CONFIG.path_list_for_trash,
+
         date = chrono::offset::Utc::now().format("%Y%m%dT%H%M%SZ"),
     );
 }
