@@ -64,21 +64,6 @@
 //! Be careful !  
 //! I then restart my Win10 and the problem magically disappears.
 //!
-//! ## Second backup
-//!
-//! It is wise to have 2 backups on external disks and store them in separate locations. Just to be sure.  
-//! If you have internet access on both places then you can sync backup_2 just the same way you sync backup_1.  
-//!
-//! ![workflow_2](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png "workflow_2")
-//!
-//! But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with  
-//!
-//! ```bash
-//! dropbox_backup_to_external_disk second_backup /mnt/f/DropBoxBackup2
-//! ```
-//!
-//! ![workflow_1](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png "workflow_1")
-//!
 //! ## remove empty folders
 //!
 //! In powershell if you give the same folder twice like this:  
@@ -103,7 +88,7 @@
 //! ![cargo_auto_1](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/cargo_auto_1.png "cargo_auto_1")
 //!
 //! I use WSL2 (Debian) on Win10 to develope and execute this CLI in Debian Linux.  
-//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  Or for the second backup on my system `/mnt/f/DropBoxBackup2`.  
+//! The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  
 //! The CLI saves the list of the local files metadata in `temp_data/list_destination_files.csv`.  
 //! And the list of the files metadata from the remote Dropbox to in `temp_data/list_source_files.csv`.
 //! Tab delimited with metadata: path (with name), datetime modified, size.
@@ -242,13 +227,6 @@ pub struct AppConfig {
     pub path_list_for_trash: &'static str,
     pub path_list_for_correct_time: &'static str,
     pub path_list_just_downloaded_or_moved: &'static str,
-
-    pub path_list2_for_download: &'static str,
-    pub path_list2_for_correct_time: &'static str,
-    pub path_list2_local_files: &'static str,
-    pub path_list2_just_downloaded_or_moved: &'static str,
-    pub path_list2_base2_local_path: &'static str,
-    pub path_list2_for_trash: &'static str,
 }
 
 /// list and sync is the complete process for backup in one command
@@ -306,18 +284,6 @@ pub fn sync_only(app_config: &'static AppConfig) {
 /// compare list: the lists and produce list_for_download, list_for_trash, list_for_correct_time
 pub fn compare_lists(app_config: &'static AppConfig) {
     add_just_downloaded_to_list_local(app_config);
-    compare_lists_internal(
-        app_config.path_list_source_files,
-        app_config.path_list_destination_files,
-        app_config.path_list_for_download,
-        app_config.path_list_for_trash,
-        app_config.path_list_for_correct_time,
-    );
-}
-
-/// compare list: the lists and produce list2_for_download, list2_for_trash, list2_for_correct_time
-pub fn compare2_lists(app_config: &'static AppConfig) {
-    add2_just_downloaded_to_list_local(app_config);
     compare_lists_internal(
         app_config.path_list_source_files,
         app_config.path_list_destination_files,
@@ -449,21 +415,4 @@ fn compare_lists_internal(
         path_list_for_correct_time,
         string_for_correct_time
     ));
-}
-
-/// After the first backup from dropbox, we want to make a second backup from the first backup.  
-/// Ideally, we put it somewhere safe in a distant location.  
-/// Having 2 external disks on the same computer, it is faster to just copy files then to question for calculating hash.  
-/// No need to move files or correct time. Just copy it. It is faster.  
-pub fn second_backup(base_path: &str, app_config: &'static AppConfig) {
-    list2_local(base_path, app_config);
-    // compare list_destination_files and list2_local_files
-    compare2_lists(app_config);
-    trash2_from_list(app_config);
-    // copy instead of download, no multi-thread
-    copy_from_list2_for_download(app_config.path_list2_for_download, app_config);
-    // just copy also the files for correct time. It is faster then hash.
-    copy_from_list2_for_download(app_config.path_list2_for_correct_time, app_config);
-    println!("{}compare local and local2 lists{}", *YELLOW, *RESET);
-    compare2_lists(app_config);
 }

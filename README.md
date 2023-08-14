@@ -5,7 +5,7 @@
 [//]: # (auto_cargo_toml_to_md start)
 
 **One way sync from dropbox to external disc**  
-***version: 2023.814.1043 date: 2023-08-14 author: [bestia.dev](https://bestia.dev) repository: [Github](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)***  
+***version: 2023.814.1219 date: 2023-08-14 author: [bestia.dev](https://bestia.dev) repository: [Github](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)***  
 
 [//]: # (auto_cargo_toml_to_md end)
 
@@ -13,9 +13,9 @@
 ![status](https://img.shields.io/badge/ready_for_use-green) 
 
 [//]: # (auto_lines_of_code start)
-[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1801-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
-[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-296-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
-[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-162-purple.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1692-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-271-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-155-purple.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 
@@ -73,21 +73,6 @@ Instead of 12.000 folders it sees only 28 ???
 Be careful !  
 I then restart my Win10 and the problem magically disappears.
 
-## Second backup
-
-It is wise to have 2 backups on external disks and store them in separate locations. Just to be sure.  
-If you have internet access on both places then you can sync backup_2 just the same way you sync backup_1.  
-
-![workflow_2](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/workflow_2.png "workflow_2")
-
-But sometimes your backup_1 is already in sync. And if both external disks are in the same place, it is faster to just one-way sync from backup_1 to backup_2 with  
-
-```bash
-dropbox_backup_to_external_disk second_backup /mnt/f/DropBoxBackup2
-```
-
-![workflow_1](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/workflow_1.png "workflow_1")
-
 ## remove empty folders
 
 In powershell if you give the same folder twice like this:  
@@ -112,7 +97,7 @@ cargo auto
 ![cargo_auto_1](https://github.com/bestia-dev/dropbox_backup_to_external_disk/raw/main/images/cargo_auto_1.png "cargo_auto_1")
 
 I use WSL2 (Debian) on Win10 to develope and execute this CLI in Debian Linux.  
-The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  Or for the second backup on my system `/mnt/f/DropBoxBackup2`.  
+The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  
 The CLI saves the list of the local files metadata in `temp_data/list_destination_files.csv`.  
 And the list of the files metadata from the remote Dropbox to in `temp_data/list_source_files.csv`.
 Tab delimited with metadata: path (with name), datetime modified, size.

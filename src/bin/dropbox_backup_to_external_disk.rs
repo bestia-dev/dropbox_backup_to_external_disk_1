@@ -14,13 +14,6 @@ static APP_CONFIG: AppConfig = AppConfig {
     path_list_for_trash: "temp_data/list_for_trash.csv",
     path_list_for_correct_time: "temp_data/list_for_correct_time.csv",
     path_list_just_downloaded_or_moved: "temp_data/list_just_downloaded_or_moved.csv",
-
-    path_list2_for_download: "temp_data/list2_for_download.csv",
-    path_list2_for_correct_time: "temp_data/list2_for_correct_time.csv",
-    path_list2_local_files: "temp_data/list2_local_files.csv",
-    path_list2_just_downloaded_or_moved: "temp_data/list2_just_downloaded_or_moved.csv",
-    path_list2_base2_local_path: "temp_data/list2_base2_local_path.csv",
-    path_list2_for_trash: "temp_data/list2_for_trash.csv",
 };
 
 fn main() {
@@ -143,13 +136,6 @@ fn main() {
             Some(path) => download_one_file(path, &APP_CONFIG),
             _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
         },
-        Some("second_backup") => match env::args().nth(2).as_deref() {
-            Some(path) => {
-                print!("{}", *CLEAR_ALL);
-                second_backup(path, &APP_CONFIG)
-            }
-            _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
-        },
         _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
     }
 }
@@ -258,10 +244,6 @@ fn print_help() {
   It can be interrupted with crl+c. The next `sync_only` will continue where it was interrupted
 {g}dropbox_backup_to_external_disk sync_only{rs}
 
-  Second backup
-  One-way sync from backup_1 external disk to backup_2 external disk.
-{g}dropbox_backup_to_external_disk second_backup /mnt/f/DropBoxBackup2{rs}
-
   {y}Just for debugging purpose, you can run every step separately.{rs}
   Test connection and authorization:
 {g}dropbox_backup_to_external_disk test{rs}
@@ -298,7 +280,6 @@ fn print_help() {
         path_list_for_download = APP_CONFIG.path_list_for_download,
         path_list_for_correct_time = APP_CONFIG.path_list_for_correct_time,
         path_list_for_trash = APP_CONFIG.path_list_for_trash,
-
         date = chrono::offset::Utc::now().format("%Y%m%dT%H%M%SZ"),
     );
 }

@@ -48,7 +48,8 @@ pub fn get_short_lived_access_token() -> dropbox_sdk::oauth2::Authorization {
 /// first get the first level of folders and then request in parallel sub-folders recursively
 pub fn list_remote(app_config: &'static AppConfig) {
     // empty the file. I want all or nothing result here if the process is terminated prematurely.
-    unwrap!(fs::write("{}", app_config.path_list_source_files));
+    fs::write(app_config.path_list_source_files, "").unwrap();
+    fs::write(app_config.path_list_source_folders, "").unwrap();
 
     let token = get_short_lived_access_token();
     let token_clone2 = token.to_owned().clone();
@@ -64,7 +65,7 @@ pub fn list_remote(app_config: &'static AppConfig) {
     let (folder_list, file_list) =
         list_remote_folder(&client, "/", 0, false, tx_clone3, x_screen_len);
     let folder_list_root = folder_list.clone();
-    let mut folder_list_all = folder_list;
+    let mut folder_list_all = vec![];
     let mut file_list_all = file_list;
 
     // these folders will request walkdir recursive in parallel
@@ -129,6 +130,7 @@ pub fn list_remote(app_config: &'static AppConfig) {
     }
 
     sort_remote_list_and_write_to_file(file_list_all, app_config);
+    sort_remote_list_folder_and_write_to_file(folder_list_all, app_config);
 }
 
 /// list remote folder
@@ -239,7 +241,7 @@ pub fn sort_remote_list_and_write_to_file(
     mut file_list_all: Vec<String>,
     app_config: &'static AppConfig,
 ) {
-    print!("{}remote list sort", at_line(9));
+    print!("{}remote list file sort", at_line(9));
 
     use rayon::prelude::*;
     file_list_all.par_sort_unstable_by(|a, b| {
@@ -257,6 +259,32 @@ pub fn sort_remote_list_and_write_to_file(
     unwrap!(fs::write(
         app_config.path_list_source_files,
         string_file_list_all
+    ));
+}
+
+/// sort and write folders to file
+pub fn sort_remote_list_folder_and_write_to_file(
+    mut folder_list_all: Vec<String>,
+    app_config: &'static AppConfig,
+) {
+    print!("{}remote list folder sort", at_line(9));
+
+    use rayon::prelude::*;
+    folder_list_all.par_sort_unstable_by(|a, b| {
+        let aa: &UncasedStr = a.as_str().into();
+        let bb: &UncasedStr = b.as_str().into();
+        aa.cmp(bb)
+    });
+    // join to string and write to file
+    println!(
+        "{}list_source_folders sorted lines: {}",
+        at_line(9),
+        folder_list_all.len()
+    );
+    let string_folder_list_all = folder_list_all.join("\n");
+    unwrap!(fs::write(
+        app_config.path_list_source_folders,
+        string_folder_list_all
     ));
 }
 
