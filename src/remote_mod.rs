@@ -131,6 +131,7 @@ pub fn list_remote(app_config: &'static AppConfig) {
 
     sort_remote_list_and_write_to_file(file_list_all, app_config);
     sort_remote_list_folder_and_write_to_file(folder_list_all, app_config);
+    // TODO: folders size is easy to calculate here. Sum all the files that start with a folder path
 }
 
 /// list remote folder
@@ -250,11 +251,6 @@ pub fn sort_remote_list_and_write_to_file(
         aa.cmp(bb)
     });
     // join to string and write to file
-    println!(
-        "{}list_source_files sorted lines: {}",
-        at_line(9),
-        file_list_all.len()
-    );
     let string_file_list_all = file_list_all.join("\n");
     unwrap!(fs::write(
         app_config.path_list_source_files,
@@ -267,8 +263,6 @@ pub fn sort_remote_list_folder_and_write_to_file(
     mut folder_list_all: Vec<String>,
     app_config: &'static AppConfig,
 ) {
-    print!("{}remote list folder sort", at_line(9));
-
     use rayon::prelude::*;
     folder_list_all.par_sort_unstable_by(|a, b| {
         let aa: &UncasedStr = a.as_str().into();
@@ -276,11 +270,6 @@ pub fn sort_remote_list_folder_and_write_to_file(
         aa.cmp(bb)
     });
     // join to string and write to file
-    println!(
-        "{}list_source_folders sorted lines: {}",
-        at_line(9),
-        folder_list_all.len()
-    );
     let string_folder_list_all = folder_list_all.join("\n");
     unwrap!(fs::write(
         app_config.path_list_source_folders,

@@ -25,10 +25,14 @@ fn list_local_internal(app_config: &'static AppConfig) {
     // empty the file. I want all or nothing result here if the process is terminated prematurely.
     unwrap!(fs::write(app_config.path_list_destination_files, ""));
     unwrap!(fs::write(app_config.path_list_destination_folders, ""));
+    fs::write(app_config.path_list_destination_readonly_files, "").unwrap();
+
     // just_loaded is obsolete once I got the fresh local list
     unwrap!(fs::write(app_config.path_list_just_downloaded_or_moved, ""));
     // write data to a big string in memory
-    let mut output_string = String::with_capacity(1024 * 1024);
+    let mut files_string = String::with_capacity(1024 * 1024);
+    let mut folders_string = String::new();
+    let mut readonly_files_string = String::new();
     let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
     use walkdir::WalkDir;
     let base_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
@@ -42,20 +46,24 @@ fn list_local_internal(app_config: &'static AppConfig) {
         let str_path = unwrap!(path.to_str());
         // path.is_dir() is slow. entry.file-type().is_dir() is fast
         if entry.file_type().is_dir() {
-            println!(
-                "{}{}Folder: {}",
-                at_line(13),
-                *CLEAR_LINE,
-                shorten_string(str_path.trim_start_matches(&base_path), x_screen_len - 9),
-            );
-            println!(
-                "{}{}local_folder_count: {}",
-                at_line(14),
-                *CLEAR_LINE,
-                folder_count
-            );
+            // I don't need the "base" folder in this list
+            if !str_path.trim_start_matches(&base_path).is_empty() {
+                folders_string.push_str(&format!("{}\n", str_path.trim_start_matches(&base_path),));
+                println!(
+                    "{}{}Folder: {}",
+                    at_line(13),
+                    *CLEAR_LINE,
+                    shorten_string(str_path.trim_start_matches(&base_path), x_screen_len - 9),
+                );
+                println!(
+                    "{}{}local_folder_count: {}",
+                    at_line(14),
+                    *CLEAR_LINE,
+                    folder_count
+                );
 
-            folder_count += 1;
+                folder_count += 1;
+            }
         } else {
             // write csv tab delimited
             // metadata() in wsl/Linux is slow. Nothing to do here.
@@ -66,7 +74,12 @@ fn list_local_internal(app_config: &'static AppConfig) {
                 use chrono::DateTime;
                 let datetime: DateTime<Utc> = unwrap!(metadata.modified()).into();
 
-                output_string.push_str(&format!(
+                if metadata.permissions().readonly() {
+                    readonly_files_string
+                        .push_str(&format!("{}\n", str_path.trim_start_matches(&base_path),));
+                }
+
+                files_string.push_str(&format!(
                     "{}\t{}\t{}\n",
                     str_path.trim_start_matches(&base_path),
                     datetime.format("%Y-%m-%dT%TZ"),
@@ -85,17 +98,21 @@ fn list_local_internal(app_config: &'static AppConfig) {
         //ns_print("WalkDir entry end", ns_started);
     }
     // region: sort
-    println!("{}local list sort...", at_line(16));
-    let sorted_string = crate::sort_string_lines(&output_string);
-    println!(
-        "{}list_destination_files sorted lines: {}",
-        at_line(16),
-        sorted_string.lines().count()
-    );
+    let files_sorted_string = crate::sort_string_lines(&files_string);
+    let folders_sorted_string = crate::sort_string_lines(&folders_string);
+    let readonly_files_sorted_string = crate::sort_string_lines(&readonly_files_string);
     // end region: sort
     unwrap!(fs::write(
         app_config.path_list_destination_files,
-        sorted_string
+        files_sorted_string,
+    ));
+    unwrap!(fs::write(
+        app_config.path_list_destination_folders,
+        folders_sorted_string,
+    ));
+    unwrap!(fs::write(
+        app_config.path_list_destination_readonly_files,
+        readonly_files_sorted_string,
     ));
 }
 
@@ -108,46 +125,13 @@ pub fn save_base_path(base_path: &str, app_config: &'static AppConfig) {
     fs::write(app_config.path_list_base_local_path, base_path).unwrap();
 }
 
-/// The source file can be on dropbox or on external disk Backup_1
-pub enum RemoteKind {
-    Client {
-        client: dropbox_sdk::default_client::UserAuthDefaultClient,
-    },
-    RemoteBasePath {
-        remote_base_local_path: String,
-    },
-}
-
-impl RemoteKind {
-    /// 2 different ways of getting the content_hash
-    /// it depends if the file is on the remote dropbox or on the local disk
-    fn get_content_hash(&self, path_for_download: &str) -> String {
-        match self {
-            RemoteKind::Client { client } => {
-                unwrap!(crate::remote_mod::remote_content_hash(
-                    path_for_download,
-                    &client
-                ))
-            }
-            RemoteKind::RemoteBasePath {
-                remote_base_local_path,
-            } => {
-                let global_path_to_download =
-                    format!("{}{}", &remote_base_local_path, path_for_download);
-                let path_global_path_to_download = path::Path::new(&global_path_to_download);
-                if path_global_path_to_download.exists() {
-                    format!(
-                        "{:x}",
-                        unwrap!(DropboxContentHasher::hash_file(
-                            path_global_path_to_download
-                        ))
-                    )
-                } else {
-                    "".to_string()
-                }
-            }
-        }
-    }
+fn get_content_hash(path_for_download: &str) -> String {
+    let token = crate::remote_mod::get_short_lived_access_token();
+    let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
+    unwrap!(crate::remote_mod::remote_content_hash(
+        path_for_download,
+        &client
+    ))
 }
 
 /// Files are often moved or renamed  
@@ -158,10 +142,9 @@ impl RemoteKind {
 /// Remove also the lines in files list_for_trash and list_for_download.  
 pub fn move_or_rename_local_files(app_config: &'static AppConfig) {
     let to_base_local_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
-    let token = crate::remote_mod::get_short_lived_access_token();
-    let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
+    /*     let token = crate::remote_mod::get_short_lived_access_token();
+    let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token); */
     move_or_rename_local_files_internal(
-        RemoteKind::Client { client },
         &to_base_local_path,
         app_config.path_list_for_trash,
         app_config.path_list_for_download,
@@ -171,7 +154,6 @@ pub fn move_or_rename_local_files(app_config: &'static AppConfig) {
 
 /// internal function
 fn move_or_rename_local_files_internal(
-    client_or_base_path: RemoteKind,
     to_base_local_path: &str,
     path_list_for_trash: &str,
     path_list_for_download: &str,
@@ -241,8 +223,7 @@ fn move_or_rename_local_files_internal(
                             "{:x}",
                             unwrap!(DropboxContentHasher::hash_file(path_global_path_to_trash))
                         );
-                        let remote_content_hash =
-                            client_or_base_path.get_content_hash(path_for_download);
+                        let remote_content_hash = get_content_hash(path_for_download);
 
                         if local_content_hash == remote_content_hash {
                             move_internal(
@@ -362,29 +343,21 @@ pub fn trash_from_list_internal(
 
 /// modify the date od files from list_for_correct_time
 pub fn correct_time_from_list(app_config: &'static AppConfig) {
-    let token = crate::remote_mod::get_short_lived_access_token();
-    let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
+    /*     let token = crate::remote_mod::get_short_lived_access_token();
+    let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token); */
     let base_local_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
-    correct_time_from_list_internal(
-        RemoteKind::Client { client },
-        &base_local_path,
-        app_config.path_list_for_correct_time,
-    );
+    correct_time_from_list_internal(&base_local_path, app_config.path_list_for_correct_time);
 }
 
 /// modify the date od files from list_for_correct_time
-fn correct_time_from_list_internal(
-    client_or_base_path: RemoteKind,
-    base_local_path: &str,
-    path_list_for_correct_time: &str,
-) {
+fn correct_time_from_list_internal(base_local_path: &str, path_list_for_correct_time: &str) {
     let list_for_correct_time = fs::read_to_string(path_list_for_correct_time).unwrap();
     for path_to_correct_time in list_for_correct_time.lines() {
         let line: Vec<&str> = path_to_correct_time.split("\t").collect();
         let remote_path = line[0];
         let local_path = format!("{}{}", base_local_path, remote_path);
         if path::Path::new(&local_path).exists() {
-            let remote_content_hash = client_or_base_path.get_content_hash(remote_path);
+            let remote_content_hash = get_content_hash(remote_path);
             let local_content_hash = format!(
                 "{:x}",
                 unwrap!(DropboxContentHasher::hash_file(&local_path))
@@ -491,4 +464,24 @@ fn add_just_downloaded_to_list_local_internal(
         // println!("list_just_downloaded_or_moved emptied");
         unwrap!(fs::write(path_list_just_downloaded, ""));
     }
+}
+pub fn read_only_toggle(app_config: &'static AppConfig) {
+    let base_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
+    let list_destination_readonly_files =
+        fs::read_to_string(app_config.path_list_destination_readonly_files).unwrap();
+    for line_for_readonly in list_destination_readonly_files.lines() {
+        let vec_line_for_readonly: Vec<&str> = line_for_readonly.split("\t").collect();
+        let string_path_for_readonly = vec_line_for_readonly[0];
+        let global_path_to_readonly = format!("{}{}", base_path, string_path_for_readonly);
+        let path_global_path_to_readonly = path::Path::new(&global_path_to_readonly);
+        // if path does not exist ignore
+        if path_global_path_to_readonly.exists() {
+            path_global_path_to_readonly
+                .metadata()
+                .unwrap()
+                .permissions()
+                .set_readonly(false);
+        }
+    }
+    fs::write(app_config.path_list_destination_readonly_files, "").unwrap();
 }

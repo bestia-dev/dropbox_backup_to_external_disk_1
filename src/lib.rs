@@ -223,6 +223,7 @@ pub struct AppConfig {
     pub path_list_destination_files: &'static str,
     pub path_list_source_folders: &'static str,
     pub path_list_destination_folders: &'static str,
+    pub path_list_destination_readonly_files: &'static str,
     pub path_list_for_download: &'static str,
     pub path_list_for_trash: &'static str,
     pub path_list_for_correct_time: &'static str,

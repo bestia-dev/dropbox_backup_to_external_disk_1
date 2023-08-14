@@ -10,6 +10,7 @@ static APP_CONFIG: AppConfig = AppConfig {
     path_list_destination_files: "temp_data/list_destination_files.csv",
     path_list_source_folders: "temp_data/list_source_folders.csv",
     path_list_destination_folders: "temp_data/list_destination_folders.csv",
+    path_list_destination_readonly_files: "temp_data/list_destination_readonly_files.csv",
     path_list_for_download: "temp_data/list_for_download.csv",
     path_list_for_trash: "temp_data/list_for_trash.csv",
     path_list_for_correct_time: "temp_data/list_for_correct_time.csv",
@@ -99,7 +100,12 @@ fn main() {
             }
             _ => println!("Unrecognized arguments. Try `dropbox_backup_to_external_disk --help`"),
         },
-
+        Some("read_only_toggle") => {
+            let ns_started = ns_start("read_only_toggle");
+            println!("{}read_only_toggle{}", *YELLOW, *RESET);
+            read_only_toggle(&APP_CONFIG);
+            ns_print_ms("read_only_toggle", ns_started);
+        }
         Some("compare_lists") => {
             let ns_started = ns_start("compare lists");
             println!("{}compare remote and local lists{}", *YELLOW, *RESET);
@@ -182,6 +188,7 @@ fn completion() {
             "-h",
             "all_list",
             "compare_lists",
+            "read_only_toggle",
             "correct_time_from_list",
             "download_from_list",
             "list_and_sync",
@@ -253,6 +260,8 @@ fn print_help() {
 {g}dropbox_backup_to_external_disk local_list /mnt/d/DropBoxBackup1{rs}
   List all - both remote and local files to `temp_date/`:
 {g}dropbox_backup_to_external_disk all_list /mnt/d/DropBoxBackup1{rs}  
+  Read-only files toggle `{path_list_for_readonly}`:
+{g}dropbox_backup_to_external_disk read_only_toggle  {rs}
   Compare lists and generate `{path_list_for_download}`, `{path_list_for_trash}` and `{path_list_for_correct_time}`:
 {g}dropbox_backup_to_external_disk compare_lists{rs}
   Move or rename local files if they are equal in trash_from_list and download_from_list:
@@ -280,6 +289,7 @@ fn print_help() {
         path_list_for_download = APP_CONFIG.path_list_for_download,
         path_list_for_correct_time = APP_CONFIG.path_list_for_correct_time,
         path_list_for_trash = APP_CONFIG.path_list_for_trash,
+        path_list_for_readonly = APP_CONFIG.path_list_destination_readonly_files,
         date = chrono::offset::Utc::now().format("%Y%m%dT%H%M%SZ"),
     );
 }
