@@ -1,4 +1,5 @@
 {
+    "editor.wordWrapColumn": 120,
     "cSpell.words": [
         "bestia",
         "chrono",
@@ -10,9 +11,11 @@
         "endregion",
         "exitcode",
         "filetime",
+        "filetxt",
         "hasher",
         "humantime",
         "mkdir",
+        "nanos",
         "nbsp",
         "octocrab",
         "paypal",

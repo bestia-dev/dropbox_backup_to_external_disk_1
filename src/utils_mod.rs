@@ -1,6 +1,7 @@
 // utils_mod.rs
 //! A module with often used functions.
 
+use std::io::Read;
 use std::io::Stdout;
 
 #[allow(unused_imports)]
@@ -228,4 +229,32 @@ pub fn press_enter_to_continue_timeout_5_sec() {
 
     unwrap!(hide_cursor_terminal.suspend_raw_mode());
     println!("");
+}
+
+/// object to work with text files
+pub struct FileTxt {
+    file_txt: std::fs::File,
+}
+impl FileTxt {
+    pub fn from_file(file: std::fs::File) -> Self {
+        FileTxt { file_txt: file }
+    }
+    pub fn open_for_read_and_write(path: &str) -> std::io::Result<Self> {
+        let file = std::fs::File::options().read(true).write(true).open(path)?;
+        Ok(Self::from_file(file))
+    }
+    /// This method is similar to fs::read_to_string, but instead of a path it expects a File parameter
+    /// So is possible to open a File in the bin part of the project and then pass it to the lib part of project.
+    /// All input and output should be in the bin part of project and not in the lib.
+    pub fn read_to_string(&mut self) -> std::io::Result<String> {
+        let size = self.file_txt.metadata().map(|m| m.len()).unwrap_or(0);
+        let mut string = String::with_capacity(size as usize);
+        self.file_txt.read_to_string(&mut string)?;
+        Ok(string)
+    }
+
+    pub fn write_str(&mut self, str: &str) -> std::io::Result<()> {
+        self.file_txt.write_all(str.as_bytes())?;
+        Ok(())
+    }
 }

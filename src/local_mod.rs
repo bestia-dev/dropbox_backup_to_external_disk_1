@@ -465,10 +465,10 @@ fn add_just_downloaded_to_list_local_internal(
         unwrap!(fs::write(path_list_just_downloaded, ""));
     }
 }
-pub fn read_only_toggle(app_config: &'static AppConfig) {
-    let base_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
-    let list_destination_readonly_files =
-        fs::read_to_string(app_config.path_list_destination_readonly_files).unwrap();
+
+/// the File is read + write. It is opened in the bin and not in lib.
+pub fn read_only_toggle(file_destination_readonly_files: &mut FileTxt, base_path: &str) {
+    let list_destination_readonly_files = file_destination_readonly_files.read_to_string().unwrap();
     for line_for_readonly in list_destination_readonly_files.lines() {
         let vec_line_for_readonly: Vec<&str> = line_for_readonly.split("\t").collect();
         let string_path_for_readonly = vec_line_for_readonly[0];
@@ -483,5 +483,5 @@ pub fn read_only_toggle(app_config: &'static AppConfig) {
                 .set_readonly(false);
         }
     }
-    fs::write(app_config.path_list_destination_readonly_files, "").unwrap();
+    file_destination_readonly_files.write_str("").unwrap();
 }

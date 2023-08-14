@@ -1,5 +1,10 @@
 //! dropbox_backup_to_external_disk.rs
 
+// All work with input/output should be inside the bin part of the Rust project, and nothing in the lib part.
+// Inside bin I should print on the screen and open or create Files. Then pass the Files to the lib part to operate on them.
+// But to be interactive I cannot wait for a lib function to finish. The lib functions should be in another thread.
+// Then send msg to the bin  main thread that print that to the screen.
+
 use dropbox_backup_to_external_disk::*;
 use std::env;
 
@@ -103,7 +108,12 @@ fn main() {
         Some("read_only_toggle") => {
             let ns_started = ns_start("read_only_toggle");
             println!("{}read_only_toggle{}", *YELLOW, *RESET);
-            read_only_toggle(&APP_CONFIG);
+            let base_path = std::fs::read_to_string(APP_CONFIG.path_list_base_local_path).unwrap();
+            // open file as read and write
+            let mut file_destination_readonly_files =
+                FileTxt::open_for_read_and_write(APP_CONFIG.path_list_destination_readonly_files)
+                    .unwrap();
+            read_only_toggle(&mut file_destination_readonly_files, &base_path);
             ns_print_ms("read_only_toggle", ns_started);
         }
         Some("compare_lists") => {
