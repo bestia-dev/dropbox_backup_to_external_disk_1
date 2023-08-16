@@ -5,7 +5,7 @@
 [//]: # (auto_cargo_toml_to_md start)
 
 **One way sync from dropbox to external disc**  
-***version: 2023.814.1740 date: 2023-08-14 author: [bestia.dev](https://bestia.dev) repository: [Github](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)***  
+***version: 2023.816.1742 date: 2023-08-16 author: [bestia.dev](https://bestia.dev) repository: [Github](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)***  
 
 [//]: # (auto_cargo_toml_to_md end)
 
@@ -13,9 +13,9 @@
 ![status](https://img.shields.io/badge/ready_for_use-green) 
 
 [//]: # (auto_lines_of_code start)
-[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1718-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
-[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-273-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
-[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-163-purple.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+[![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1459-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+[![Lines in Doc comments](https://img.shields.io/badge/Lines_in_Doc_comments-276-blue.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
+[![Lines in Comments](https://img.shields.io/badge/Lines_in_comments-172-purple.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 [![Lines in examples](https://img.shields.io/badge/Lines_in_examples-0-yellow.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 [![Lines in tests](https://img.shields.io/badge/Lines_in_tests-0-orange.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
 
@@ -185,7 +185,7 @@ Invert only black and white is for image transformation to `dark theme`.
 
 Can I recognize that a directory is moved or renamed? This is common and should be super fast.  
 If most of the files in the directory are equal it means, that it is moved/renamed.  
-Then a new `compare_lists` will generate a new list if there are smaller differences.  
+Then a new `compare_files` will generate a new list if there are smaller differences.  
 Is there a limit in the api for file size bigger than 2GB? Why the program crashes without an error?
 Files with size 0 are not downloaded.
 Solve empty folders in the program.

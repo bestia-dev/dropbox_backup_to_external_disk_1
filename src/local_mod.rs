@@ -49,18 +49,8 @@ fn list_local_internal(app_config: &'static AppConfig) {
             // I don't need the "base" folder in this list
             if !str_path.trim_start_matches(&base_path).is_empty() {
                 folders_string.push_str(&format!("{}\n", str_path.trim_start_matches(&base_path),));
-                println!(
-                    "{}{}Folder: {}",
-                    at_line(13),
-                    *CLEAR_LINE,
-                    shorten_string(str_path.trim_start_matches(&base_path), x_screen_len - 9),
-                );
-                println!(
-                    "{}{}local_folder_count: {}",
-                    at_line(14),
-                    *CLEAR_LINE,
-                    folder_count
-                );
+                println!("{}{}Folder: {}", at_line(13), *CLEAR_LINE, shorten_string(str_path.trim_start_matches(&base_path), x_screen_len - 9),);
+                println!("{}{}local_folder_count: {}", at_line(14), *CLEAR_LINE, folder_count);
 
                 folder_count += 1;
             }
@@ -75,22 +65,11 @@ fn list_local_internal(app_config: &'static AppConfig) {
                 let datetime: DateTime<Utc> = unwrap!(metadata.modified()).into();
 
                 if metadata.permissions().readonly() {
-                    readonly_files_string
-                        .push_str(&format!("{}\n", str_path.trim_start_matches(&base_path),));
+                    readonly_files_string.push_str(&format!("{}\n", str_path.trim_start_matches(&base_path),));
                 }
 
-                files_string.push_str(&format!(
-                    "{}\t{}\t{}\n",
-                    str_path.trim_start_matches(&base_path),
-                    datetime.format("%Y-%m-%dT%TZ"),
-                    metadata.len()
-                ));
-                println!(
-                    "{}{}local_file_count: {}",
-                    at_line(15),
-                    *CLEAR_LINE,
-                    file_count
-                );
+                files_string.push_str(&format!("{}\t{}\t{}\n", str_path.trim_start_matches(&base_path), datetime.format("%Y-%m-%dT%TZ"), metadata.len()));
+                println!("{}{}local_file_count: {}", at_line(15), *CLEAR_LINE, file_count);
 
                 file_count += 1;
             }
@@ -102,18 +81,9 @@ fn list_local_internal(app_config: &'static AppConfig) {
     let folders_sorted_string = crate::sort_string_lines(&folders_string);
     let readonly_files_sorted_string = crate::sort_string_lines(&readonly_files_string);
     // end region: sort
-    unwrap!(fs::write(
-        app_config.path_list_destination_files,
-        files_sorted_string,
-    ));
-    unwrap!(fs::write(
-        app_config.path_list_destination_folders,
-        folders_sorted_string,
-    ));
-    unwrap!(fs::write(
-        app_config.path_list_destination_readonly_files,
-        readonly_files_sorted_string,
-    ));
+    unwrap!(fs::write(app_config.path_list_destination_files, files_sorted_string,));
+    unwrap!(fs::write(app_config.path_list_destination_folders, folders_sorted_string,));
+    unwrap!(fs::write(app_config.path_list_destination_readonly_files, readonly_files_sorted_string,));
 }
 
 /// saves the base local path for later use like "/mnt/d/DropBoxBackup1"
@@ -128,10 +98,7 @@ pub fn save_base_path(base_path: &str, app_config: &'static AppConfig) {
 fn get_content_hash(path_for_download: &str) -> String {
     let token = crate::remote_mod::get_short_lived_access_token();
     let client = dropbox_sdk::default_client::UserAuthDefaultClient::new(token);
-    unwrap!(crate::remote_mod::remote_content_hash(
-        path_for_download,
-        &client
-    ))
+    unwrap!(crate::remote_mod::remote_content_hash(path_for_download, &client))
 }
 
 /// Files are often moved or renamed  
@@ -153,21 +120,12 @@ pub fn move_or_rename_local_files(app_config: &'static AppConfig) {
 }
 
 /// internal function
-fn move_or_rename_local_files_internal(
-    to_base_local_path: &str,
-    path_list_for_trash: &str,
-    path_list_for_download: &str,
-    list_just_downloaded_or_moved: &str,
-) {
+fn move_or_rename_local_files_internal(to_base_local_path: &str, path_list_for_trash: &str, path_list_for_download: &str, list_just_downloaded_or_moved: &str) {
     let list_for_trash = fs::read_to_string(path_list_for_trash).unwrap();
     let list_for_download = fs::read_to_string(path_list_for_download).unwrap();
 
     // write the renamed files to list_just_downloaded_or_moved, later they will be added to list_destination_files.csv
-    let mut just_downloaded = fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(list_just_downloaded_or_moved)
-        .unwrap();
+    let mut just_downloaded = fs::OpenOptions::new().create(true).append(true).open(list_just_downloaded_or_moved).unwrap();
     let mut count_moved = 0;
     for line_for_trash in list_for_trash.lines() {
         let vec_line_for_trash: Vec<&str> = line_for_trash.split("\t").collect();
@@ -192,15 +150,8 @@ fn move_or_rename_local_files_internal(
                 let file_name_for_download: Vec<&str> = path_for_download.split("/").collect();
                 let file_name_for_download = unwrap!(file_name_for_download.last());
 
-                if modified_for_trash == modified_for_download
-                    && size_for_trash == size_for_download
-                    && file_name_for_trash == file_name_for_download
-                {
-                    move_internal(
-                        path_global_path_to_trash,
-                        &to_base_local_path,
-                        path_for_download,
-                    );
+                if modified_for_trash == modified_for_download && size_for_trash == size_for_download && file_name_for_trash == file_name_for_download {
+                    move_internal(path_global_path_to_trash, &to_base_local_path, path_for_download);
                     unwrap!(writeln!(just_downloaded, "{}", line_for_download));
                     count_moved += 1;
                     is_moved = true;
@@ -215,22 +166,13 @@ fn move_or_rename_local_files_internal(
                     let modified_for_download = vec_line_for_download[1];
                     let size_for_download = vec_line_for_download[2];
 
-                    if modified_for_trash == modified_for_download
-                        && size_for_trash == size_for_download
-                    {
+                    if modified_for_trash == modified_for_download && size_for_trash == size_for_download {
                         // same size and date. Let's check the content_hash to be sure.
-                        let local_content_hash = format!(
-                            "{:x}",
-                            unwrap!(DropboxContentHasher::hash_file(path_global_path_to_trash))
-                        );
+                        let local_content_hash = format!("{:x}", unwrap!(DropboxContentHasher::hash_file(path_global_path_to_trash)));
                         let remote_content_hash = get_content_hash(path_for_download);
 
                         if local_content_hash == remote_content_hash {
-                            move_internal(
-                                path_global_path_to_trash,
-                                &to_base_local_path,
-                                path_for_download,
-                            );
+                            move_internal(path_global_path_to_trash, &to_base_local_path, path_for_download);
                             unwrap!(writeln!(just_downloaded, "{}", line_for_download));
                             count_moved += 1;
                             break;
@@ -244,11 +186,7 @@ fn move_or_rename_local_files_internal(
 }
 
 /// internal code to move file
-fn move_internal(
-    path_global_path_to_trash: &path::Path,
-    to_base_local_path: &str,
-    path_for_download: &str,
-) {
+fn move_internal(path_global_path_to_trash: &path::Path, to_base_local_path: &str, path_for_download: &str) {
     let move_from = path_global_path_to_trash;
     let move_to = format!("{}{}", to_base_local_path, path_for_download);
     println!("move {}  ->  {}", &move_from.to_string_lossy(), move_to);
@@ -278,26 +216,16 @@ fn move_internal(
 pub fn trash_from_list(app_config: &'static AppConfig) {
     let base_local_path = fs::read_to_string(app_config.path_list_base_local_path).unwrap();
     let path_list_local_files = app_config.path_list_destination_files;
-    trash_from_list_internal(
-        &base_local_path,
-        app_config.path_list_for_trash,
-        path_list_local_files,
-    );
+    trash_from_list_internal(&base_local_path, app_config.path_list_for_trash, path_list_local_files);
 }
 
 /// internal
-pub fn trash_from_list_internal(
-    base_local_path: &str,
-    path_list_for_trash: &str,
-    path_list_local_files: &str,
-) {
+pub fn trash_from_list_internal(base_local_path: &str, path_list_for_trash: &str, path_list_local_files: &str) {
     let list_for_trash = fs::read_to_string(path_list_for_trash).unwrap();
     if list_for_trash.is_empty() {
         println!("{}: 0", path_list_for_trash);
     } else {
-        let now_string = chrono::Local::now()
-            .format("trash_%Y-%m-%d_%H-%M-%S")
-            .to_string();
+        let now_string = chrono::Local::now().format("trash_%Y-%m-%d_%H-%M-%S").to_string();
         let base_trash_path = format!("{}_{}", base_local_path, &now_string);
         if !path::Path::new(&base_trash_path).exists() {
             fs::create_dir_all(&base_trash_path).unwrap();
@@ -358,14 +286,9 @@ fn correct_time_from_list_internal(base_local_path: &str, path_list_for_correct_
         let local_path = format!("{}{}", base_local_path, remote_path);
         if path::Path::new(&local_path).exists() {
             let remote_content_hash = get_content_hash(remote_path);
-            let local_content_hash = format!(
-                "{:x}",
-                unwrap!(DropboxContentHasher::hash_file(&local_path))
-            );
+            let local_content_hash = format!("{:x}", unwrap!(DropboxContentHasher::hash_file(&local_path)));
             if local_content_hash == remote_content_hash {
-                let modified = filetime::FileTime::from_system_time(unwrap!(
-                    humantime::parse_rfc3339(line[1])
-                ));
+                let modified = filetime::FileTime::from_system_time(unwrap!(humantime::parse_rfc3339(line[1])));
                 unwrap!(filetime::set_file_mtime(local_path, modified));
             } else {
                 error!("correct_time content_hash different: {}", remote_path);
@@ -379,17 +302,11 @@ fn correct_time_from_list_internal(base_local_path: &str, path_list_for_correct_
 /// add just downloaded files to list_local (from dropbox remote)
 pub fn add_just_downloaded_to_list_local(app_config: &'static AppConfig) {
     let path_list_local_files = app_config.path_list_destination_files;
-    add_just_downloaded_to_list_local_internal(
-        app_config.path_list_just_downloaded_or_moved,
-        path_list_local_files,
-    );
+    add_just_downloaded_to_list_local_internal(app_config.path_list_just_downloaded_or_moved, path_list_local_files);
 }
 
 /// add lines from just_downloaded to list_local. Only before compare.
-fn add_just_downloaded_to_list_local_internal(
-    path_list_just_downloaded: &str,
-    path_list_local_files: &str,
-) {
+fn add_just_downloaded_to_list_local_internal(path_list_just_downloaded: &str, path_list_local_files: &str) {
     let string_just_downloaded = fs::read_to_string(path_list_just_downloaded).unwrap();
     if !string_just_downloaded.is_empty() {
         // it must be sorted, because downloads are multi-thread and not in sort order
@@ -397,15 +314,8 @@ fn add_just_downloaded_to_list_local_internal(
         let mut vec_sorted_downloaded: Vec<&str> = string_sorted_just_downloaded.lines().collect();
         // It is forbidden to have duplicate lines
         vec_sorted_downloaded.dedup();
-        println!(
-            "{}: {}",
-            path_list_just_downloaded.split("/").collect::<Vec<&str>>()[1],
-            vec_sorted_downloaded.len()
-        );
-        unwrap!(fs::write(
-            path_list_just_downloaded,
-            &string_sorted_just_downloaded
-        ));
+        println!("{}: {}", path_list_just_downloaded.split("/").collect::<Vec<&str>>()[1], vec_sorted_downloaded.len());
+        unwrap!(fs::write(path_list_just_downloaded, &string_sorted_just_downloaded));
 
         let string_local_files = fs::read_to_string(path_list_local_files).unwrap();
         let mut vec_sorted_local: Vec<&str> = string_local_files.lines().collect();
@@ -419,24 +329,18 @@ fn add_just_downloaded_to_list_local_internal(
             vec_line_local.truncate(3);
             vec_line_downloaded.truncate(3);
 
-            if cursor_downloaded >= vec_sorted_downloaded.len()
-                && cursor_local >= vec_sorted_local.len()
-            {
+            if cursor_downloaded >= vec_sorted_downloaded.len() && cursor_local >= vec_sorted_local.len() {
                 break;
             } else if cursor_downloaded >= vec_sorted_downloaded.len() {
                 // final lines
                 break;
             } else if cursor_local >= vec_sorted_local.len() {
                 // final lines
-                vec_line_downloaded = vec_sorted_downloaded[cursor_downloaded]
-                    .split("\t")
-                    .collect();
+                vec_line_downloaded = vec_sorted_downloaded[cursor_downloaded].split("\t").collect();
                 vec_sorted_local.push(&vec_sorted_downloaded[cursor_downloaded]);
                 cursor_downloaded += 1;
             } else {
-                vec_line_downloaded = vec_sorted_downloaded[cursor_downloaded]
-                    .split("\t")
-                    .collect();
+                vec_line_downloaded = vec_sorted_downloaded[cursor_downloaded].split("\t").collect();
                 vec_line_local = vec_sorted_local[cursor_local].split("\t").collect();
                 // UncasedStr preserves the case in the string, but comparison is done case insensitive
                 let path_downloaded: &UncasedStr = vec_line_downloaded[0].into();
@@ -466,7 +370,7 @@ fn add_just_downloaded_to_list_local_internal(
     }
 }
 
-/// the File is read + write. It is opened in the bin and not in lib.
+/// the File is read + write. It is opened in the bin and not in lib, but it is only manipulated in lib.
 pub fn read_only_toggle(file_destination_readonly_files: &mut FileTxt, base_path: &str) {
     let list_destination_readonly_files = file_destination_readonly_files.read_to_string().unwrap();
     for line_for_readonly in list_destination_readonly_files.lines() {
@@ -476,11 +380,7 @@ pub fn read_only_toggle(file_destination_readonly_files: &mut FileTxt, base_path
         let path_global_path_to_readonly = path::Path::new(&global_path_to_readonly);
         // if path does not exist ignore
         if path_global_path_to_readonly.exists() {
-            path_global_path_to_readonly
-                .metadata()
-                .unwrap()
-                .permissions()
-                .set_readonly(false);
+            path_global_path_to_readonly.metadata().unwrap().permissions().set_readonly(false);
         }
     }
     file_destination_readonly_files.write_str("").unwrap();

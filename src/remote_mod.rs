@@ -62,8 +62,7 @@ pub fn list_remote(app_config: &'static AppConfig) {
     let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
 
     // walkdir non-recursive for the first level of folders
-    let (folder_list, file_list) =
-        list_remote_folder(&client, "/", 0, false, tx_clone3, x_screen_len);
+    let (folder_list, file_list) = list_remote_folder(&client, "/", 0, false, tx_clone3, x_screen_len);
     let folder_list_root = folder_list.clone();
     let mut folder_list_all = vec![];
     let mut file_list_all = file_list;
@@ -72,10 +71,7 @@ pub fn list_remote(app_config: &'static AppConfig) {
     // loop in a new thread, so the send msg will come immediately
     let _sender_thread = thread::spawn(move || {
         // threadpool with 3 threads
-        let pool = rayon::ThreadPoolBuilder::new()
-            .num_threads(3)
-            .build()
-            .unwrap();
+        let pool = rayon::ThreadPoolBuilder::new().num_threads(3).build().unwrap();
         pool.scope(|scoped| {
             for folder_path in &folder_list_root {
                 let folder_path = folder_path.clone();
@@ -87,14 +83,7 @@ pub fn list_remote(app_config: &'static AppConfig) {
                     let client = UserAuthDefaultClient::new(token_clone2.to_owned());
                     // recursive walkdir
                     let thread_num = unwrap!(rayon::current_thread_index()) as i32;
-                    let (folder_list, file_list) = list_remote_folder(
-                        &client,
-                        &folder_path,
-                        thread_num,
-                        true,
-                        tx_clone2,
-                        x_screen_len,
-                    );
+                    let (folder_list, file_list) = list_remote_folder(&client, &folder_path, thread_num, true, tx_clone2, x_screen_len);
                     unwrap!(tx_clone4.send((Some(folder_list), Some(file_list), 0, 0)));
                 });
             }
@@ -115,18 +104,8 @@ pub fn list_remote(app_config: &'static AppConfig) {
         }
         all_folder_count += folder_count;
         all_file_count += file_count;
-        println!(
-            "{}{}remote_folder_count: {}",
-            at_line(7),
-            *CLEAR_LINE,
-            all_folder_count
-        );
-        println!(
-            "{}{}remote_file_count: {}",
-            at_line(8),
-            *CLEAR_LINE,
-            all_file_count
-        );
+        println!("{}{}remote_folder_count: {}", at_line(7), *CLEAR_LINE, all_folder_count);
+        println!("{}{}remote_file_count: {}", at_line(8), *CLEAR_LINE, all_file_count);
     }
 
     sort_remote_list_and_write_to_file(file_list_all, app_config);
@@ -154,13 +133,7 @@ pub fn list_remote_folder(
                         // path_display is not 100% case accurate. Dropbox is case-insensitive and preserves the casing only for the metadata_name, not path.
                         let folder_path = entry.path_display.unwrap_or(entry.name);
                         // for 3 threads this is lines: 4,5, 6,7, 8,9, so summary can be on 10,11 and list_local on 16,17
-                        println!(
-                            "{}{}{}. Folder: {}",
-                            at_line(screen_line),
-                            *CLEAR_LINE,
-                            thread_num,
-                            shorten_string(&folder_path, x_screen_len - 11)
-                        );
+                        println!("{}{}{}. Folder: {}", at_line(screen_line), *CLEAR_LINE, thread_num, shorten_string(&folder_path, x_screen_len - 11));
                         folder_list.push(folder_path);
                         unwrap!(tx_clone.send((None, None, 1, 0)));
                     }
@@ -170,67 +143,29 @@ pub fn list_remote_folder(
                         // path_display is not 100% case accurate. Dropbox is case-insensitive and preserves the casing only for the metadata_name, not path.
                         let file_path = entry.path_display.unwrap_or(entry.name);
                         if !file_path.ends_with("com.dropbox.attrs") {
-                            file_list.push(format!(
-                                "{}\t{}\t{}",
-                                file_path, entry.client_modified, entry.size
-                            ));
+                            file_list.push(format!("{}\t{}\t{}", file_path, entry.client_modified, entry.size));
                             unwrap!(tx_clone.send((None, None, 0, 1)));
                         }
                     }
                     Ok(Ok(files::Metadata::Deleted(entry))) => {
-                        panic!(
-                            "{}{}{}unexpected deleted entry: {:?}{}",
-                            at_line(screen_line),
-                            *CLEAR_LINE,
-                            *RED,
-                            entry,
-                            *RESET
-                        );
+                        panic!("{}{}{}unexpected deleted entry: {:?}{}", at_line(screen_line), *CLEAR_LINE, *RED, entry, *RESET);
                     }
                     Ok(Err(e)) => {
-                        println!(
-                            "{}{}{}Error from files/list_folder_continue: {}{}",
-                            at_line(screen_line),
-                            *CLEAR_LINE,
-                            *RED,
-                            e,
-                            *RESET
-                        );
+                        println!("{}{}{}Error from files/list_folder_continue: {}{}", at_line(screen_line), *CLEAR_LINE, *RED, e, *RESET);
                         break;
                     }
                     Err(e) => {
-                        println!(
-                            "{}{}{}API request error: {}{}",
-                            at_line(screen_line),
-                            *CLEAR_LINE,
-                            *RED,
-                            e,
-                            *RESET
-                        );
+                        println!("{}{}{}API request error: {}{}", at_line(screen_line), *CLEAR_LINE, *RED, e, *RESET);
                         break;
                     }
                 }
             }
         }
         Ok(Err(e)) => {
-            println!(
-                "{}{}{}Error from files/list_folder: {}{}",
-                at_line(screen_line),
-                *CLEAR_LINE,
-                *RED,
-                e,
-                *RESET
-            );
+            println!("{}{}{}Error from files/list_folder: {}{}", at_line(screen_line), *CLEAR_LINE, *RED, e, *RESET);
         }
         Err(e) => {
-            println!(
-                "{}{}{}API request error: {}{}",
-                at_line(screen_line),
-                *CLEAR_LINE,
-                *RED,
-                e,
-                *RESET
-            );
+            println!("{}{}{}API request error: {}{}", at_line(screen_line), *CLEAR_LINE, *RED, e, *RESET);
         }
     }
     // return
@@ -238,10 +173,7 @@ pub fn list_remote_folder(
 }
 
 /// sort and write to file
-pub fn sort_remote_list_and_write_to_file(
-    mut file_list_all: Vec<String>,
-    app_config: &'static AppConfig,
-) {
+pub fn sort_remote_list_and_write_to_file(mut file_list_all: Vec<String>, app_config: &'static AppConfig) {
     print!("{}remote list file sort", at_line(9));
 
     use rayon::prelude::*;
@@ -252,17 +184,11 @@ pub fn sort_remote_list_and_write_to_file(
     });
     // join to string and write to file
     let string_file_list_all = file_list_all.join("\n");
-    unwrap!(fs::write(
-        app_config.path_list_source_files,
-        string_file_list_all
-    ));
+    unwrap!(fs::write(app_config.path_list_source_files, string_file_list_all));
 }
 
 /// sort and write folders to file
-pub fn sort_remote_list_folder_and_write_to_file(
-    mut folder_list_all: Vec<String>,
-    app_config: &'static AppConfig,
-) {
+pub fn sort_remote_list_folder_and_write_to_file(mut folder_list_all: Vec<String>, app_config: &'static AppConfig) {
     use rayon::prelude::*;
     folder_list_all.par_sort_unstable_by(|a, b| {
         let aa: &UncasedStr = a.as_str().into();
@@ -271,10 +197,7 @@ pub fn sort_remote_list_folder_and_write_to_file(
     });
     // join to string and write to file
     let string_folder_list_all = folder_list_all.join("\n");
-    unwrap!(fs::write(
-        app_config.path_list_source_folders,
-        string_folder_list_all
-    ));
+    unwrap!(fs::write(app_config.path_list_source_folders, string_folder_list_all));
 }
 
 /// download one file
@@ -291,15 +214,7 @@ pub fn download_one_file(path_to_download: &str, app_config: &'static AppConfig)
         let client_ref = &client;
         let thread_num = 0;
         let tx_clone2 = mpsc::Sender::clone(&tx);
-        download_internal(
-            &path_to_download,
-            client_ref,
-            base_local_path_ref,
-            thread_num,
-            tx_clone2,
-            x_screen_len,
-            app_config,
-        );
+        download_internal(&path_to_download, client_ref, base_local_path_ref, thread_num, tx_clone2, x_screen_len, app_config);
         drop(tx);
     });
     // the receiver reads all msgs from the queue, until all senders exist - drop(tx)
@@ -347,11 +262,7 @@ fn download_internal(
         fs::create_dir_all(temp_parent).unwrap();
     }
 
-    let mut file = fs::OpenOptions::new()
-        .create(true)
-        .write(true)
-        .open(&temp_local_path)
-        .unwrap();
+    let mut file = fs::OpenOptions::new().create(true).write(true).open(&temp_local_path).unwrap();
 
     let mut modified: Option<filetime::FileTime> = None;
     let mut s_modified = "".to_string();
@@ -363,9 +274,7 @@ fn download_internal(
                 let mut body = download_result.body.expect("no body received!");
                 if modified.is_none() {
                     s_modified = download_result.result.client_modified.clone();
-                    modified = Some(filetime::FileTime::from_system_time(unwrap!(
-                        humantime::parse_rfc3339(&s_modified)
-                    )));
+                    modified = Some(filetime::FileTime::from_system_time(unwrap!(humantime::parse_rfc3339(&s_modified))));
                 };
                 loop {
                     // limit read to 1 MiB per loop iteration so we can output progress
@@ -386,12 +295,7 @@ fn download_internal(
                                 );
                                 unwrap!(tx_clone.send((string_to_print, thread_num)));
                             } else {
-                                let string_to_print = format!(
-                                    "{}{} Mb downloaded {}",
-                                    *CLEAR_LINE,
-                                    bytes_out as f64 / 1000000.,
-                                    shorten_string(download_path, x_screen_len - 31)
-                                );
+                                let string_to_print = format!("{}{} Mb downloaded {}", *CLEAR_LINE, bytes_out as f64 / 1000000., shorten_string(download_path, x_screen_len - 31));
                                 unwrap!(tx_clone.send((string_to_print, thread_num)));
                             }
                         }
@@ -404,8 +308,7 @@ fn download_internal(
                 }
             }
             Ok(Err(download_error)) => {
-                let string_to_print =
-                    format!("{}Download error: {}{}", *RED, download_error, *RESET);
+                let string_to_print = format!("{}Download error: {}{}", *RED, download_error, *RESET);
                 unwrap!(tx_clone.send((string_to_print, -1)));
             }
             Err(request_error) => {
@@ -439,11 +342,7 @@ fn download_internal(
     let line_to_append = format!("{}\t{}\t{}", download_path, s_modified, bytes_out);
     let string_to_print = format!("{}", &line_to_append);
     unwrap!(tx_clone.send((string_to_print, -1)));
-    let mut just_downloaded = fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(app_config.path_list_just_downloaded_or_moved)
-        .unwrap();
+    let mut just_downloaded = fs::OpenOptions::new().create(true).append(true).open(app_config.path_list_just_downloaded_or_moved).unwrap();
     unwrap!(writeln!(just_downloaded, "{}", line_to_append));
 }
 
@@ -470,10 +369,7 @@ pub fn download_from_list(app_config: &'static AppConfig) {
             let base_local_path_ref = &base_local_path;
             let client_ref = &client;
             // 3 threads to download in parallel
-            let pool = rayon::ThreadPoolBuilder::new()
-                .num_threads(3)
-                .build()
-                .unwrap();
+            let pool = rayon::ThreadPoolBuilder::new().num_threads(3).build().unwrap();
             pool.scope(|scoped| {
                 for line_path_to_download in list_for_download.lines() {
                     let line: Vec<&str> = line_path_to_download.split("\t").collect();
@@ -488,11 +384,7 @@ pub fn download_from_list(app_config: &'static AppConfig) {
                         if !path::Path::new(&parent).exists() {
                             fs::create_dir_all(parent).unwrap();
                         }
-                        let mut file = fs::OpenOptions::new()
-                            .create(true)
-                            .write(true)
-                            .open(&local_path)
-                            .unwrap();
+                        let mut file = fs::OpenOptions::new().create(true).write(true).open(&local_path).unwrap();
                         unwrap!(writeln!(file, "{}", ""));
                         // change the file date
                         let system_time = unwrap!(humantime::parse_rfc3339(modified_for_download));
@@ -504,26 +396,14 @@ pub fn download_from_list(app_config: &'static AppConfig) {
                         unwrap!(tx.send((format!("{}", &local_path), -1)));
 
                         // append to list_just_downloaded
-                        let mut just_downloaded = fs::OpenOptions::new()
-                            .create(true)
-                            .append(true)
-                            .open(app_config.path_list_just_downloaded_or_moved)
-                            .unwrap();
+                        let mut just_downloaded = fs::OpenOptions::new().create(true).append(true).open(app_config.path_list_just_downloaded_or_moved).unwrap();
                         unwrap!(writeln!(just_downloaded, "{}", line_path_to_download));
                     } else {
                         let tx_clone2 = mpsc::Sender::clone(&tx);
                         // execute in a separate threads, or waits for a free thread from the pool
                         scoped.spawn(move |_s| {
                             let thread_num = unwrap!(rayon::current_thread_index()) as i32;
-                            download_internal(
-                                path_to_download,
-                                client_ref,
-                                base_local_path_ref,
-                                thread_num,
-                                tx_clone2,
-                                x_screen_len,
-                                app_config,
-                            );
+                            download_internal(path_to_download, client_ref, base_local_path_ref, thread_num, tx_clone2, x_screen_len, app_config);
                         });
                     }
                 }
@@ -577,35 +457,21 @@ pub fn download_from_list(app_config: &'static AppConfig) {
         println!("list_for_download: 0");
     }
     println!("{}compare remote and local lists{}", *YELLOW, *RESET);
-    compare_lists(app_config);
+    compare_files(app_config);
 }
 
 /// list directory
-fn list_directory<'a>(
-    client: &'a UserAuthDefaultClient,
-    path: &str,
-    recursive: bool,
-) -> dropbox_sdk::Result<Result<DirectoryIterator<'a>, files::ListFolderError>> {
-    assert!(
-        path.starts_with('/'),
-        "path needs to be absolute (start with a '/')"
-    );
+fn list_directory<'a>(client: &'a UserAuthDefaultClient, path: &str, recursive: bool) -> dropbox_sdk::Result<Result<DirectoryIterator<'a>, files::ListFolderError>> {
+    assert!(path.starts_with('/'), "path needs to be absolute (start with a '/')");
     let requested_path = if path == "/" {
         // Root folder should be requested as empty string
         String::new()
     } else {
         path.to_owned()
     };
-    match files::list_folder(
-        client,
-        &files::ListFolderArg::new(requested_path).with_recursive(recursive),
-    ) {
+    match files::list_folder(client, &files::ListFolderArg::new(requested_path).with_recursive(recursive)) {
         Ok(Ok(result)) => {
-            let cursor = if result.has_more {
-                Some(result.cursor)
-            } else {
-                None
-            };
+            let cursor = if result.has_more { Some(result.cursor) } else { None };
 
             Ok(Ok(DirectoryIterator {
                 client,
@@ -632,10 +498,7 @@ impl<'a> Iterator for DirectoryIterator<'a> {
         if let Some(entry) = self.buffer.pop_front() {
             Some(Ok(Ok(entry)))
         } else if let Some(cursor) = self.cursor.take() {
-            match files::list_folder_continue(
-                self.client,
-                &files::ListFolderContinueArg::new(cursor),
-            ) {
+            match files::list_folder_continue(self.client, &files::ListFolderContinueArg::new(cursor)) {
                 Ok(Ok(result)) => {
                     self.buffer.extend(result.entries.into_iter());
                     if result.has_more {

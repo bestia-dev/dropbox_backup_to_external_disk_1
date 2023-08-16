@@ -176,7 +176,7 @@
 //!
 //! Can I recognize that a directory is moved or renamed? This is common and should be super fast.  
 //! If most of the files in the directory are equal it means, that it is moved/renamed.  
-//! Then a new `compare_lists` will generate a new list if there are smaller differences.  
+//! Then a new `compare_files` will generate a new list if there are smaller differences.  
 //!
 //! ## cargo crev reviews and advisory
 //!
@@ -228,6 +228,8 @@ pub struct AppConfig {
     pub path_list_for_trash: &'static str,
     pub path_list_for_correct_time: &'static str,
     pub path_list_just_downloaded_or_moved: &'static str,
+    pub path_list_for_trash_folders: &'static str,
+    pub path_list_for_create_folders: &'static str,
 }
 
 /// list and sync is the complete process for backup in one command
@@ -240,12 +242,7 @@ pub fn list_and_sync(base_path: &str, app_config: &'static AppConfig) {
 /// all list remote and local
 pub fn all_list_remote_and_local(base_path: &str, app_config: &'static AppConfig) {
     let _hide_cursor_terminal = crate::start_hide_cursor_terminal();
-    println!(
-        "{}{}dropbox_backup_to_external_disk list_and_sync{}",
-        at_line(1),
-        *YELLOW,
-        *RESET
-    );
+    println!("{}{}dropbox_backup_to_external_disk list_and_sync{}", at_line(1), *YELLOW, *RESET);
     ns_start("");
     // start 2 threads, first for remote list and second for local list
     use std::thread;
@@ -271,7 +268,7 @@ pub fn all_list_remote_and_local(base_path: &str, app_config: &'static AppConfig
 /// No need to repeat the "list" that takes lots of times.  
 pub fn sync_only(app_config: &'static AppConfig) {
     println!("{}compare remote and local lists{}", *YELLOW, *RESET);
-    compare_lists(app_config);
+    compare_files(app_config);
     println!("{}rename or move equal files{}", *YELLOW, *RESET);
     move_or_rename_local_files(app_config);
     println!("{}move to trash from list{}", *YELLOW, *RESET);
@@ -283,7 +280,7 @@ pub fn sync_only(app_config: &'static AppConfig) {
 }
 
 /// compare list: the lists and produce list_for_download, list_for_trash, list_for_correct_time
-pub fn compare_lists(app_config: &'static AppConfig) {
+pub fn compare_files(app_config: &'static AppConfig) {
     add_just_downloaded_to_list_local(app_config);
     compare_lists_internal(
         app_config.path_list_source_files,
@@ -295,29 +292,13 @@ pub fn compare_lists(app_config: &'static AppConfig) {
 }
 
 /// compare list: the lists must be already sorted for this to work correctly
-fn compare_lists_internal(
-    path_list_source_files: &str,
-    path_list_destination_files: &str,
-    path_list_for_download: &str,
-    path_list_for_trash: &str,
-    path_list_for_correct_time: &str,
-) {
-    let string_remote = unwrap!(fs::read_to_string(path_list_source_files));
-    let vec_remote_lines: Vec<&str> = string_remote.lines().collect();
-    println!(
-        "{}: {}",
-        path_list_source_files.split("/").collect::<Vec<&str>>()[1],
-        vec_remote_lines.len()
-    );
-    let string_destination = unwrap!(fs::read_to_string(path_list_destination_files));
-    let vec_destination_lines: Vec<&str> = string_destination.lines().collect();
-    println!(
-        "{}: {}",
-        path_list_destination_files
-            .split("/")
-            .collect::<Vec<&str>>()[1],
-        vec_destination_lines.len()
-    );
+fn compare_lists_internal(path_list_source_files: &str, path_list_destination_files: &str, path_list_for_download: &str, path_list_for_trash: &str, path_list_for_correct_time: &str) {
+    let string_list_source_files = unwrap!(fs::read_to_string(path_list_source_files));
+    let vec_list_source_files: Vec<&str> = string_list_source_files.lines().collect();
+    println!("{}: {}", path_list_source_files.split("/").collect::<Vec<&str>>()[1], vec_list_source_files.len());
+    let string_list_destination_files = unwrap!(fs::read_to_string(path_list_destination_files));
+    let vec_list_destination_files: Vec<&str> = string_list_destination_files.lines().collect();
+    println!("{}: {}", path_list_destination_files.split("/").collect::<Vec<&str>>()[1], vec_list_destination_files.len());
 
     let mut vec_for_download: Vec<String> = vec![];
     let mut vec_for_trash: Vec<String> = vec![];
@@ -332,23 +313,20 @@ fn compare_lists_internal(
         vec_line_destination.truncate(3);
         vec_line_source.truncate(3);
 
-        if cursor_source >= vec_remote_lines.len()
-            && cursor_destination >= vec_destination_lines.len()
-        {
+        if cursor_source >= vec_list_source_files.len() && cursor_destination >= vec_list_destination_files.len() {
             break;
-        } else if cursor_source >= vec_remote_lines.len() {
+        } else if cursor_source >= vec_list_source_files.len() {
             // final lines
-            vec_for_trash.push(vec_destination_lines[cursor_destination].to_string());
+            vec_for_trash.push(vec_list_destination_files[cursor_destination].to_string());
             cursor_destination += 1;
-        } else if cursor_destination >= vec_destination_lines.len() {
+        } else if cursor_destination >= vec_list_destination_files.len() {
             // final lines
-            vec_for_download.push(vec_remote_lines[cursor_source].to_string());
+            vec_for_download.push(vec_list_source_files[cursor_source].to_string());
             cursor_source += 1;
         } else {
-            vec_line_source = vec_remote_lines[cursor_source].split("\t").collect();
-            vec_line_destination = vec_destination_lines[cursor_destination]
-                .split("\t")
-                .collect();
+            //compare the 2 lines
+            vec_line_source = vec_list_source_files[cursor_source].split("\t").collect();
+            vec_line_destination = vec_list_destination_files[cursor_destination].split("\t").collect();
             // UncasedStr preserves the case in the string, but comparison is done case insensitive
             let path_source: &UncasedStr = vec_line_source[0].into();
             let path_destination: &UncasedStr = vec_line_destination[0].into();
@@ -357,32 +335,26 @@ fn compare_lists_internal(
             //println!("{}",path_destination);
             if path_source.lt(path_destination) {
                 //println!("lt");
-                vec_for_download.push(vec_remote_lines[cursor_source].to_string());
+                vec_for_download.push(vec_list_source_files[cursor_source].to_string());
                 cursor_source += 1;
             } else if path_source.gt(path_destination) {
                 //println!("gt" );
-                vec_for_trash.push(vec_destination_lines[cursor_destination].to_string());
+                vec_for_trash.push(vec_list_destination_files[cursor_destination].to_string());
                 cursor_destination += 1;
             } else {
                 //println!("eq");
                 // equal names. check date and size
                 // println!("Equal names: {}   {}",path_remote,path_destination);
                 // if equal size and time difference only in seconds, then correct destination time
-                if vec_line_source[2] == vec_line_destination[2]
-                    && vec_line_source[1] != vec_line_destination[1]
-                    && vec_line_source[1][0..17] == vec_line_destination[1][0..17]
-                {
-                    vec_for_correct_time
-                        .push(format!("{}\t{}", path_destination, vec_line_source[1]));
-                } else if vec_line_source[1] != vec_line_destination[1]
-                    || vec_line_source[2] != vec_line_destination[2]
-                {
+                if vec_line_source[2] == vec_line_destination[2] && vec_line_source[1] != vec_line_destination[1] && vec_line_source[1][0..17] == vec_line_destination[1][0..17] {
+                    vec_for_correct_time.push(format!("{}\t{}", path_destination, vec_line_source[1]));
+                } else if vec_line_source[1] != vec_line_destination[1] || vec_line_source[2] != vec_line_destination[2] {
                     //println!("Equal names: {}   {}", path_remote, path_destination);
                     //println!(
                     //"Different date or size {} {} {} {}",
                     //line_remote[1], line_destination[1], line_remote[2], line_local[2]
                     //);
-                    vec_for_download.push(vec_remote_lines[cursor_source].to_string());
+                    vec_for_download.push(vec_list_source_files[cursor_source].to_string());
                 }
                 // else the metadata is the same, no action
                 cursor_destination += 1;
@@ -390,30 +362,70 @@ fn compare_lists_internal(
             }
         }
     }
-    println!(
-        "{}: {}",
-        path_list_for_download.split("/").collect::<Vec<&str>>()[1],
-        vec_for_download.len()
-    );
+    println!("{}: {}", path_list_for_download.split("/").collect::<Vec<&str>>()[1], vec_for_download.len());
     let string_for_download = vec_for_download.join("\n");
     unwrap!(fs::write(path_list_for_download, string_for_download));
 
-    println!(
-        "{}: {}",
-        path_list_for_trash.split("/").collect::<Vec<&str>>()[1],
-        vec_for_trash.len()
-    );
+    println!("{}: {}", path_list_for_trash.split("/").collect::<Vec<&str>>()[1], vec_for_trash.len());
     let string_for_trash = vec_for_trash.join("\n");
     unwrap!(fs::write(path_list_for_trash, string_for_trash));
 
-    println!(
-        "{}: {}",
-        path_list_for_correct_time.split("/").collect::<Vec<&str>>()[1],
-        vec_for_correct_time.len()
-    );
+    println!("{}: {}", path_list_for_correct_time.split("/").collect::<Vec<&str>>()[1], vec_for_correct_time.len());
     let string_for_correct_time = vec_for_correct_time.join("\n");
-    unwrap!(fs::write(
-        path_list_for_correct_time,
-        string_for_correct_time
-    ));
+    unwrap!(fs::write(path_list_for_correct_time, string_for_correct_time));
+}
+
+/// compare folders and write folders to trash into path_list_for_trash_folders
+/// the list is already sorted
+pub fn compare_folders(string_list_source_folders: &str, string_list_destination_folders: &str, file_list_for_trash_folders: &mut FileTxt, file_list_for_create_folders: &mut FileTxt) {
+    let vec_list_source_folders: Vec<&str> = string_list_source_folders.lines().collect();
+    let vec_list_destination_folders: Vec<&str> = string_list_destination_folders.lines().collect();
+
+    let mut vec_for_trash: Vec<String> = vec![];
+    file_list_for_trash_folders.write_str("").unwrap();
+    let mut vec_for_create: Vec<String> = vec![];
+    file_list_for_create_folders.write_str("").unwrap();
+    let mut cursor_source = 0;
+    let mut cursor_destination = 0;
+
+    loop {
+        if cursor_source >= vec_list_source_folders.len() && cursor_destination >= vec_list_destination_folders.len() {
+            // all lines are processed
+            dbg!("break");
+            break;
+        } else if cursor_destination >= vec_list_destination_folders.len() {
+            // final lines
+            dbg!("final create_empty_folders ", vec_list_source_folders[cursor_source]);
+            vec_for_create.push(vec_list_source_folders[cursor_source].to_string());
+            cursor_source += 1;
+        } else if cursor_source >= vec_list_source_folders.len() {
+            // final lines
+            dbg!("final trash ", vec_list_destination_folders[cursor_destination]);
+            vec_for_trash.push(vec_list_destination_folders[cursor_destination].to_string());
+            cursor_destination += 1;
+        } else {
+            // compare the 2 lines
+            // UncasedStr preserves the case in the string, but comparison is done case insensitive
+            let path_source: &UncasedStr = vec_list_source_folders[cursor_source].into();
+            let path_destination: &UncasedStr = vec_list_destination_folders[cursor_destination].into();
+            if path_source.lt(path_destination) {
+                dbg!("create_empty_folders {}", vec_list_source_folders[cursor_source]);
+                vec_for_create.push(vec_list_source_folders[cursor_source].to_string());
+                cursor_source += 1;
+            } else if path_source.gt(path_destination) {
+                dbg!("trash {}", vec_list_destination_folders[cursor_destination]);
+                vec_for_trash.push(vec_list_destination_folders[cursor_destination].to_string());
+                cursor_destination += 1;
+            } else {
+                // else no action, just increment cursors
+                // dbg!("same lines, just increment");
+                cursor_destination += 1;
+                cursor_source += 1;
+            }
+        }
+    }
+    let string_for_trash = vec_for_trash.join("\n");
+    file_list_for_trash_folders.write_str(&string_for_trash).unwrap();
+    let string_for_create = vec_for_create.join("\n");
+    file_list_for_create_folders.write_str(&string_for_create).unwrap();
 }

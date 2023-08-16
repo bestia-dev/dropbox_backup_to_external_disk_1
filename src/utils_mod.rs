@@ -35,9 +35,7 @@ pub fn at_line(y: u16) -> String {
 }
 
 /// get cursor position from raw_mode, but return immediately to normal_mode
-pub fn get_pos(
-    hide_cursor_terminal: &mut termion::cursor::HideCursor<RawTerminal<Stdout>>,
-) -> (u16, u16) {
+pub fn get_pos(hide_cursor_terminal: &mut termion::cursor::HideCursor<RawTerminal<Stdout>>) -> (u16, u16) {
     unwrap!(hide_cursor_terminal.activate_raw_mode());
     use termion::cursor::DetectCursorPos;
     // this can return error: Cursor position detection timed out.
@@ -48,9 +46,7 @@ pub fn get_pos(
 
 /// when changing cursor position it is good to hide the cursor
 pub fn start_hide_cursor_terminal() -> termion::cursor::HideCursor<RawTerminal<Stdout>> {
-    let hide_cursor = termion::cursor::HideCursor::from(
-        termion::raw::IntoRawMode::into_raw_mode(std::io::stdout()).unwrap(),
-    );
+    let hide_cursor = termion::cursor::HideCursor::from(termion::raw::IntoRawMode::into_raw_mode(std::io::stdout()).unwrap());
     unwrap!(hide_cursor.suspend_raw_mode());
     // return
     hide_cursor
@@ -60,13 +56,7 @@ pub fn start_hide_cursor_terminal() -> termion::cursor::HideCursor<RawTerminal<S
 pub fn ns_start(text: &str) -> i64 {
     let now = Utc::now();
     if !text.is_empty() {
-        println!(
-            "{}{}: {}{}",
-            *GREEN,
-            &Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
-            text,
-            *RESET
-        );
+        println!("{}{}: {}{}", *GREEN, &Local::now().format("%Y-%m-%d %H:%M:%S").to_string(), text, *RESET);
     }
     now.timestamp_nanos()
 }
@@ -88,10 +78,7 @@ pub fn ns_print_ms(name: &str, ns_start: i64) -> i64 {
         let mut string_duration_ns = String::new();
         unwrap!(string_duration_ns.write_formatted(&duration_ns, &Locale::en));
 
-        println!(
-            "{}{:>15} ms: {}{}",
-            *GREEN, string_duration_ns, name, *RESET
-        );
+        println!("{}{:>15} ms: {}{}", *GREEN, string_duration_ns, name, *RESET);
     }
     // return new now_ns
     Utc::now().timestamp_nanos()
@@ -106,10 +93,7 @@ pub fn ns_print_ns(name: &str, ns_start: i64) -> i64 {
         let mut string_duration_ns = String::new();
         unwrap!(string_duration_ns.write_formatted(&duration_ns, &Locale::en));
 
-        println!(
-            "{}{:>15} ns: {}{}",
-            *GREEN, string_duration_ns, name, *RESET
-        );
+        println!("{}{:>15} ns: {}{}", *GREEN, string_duration_ns, name, *RESET);
     }
     // return new now_ns
     Utc::now().timestamp_nanos()
@@ -239,8 +223,14 @@ impl FileTxt {
     pub fn from_file(file: std::fs::File) -> Self {
         FileTxt { file_txt: file }
     }
+    /// if file not exist, it creates it
     pub fn open_for_read_and_write(path: &str) -> std::io::Result<Self> {
+        let path = std::path::Path::new(path);
+        if !path.exists() {
+            std::fs::File::create(path).unwrap();
+        }
         let file = std::fs::File::options().read(true).write(true).open(path)?;
+
         Ok(Self::from_file(file))
     }
     /// This method is similar to fs::read_to_string, but instead of a path it expects a File parameter
