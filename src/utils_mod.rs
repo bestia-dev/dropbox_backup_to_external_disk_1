@@ -233,6 +233,7 @@ impl FileTxt {
 
         Ok(Self::from_file(file))
     }
+
     /// This method is similar to fs::read_to_string, but instead of a path it expects a File parameter
     /// So is possible to open a File in the bin part of the project and then pass it to the lib part of project.
     /// All input and output should be in the bin part of project and not in the lib.
@@ -243,8 +244,15 @@ impl FileTxt {
         Ok(string)
     }
 
+    /// write str to file (append)
     pub fn write_str(&mut self, str: &str) -> std::io::Result<()> {
         self.file_txt.write_all(str.as_bytes())?;
+        Ok(())
+    }
+
+    /// empty the file
+    pub fn empty(&mut self) -> std::io::Result<()> {
+        self.file_txt.set_len(0).unwrap();
         Ok(())
     }
 }

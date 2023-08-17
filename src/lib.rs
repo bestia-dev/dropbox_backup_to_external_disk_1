@@ -382,25 +382,25 @@ pub fn compare_folders(string_list_source_folders: &str, string_list_destination
     let vec_list_destination_folders: Vec<&str> = string_list_destination_folders.lines().collect();
 
     let mut vec_for_trash: Vec<String> = vec![];
-    file_list_for_trash_folders.write_str("").unwrap();
+    file_list_for_trash_folders.empty().unwrap();
     let mut vec_for_create: Vec<String> = vec![];
-    file_list_for_create_folders.write_str("").unwrap();
+    file_list_for_create_folders.empty().unwrap();
     let mut cursor_source = 0;
     let mut cursor_destination = 0;
 
     loop {
         if cursor_source >= vec_list_source_folders.len() && cursor_destination >= vec_list_destination_folders.len() {
             // all lines are processed
-            dbg!("break");
+            //dbg!("break");
             break;
         } else if cursor_destination >= vec_list_destination_folders.len() {
             // final lines
-            dbg!("final create_empty_folders ", vec_list_source_folders[cursor_source]);
+            //dbg!("final create_empty_folders ", vec_list_source_folders[cursor_source]);
             vec_for_create.push(vec_list_source_folders[cursor_source].to_string());
             cursor_source += 1;
         } else if cursor_source >= vec_list_source_folders.len() {
             // final lines
-            dbg!("final trash ", vec_list_destination_folders[cursor_destination]);
+            //dbg!("final trash ", vec_list_destination_folders[cursor_destination]);
             vec_for_trash.push(vec_list_destination_folders[cursor_destination].to_string());
             cursor_destination += 1;
         } else {
@@ -409,11 +409,11 @@ pub fn compare_folders(string_list_source_folders: &str, string_list_destination
             let path_source: &UncasedStr = vec_list_source_folders[cursor_source].into();
             let path_destination: &UncasedStr = vec_list_destination_folders[cursor_destination].into();
             if path_source.lt(path_destination) {
-                dbg!("create_empty_folders {}", vec_list_source_folders[cursor_source]);
+                //dbg!("create_empty_folders {}", vec_list_source_folders[cursor_source]);
                 vec_for_create.push(vec_list_source_folders[cursor_source].to_string());
                 cursor_source += 1;
             } else if path_source.gt(path_destination) {
-                dbg!("trash {}", vec_list_destination_folders[cursor_destination]);
+                //dbg!("trash {}", vec_list_destination_folders[cursor_destination]);
                 vec_for_trash.push(vec_list_destination_folders[cursor_destination].to_string());
                 cursor_destination += 1;
             } else {

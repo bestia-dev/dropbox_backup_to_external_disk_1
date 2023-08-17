@@ -383,5 +383,54 @@ pub fn read_only_toggle(file_destination_readonly_files: &mut FileTxt, base_path
             path_global_path_to_readonly.metadata().unwrap().permissions().set_readonly(false);
         }
     }
-    file_destination_readonly_files.write_str("").unwrap();
+    file_destination_readonly_files.empty().unwrap();
+}
+
+/// create new empty folders
+pub fn create_folders(file_list_for_create_folders: &mut FileTxt, base_path: &str) {
+    let list_for_create_folders = file_list_for_create_folders.read_to_string().unwrap();
+    if list_for_create_folders.is_empty() {
+        println!("list_for_create_folders is empty");
+    } else {
+        for string_path in list_for_create_folders.lines() {
+            let global_path = format!("{}{}", base_path, string_path);
+            let path_global_path = path::Path::new(&global_path);
+            // if path exists ignore
+            if !path_global_path.exists() {
+                dbg!(path_global_path);
+                fs::create_dir_all(path_global_path).unwrap();
+            }
+        }
+        file_list_for_create_folders.empty().unwrap();
+    }
+}
+
+/// Move to trash folder the folders from list_for_trash_folders.  
+pub fn trash_folders(file_list_for_trash_folders: &mut FileTxt, base_path: &str) {
+    let list_for_trash_folders = file_list_for_trash_folders.read_to_string().unwrap();
+    if list_for_trash_folders.is_empty() {
+        println!("list_for_trash_folders is empty");
+    } else {
+        let now_string = chrono::Local::now().format("trash_%Y-%m-%d_%H-%M-%S").to_string();
+        let base_trash_path = format!("{}_{}", base_path, &now_string);
+        if !path::Path::new(&base_trash_path).exists() {
+            fs::create_dir_all(&base_trash_path).unwrap();
+        }
+        for string_path_for_trash in list_for_trash_folders.lines() {
+            let move_from = format!("{}{}", base_path, string_path_for_trash);
+            let path_move_from = path::Path::new(&move_from);
+
+            // move to trash if file exists. Nothing if it does not exist, maybe is deleted when moved or in a move_to_trash before.
+            if path_move_from.exists() {
+                let move_to = format!("{}{}", base_trash_path, string_path_for_trash);
+                println!("{}  ->  {}", move_from, move_to);
+                let parent = unwrap!(path::Path::parent(path::Path::new(&move_to)));
+                if !parent.exists() {
+                    fs::create_dir_all(&parent).unwrap();
+                }
+                unwrap!(fs::rename(&move_from, &move_to));
+            }
+        }
+        file_list_for_trash_folders.empty().unwrap();
+    }
 }

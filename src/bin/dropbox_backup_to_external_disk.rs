@@ -35,6 +35,12 @@ fn main() {
     //create the directory temp_data/
     std::fs::create_dir_all("temp_data").unwrap();
 
+    let base_path = if std::path::Path::new(APP_CONFIG.path_list_base_local_path).exists() {
+        std::fs::read_to_string(APP_CONFIG.path_list_base_local_path).unwrap()
+    } else {
+        String::new()
+    };
+
     match env::args().nth(1).as_deref() {
         None | Some("--help") | Some("-h") => print_help(),
         Some("completion") => completion(),
@@ -90,7 +96,6 @@ fn main() {
         Some("read_only_toggle") => {
             let ns_started = ns_start("read_only_toggle");
             println!("{}read_only_toggle{}", *YELLOW, *RESET);
-            let base_path = std::fs::read_to_string(APP_CONFIG.path_list_base_local_path).unwrap();
             // open file as read and write
             let mut file_destination_readonly_files = FileTxt::open_for_read_and_write(APP_CONFIG.path_list_destination_readonly_files).unwrap();
             read_only_toggle(&mut file_destination_readonly_files, &base_path);
@@ -117,6 +122,26 @@ fn main() {
             );
             println!("Created files: list_for_trash_folders.csv and list_for_create_folders.csv");
             ns_print_ms("compare_folders", ns_started);
+        }
+        Some("create_folders") => {
+            if base_path.is_empty() {
+                println!("error: base_path is empty!");
+            } else {
+                let ns_started = ns_start(&format!("create_folders {}", APP_CONFIG.path_list_for_create_folders));
+                let mut file_list_for_create_folders = FileTxt::open_for_read_and_write(APP_CONFIG.path_list_for_create_folders).unwrap();
+                create_folders(&mut file_list_for_create_folders, &base_path);
+                ns_print_ms("create_folders", ns_started);
+            }
+        }
+        Some("trash_folders") => {
+            if base_path.is_empty() {
+                println!("error: base_path is empty!");
+            } else {
+                let ns_started = ns_start(&format!("trash_folders {}", APP_CONFIG.path_list_for_trash_folders));
+                let mut file_list_for_trash_folders = FileTxt::open_for_read_and_write(APP_CONFIG.path_list_for_trash_folders).unwrap();
+                trash_folders(&mut file_list_for_trash_folders, &base_path);
+                ns_print_ms("trash_folders", ns_started);
+            }
         }
         Some("move_or_rename_local_files") => {
             let ns_started = ns_start("move_or_rename_local_files");
@@ -187,6 +212,7 @@ fn completion() {
             "all_list",
             "compare_files",
             "compare_folders",
+            "create_folders",
             "read_only_toggle",
             "correct_time_from_list",
             "download_from_list",
@@ -198,6 +224,7 @@ fn completion() {
             "second_backup",
             "sync_only",
             "test",
+            "trash_folders",
             "trash_from_list",
         ];
         completion_return_one_or_more_sub_commands(sub_commands, word_being_completed);
@@ -263,10 +290,14 @@ fn print_help() {
 {g}dropbox_backup_to_external_disk read_only_toggle  {rs}
   Compare file lists and generate `{path_list_for_download}`, `{path_list_for_trash}` and `{path_list_for_correct_time}`:
 {g}dropbox_backup_to_external_disk compare_files{rs}
-Compare folders lists and generate `{path_list_for_trash_folders}`:
+  Compare folders lists and generate `{path_list_for_trash_folders}`:
 {g}dropbox_backup_to_external_disk compare_folders{rs}
+  Create folders from `{path_list_for_create_folders}`:
+{g}dropbox_backup_to_external_disk create_folders{rs}
   Move or rename local files if they are equal in trash_from_list and download_from_list:
 {g}dropbox_backup_to_external_disk move_or_rename_local_files{rs}
+  Move to trash from `{path_list_for_trash_folders}`:
+{g}dropbox_backup_to_external_disk trash_folders{rs}
   Move to trash from `{path_list_for_trash}`:
 {g}dropbox_backup_to_external_disk trash_from_list{rs}
   Correct time of files from `{path_list_for_correct_time}`:
@@ -292,6 +323,7 @@ Compare folders lists and generate `{path_list_for_trash_folders}`:
         path_list_for_trash = APP_CONFIG.path_list_for_trash,
         path_list_for_readonly = APP_CONFIG.path_list_destination_readonly_files,
         path_list_for_trash_folders = APP_CONFIG.path_list_destination_folders,
+        path_list_for_create_folders = APP_CONFIG.path_list_for_create_folders,
         date = chrono::offset::Utc::now().format("%Y%m%dT%H%M%SZ"),
     );
 }
