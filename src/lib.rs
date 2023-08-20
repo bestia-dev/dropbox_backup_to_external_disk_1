@@ -248,12 +248,12 @@ pub fn all_list_remote_and_local(base_path: &str, app_config: &'static AppConfig
     use std::thread;
     let base_path = base_path.to_string();
     let handle_2 = thread::spawn(move || {
-        println!("{}{}Threads for remote:{}", at_line(3), *GREEN, *RESET);
+        println!("{}{}3 threads for source (remote files):{}", at_line(3), *GREEN, *RESET);
         // prints at rows 4,5,6 and 7,8,9
         list_remote(app_config);
     });
     let handle_1 = thread::spawn(move || {
-        println!("{}{}Thread for local:{}", at_line(12), *GREEN, *RESET);
+        println!("{}{}1 thread for destination (local files):{}", at_line(12), *GREEN, *RESET);
         // prints at rows 13,14,15,16
         list_local(&base_path, app_config);
     });

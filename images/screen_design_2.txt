@@ -1,8 +1,8 @@
 01/ CLI screen design for: Yellow: download_from_list
 02/ 
-03/ 100.0% of 0.00 Mb downloading /BestiaSoftware/GitHub/amafatt/webfolder/favicon.icocom.dropbox.attrs
-04/ 100.0% of 0.00 Mb downloading /BestiaSoftware/GitHub/home_automation/images/shutdown.icocom.dropbox.attrs
-05/ 100.0% of 0.00 Mb downloading /BestiaSoftware/GitHub/home_automation/images/shutdown.icocom.dropbox.attrs
+03/ 100.0% of 0.00 MB downloading /BestiaSoftware/GitHub/amafatt/webfolder/favicon.icocom.dropbox.attrs
+04/ 100.0% of 0.00 MB downloading /BestiaSoftware/GitHub/home_automation/images/shutdown.icocom.dropbox.attrs
+05/ 100.0% of 0.00 MB downloading /BestiaSoftware/GitHub/home_automation/images/shutdown.icocom.dropbox.attrs
 06/ 
 07/ /BestiaSoftware/GitHub/home_automation/images/shutdown.icocom.dropbox.attrs    2020-12-04T01:39:18Z    26
 08/ /BestiaSoftware/GitHub/amafatt/webfolder/favicon.icocom.dropbox.attrs  2021-06-16T15:35:16Z    26

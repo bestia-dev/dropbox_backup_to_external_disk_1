@@ -4,7 +4,6 @@
 #[allow(unused_imports)]
 use dropbox_content_hasher::DropboxContentHasher;
 use log::error;
-use std::fs;
 use std::io::Write;
 use std::path;
 use uncased::UncasedStr;
@@ -23,14 +22,20 @@ pub fn list_local(base_path: &str, app_config: &'static AppConfig) {
 /// list all local files and folders. It can take some time.
 fn list_local_internal(app_config: &'static AppConfig) {
     // empty the file. I want all or nothing result here if the process is terminated prematurely.
-    unwrap!(fs::write(app_config.path_list_destination_files, ""));
-    unwrap!(fs::write(app_config.path_list_destination_folders, ""));
-    fs::write(app_config.path_list_destination_readonly_files, "").unwrap();
+
+    let mut file_list_destination_files = FileTxt::open_for_read_and_write(app_config.path_list_destination_files).unwrap();
+    file_list_destination_files.empty().unwrap();
+    let mut file_list_destination_folders = FileTxt::open_for_read_and_write(app_config.path_list_destination_folders).unwrap();
+    file_list_destination_folders.empty().unwrap();
+    let mut file_list_destination_readonly_files = FileTxt::open_for_read_and_write(app_config.path_list_destination_readonly_files).unwrap();
+    file_list_destination_readonly_files.empty().unwrap();
 
     // just_loaded is obsolete once I got the fresh local list
-    unwrap!(fs::write(app_config.path_list_just_downloaded_or_moved, ""));
-    // write data to a big string in memory
-    let mut files_string = String::with_capacity(1024 * 1024);
+    let mut file_list_just_downloaded_or_moved = FileTxt::open_for_read_and_write(app_config.path_list_just_downloaded_or_moved).unwrap();
+    file_list_just_downloaded_or_moved.empty().unwrap();
+
+    // write data to a big string in memory (for my use-case it is 25 MB)
+    let mut files_string = String::with_capacity(26_214_400);
     let mut folders_string = String::new();
     let mut readonly_files_string = String::new();
     let (x_screen_len, _y_screen_len) = unwrap!(termion::terminal_size());
@@ -39,6 +44,7 @@ fn list_local_internal(app_config: &'static AppConfig) {
 
     let mut folder_count = 0;
     let mut file_count = 0;
+    let mut last_print_ms = std::time::Instant::now();
     for entry in WalkDir::new(&base_path) {
         //let mut ns_started = ns_start("WalkDir entry start");
         let entry: walkdir::DirEntry = entry.unwrap();
@@ -49,9 +55,14 @@ fn list_local_internal(app_config: &'static AppConfig) {
             // I don't need the "base" folder in this list
             if !str_path.trim_start_matches(&base_path).is_empty() {
                 folders_string.push_str(&format!("{}\n", str_path.trim_start_matches(&base_path),));
-                println!("{}{}Folder: {}", at_line(13), *CLEAR_LINE, shorten_string(str_path.trim_start_matches(&base_path), x_screen_len - 9),);
-                println!("{}{}local_folder_count: {}", at_line(14), *CLEAR_LINE, folder_count);
-
+                // TODO: don't print every folder, because print is slow. Check if 200ms passed
+                if last_print_ms.elapsed().as_millis() >= 200 {
+                    println!("{}{}Folder: {}", at_line(13), *CLEAR_LINE, shorten_string(str_path.trim_start_matches(&base_path), x_screen_len - 9),);
+                    println!("{}{}local_folder_count: {}", at_line(14), *CLEAR_LINE, folder_count);
+                    // it would be too much too print count for every single file
+                    println!("{}{}local_file_count: {}", at_line(15), *CLEAR_LINE, file_count);
+                    last_print_ms = std::time::Instant::now();
+                }
                 folder_count += 1;
             }
         } else {
@@ -67,9 +78,7 @@ fn list_local_internal(app_config: &'static AppConfig) {
                 if metadata.permissions().readonly() {
                     readonly_files_string.push_str(&format!("{}\n", str_path.trim_start_matches(&base_path),));
                 }
-
                 files_string.push_str(&format!("{}\t{}\t{}\n", str_path.trim_start_matches(&base_path), datetime.format("%Y-%m-%dT%TZ"), metadata.len()));
-                println!("{}{}local_file_count: {}", at_line(15), *CLEAR_LINE, file_count);
 
                 file_count += 1;
             }
@@ -81,9 +90,9 @@ fn list_local_internal(app_config: &'static AppConfig) {
     let folders_sorted_string = crate::sort_string_lines(&folders_string);
     let readonly_files_sorted_string = crate::sort_string_lines(&readonly_files_string);
     // end region: sort
-    unwrap!(fs::write(app_config.path_list_destination_files, files_sorted_string,));
-    unwrap!(fs::write(app_config.path_list_destination_folders, folders_sorted_string,));
-    unwrap!(fs::write(app_config.path_list_destination_readonly_files, readonly_files_sorted_string,));
+    file_list_destination_files.write_str(&files_sorted_string).unwrap();
+    file_list_destination_folders.write_str(&folders_sorted_string).unwrap();
+    file_list_destination_readonly_files.write_str(&readonly_files_sorted_string).unwrap();
 }
 
 /// saves the base local path for later use like "/mnt/d/DropBoxBackup1"
@@ -195,17 +204,17 @@ fn move_internal(path_global_path_to_trash: &path::Path, to_base_local_path: &st
         fs::create_dir_all(&parent).unwrap();
     }
     if path::Path::new(&move_to).exists() {
-        let mut perms = unwrap!(fs::metadata(&move_to)).permissions();
+        let mut perms = fs::metadata(&move_to).unwrap().permissions();
         if perms.readonly() == true {
             perms.set_readonly(false);
-            unwrap!(fs::set_permissions(&move_to, perms));
+            fs::set_permissions(&move_to, perms).unwrap();
         }
     }
     if path::Path::new(&move_from).exists() {
         let mut perms = unwrap!(fs::metadata(&move_from)).permissions();
         if perms.readonly() == true {
             perms.set_readonly(false);
-            unwrap!(fs::set_permissions(&move_from, perms));
+            fs::set_permissions(&move_from, perms).unwrap();
         }
     }
     unwrap!(fs::rename(&move_from, &move_to));
@@ -279,7 +288,8 @@ pub fn correct_time_from_list(app_config: &'static AppConfig) {
 
 /// modify the date od files from list_for_correct_time
 fn correct_time_from_list_internal(base_local_path: &str, path_list_for_correct_time: &str) {
-    let list_for_correct_time = fs::read_to_string(path_list_for_correct_time).unwrap();
+    let mut file_list_for_correct_time = FileTxt::open_for_read_and_write(path_list_for_correct_time).unwrap();
+    let list_for_correct_time = file_list_for_correct_time.read_to_string().unwrap();
     for path_to_correct_time in list_for_correct_time.lines() {
         let line: Vec<&str> = path_to_correct_time.split("\t").collect();
         let remote_path = line[0];
@@ -290,13 +300,14 @@ fn correct_time_from_list_internal(base_local_path: &str, path_list_for_correct_
             if local_content_hash == remote_content_hash {
                 let modified = filetime::FileTime::from_system_time(unwrap!(humantime::parse_rfc3339(line[1])));
                 unwrap!(filetime::set_file_mtime(local_path, modified));
+                // TODO: correct also in list_destination_files.csv, so I can make a new compare after this action
             } else {
                 error!("correct_time content_hash different: {}", remote_path);
             }
         }
     }
     // empty the list
-    unwrap!(fs::write(path_list_for_correct_time, ""));
+    file_list_for_correct_time.empty().unwrap();
 }
 
 /// add just downloaded files to list_local (from dropbox remote)
@@ -373,14 +384,16 @@ fn add_just_downloaded_to_list_local_internal(path_list_just_downloaded: &str, p
 /// the File is read + write. It is opened in the bin and not in lib, but it is only manipulated in lib.
 pub fn read_only_toggle(file_destination_readonly_files: &mut FileTxt, base_path: &str) {
     let list_destination_readonly_files = file_destination_readonly_files.read_to_string().unwrap();
-    for line_for_readonly in list_destination_readonly_files.lines() {
-        let vec_line_for_readonly: Vec<&str> = line_for_readonly.split("\t").collect();
-        let string_path_for_readonly = vec_line_for_readonly[0];
+    for string_path_for_readonly in list_destination_readonly_files.lines() {
         let global_path_to_readonly = format!("{}{}", base_path, string_path_for_readonly);
         let path_global_path_to_readonly = path::Path::new(&global_path_to_readonly);
         // if path does not exist ignore
         if path_global_path_to_readonly.exists() {
-            path_global_path_to_readonly.metadata().unwrap().permissions().set_readonly(false);
+            let mut perms = path_global_path_to_readonly.metadata().unwrap().permissions();
+            if perms.readonly() == true {
+                perms.set_readonly(false);
+                fs::set_permissions(path_global_path_to_readonly, perms).unwrap();
+            }
         }
     }
     file_destination_readonly_files.empty().unwrap();

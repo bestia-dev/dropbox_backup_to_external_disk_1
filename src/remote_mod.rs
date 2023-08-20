@@ -278,7 +278,7 @@ fn download_internal(
                 };
                 loop {
                     // limit read to 1 MiB per loop iteration so we can output progress
-                    let mut input_chunk = (&mut body).take(1024 * 1024);
+                    let mut input_chunk = (&mut body).take(1_048_576);
                     match io::copy(&mut input_chunk, &mut file) {
                         Ok(0) => {
                             break 'download;
@@ -287,7 +287,7 @@ fn download_internal(
                             bytes_out += len as u64;
                             if let Some(total) = download_result.content_length {
                                 let string_to_print = format!(
-                                    "{}{:.01}% of {:.02} Mb downloading {}",
+                                    "{}{:.01}% of {:.02} MB downloading {}",
                                     *CLEAR_LINE,
                                     bytes_out as f64 / total as f64 * 100.,
                                     total as f64 / 1000000.,
@@ -295,7 +295,7 @@ fn download_internal(
                                 );
                                 unwrap!(tx_clone.send((string_to_print, thread_num)));
                             } else {
-                                let string_to_print = format!("{}{} Mb downloaded {}", *CLEAR_LINE, bytes_out as f64 / 1000000., shorten_string(download_path, x_screen_len - 31));
+                                let string_to_print = format!("{}{} MB downloaded {}", *CLEAR_LINE, bytes_out as f64 / 1000000., shorten_string(download_path, x_screen_len - 31));
                                 unwrap!(tx_clone.send((string_to_print, thread_num)));
                             }
                         }
@@ -330,7 +330,7 @@ fn download_internal(
         if perms.readonly() == true {
             //is_read_only = true;
             perms.set_readonly(false);
-            unwrap!(fs::set_permissions(&path_of_local_path, perms));
+            fs::set_permissions(&path_of_local_path, perms).unwrap();
         }
     }
 
@@ -384,8 +384,9 @@ pub fn download_from_list(app_config: &'static AppConfig) {
                         if !path::Path::new(&parent).exists() {
                             fs::create_dir_all(parent).unwrap();
                         }
-                        let mut file = fs::OpenOptions::new().create(true).write(true).open(&local_path).unwrap();
-                        unwrap!(writeln!(file, "{}", ""));
+                        let mut file = FileTxt::open_for_read_and_write(&local_path).unwrap();
+                        file.empty().unwrap();
+
                         // change the file date
                         let system_time = unwrap!(humantime::parse_rfc3339(modified_for_download));
                         let modified = filetime::FileTime::from_system_time(system_time);
