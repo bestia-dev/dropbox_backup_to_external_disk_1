@@ -189,15 +189,6 @@ Files with size 0 are not downloaded.
 Solve empty folders in the program.
 Make a command inside the program to save the oauth_token. 
 
-## cargo crev reviews and advisory
-
-We leave in times of danger with [supply chain attacks](https://en.wikipedia.org/wiki/Supply_chain_attack).  
-It is recommended to always use [cargo-crev](https://github.com/crev-dev/cargo-crev)  
-to verify the trustworthiness of each of your dependencies.  
-Please, spread this info.  
-You can also read reviews quickly on the web. Example for the crate `num-traits`:  
-<https://web.crev.dev/rust-reviews/crate/num-traits/>  
-
 ## Open-source and free as a beer
 
 My open-source projects are free as a beer (MIT license).  
