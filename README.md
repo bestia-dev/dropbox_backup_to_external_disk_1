@@ -9,8 +9,7 @@
 
 [//]: # (auto_cargo_toml_to_md end)
 
- ![maintained](https://img.shields.io/badge/maintained-green)
- ![ready_for_use](https://img.shields.io/badge/ready_for_use-green)
+ ![obsolete](https://img.shields.io/badge/obsolete-red)
 
 [//]: # (auto_lines_of_code start)
 [![Lines in Rust code](https://img.shields.io/badge/Lines_in_Rust-1549-green.svg)](https://github.com/bestia-dev/dropbox_backup_to_external_disk/)
@@ -27,6 +26,11 @@
 
 Hashtags: #rustlang #tutorial #dropbox #cli  
 My projects on Github are more like a tutorial than a finished product: [bestia-dev tutorials](https://github.com/bestia-dev/tutorials_rust_wasm).
+
+## Obsolete
+
+I am developing the version 2 on https://github.com/bestia-dev/dropbox_backup_to_external_disk_2.  
+It will be structured as a library and different executable binaries for the UI - User Interface.  
 
 ## Motivation
 
