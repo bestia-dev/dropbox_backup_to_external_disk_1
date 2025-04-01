@@ -375,7 +375,7 @@ fn add_just_downloaded_to_list_local_internal(path_list_just_downloaded: &str, p
         let new_local_files = vec_sorted_local.join("\n");
         unwrap!(fs::write(path_list_local_files, &new_local_files));
 
-        // empty the file temp_data/list_just_downloaded_or_moved.csv
+        // empty the file tmp/temp_data/list_just_downloaded_or_moved.csv
         // println!("list_just_downloaded_or_moved emptied");
         unwrap!(fs::write(path_list_just_downloaded, ""));
     }

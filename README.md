@@ -51,7 +51,7 @@ The dropbox remote storage will always be read_only, nothing will be modified th
 
 There are a few manual steps for the security of you files on Dropbox. Authentication on internet is a complex topic.  
 You should be logged in Linux terminal (also in WSL2) with your account. So things you do, are not visible to others. You will set some local environment variables that are private/secret to your linux Session.  After you logout from you Linux session these local environment variables will be deleted.  
-The executable will create a sub-directory `temp_data` in the current directory. Maybe it is best if you create a dedicated directory `~/dropbox_backup_to_external_disk/` just for this executable.
+The executable will create a sub-directory `tmp/temp_data` in the current directory. Maybe it is best if you create a dedicated directory `~/dropbox_backup_to_external_disk/` just for this executable.
 Download the latest release from [Github](https://github.com/bestia-dev/dropbox_backup_to_external_disk/releases) and make the file executable and enable auto-completion:
 
 ```bash
@@ -103,8 +103,8 @@ cargo auto
 
 I use WSL2 (Debian) on Win10 to develope and execute this CLI in Debian Linux.  
 The external disk path from WSL2 looks like this: `/mnt/d/DropBoxBackup1`.  
-The CLI saves the list of the local files metadata in `temp_data/list_destination_files.csv`.  
-And the list of the files metadata from the remote Dropbox to in `temp_data/list_source_files.csv`.
+The CLI saves the list of the local files metadata in `tmp/temp_data/list_destination_files.csv`.  
+And the list of the files metadata from the remote Dropbox to in `tmp/temp_data/list_source_files.csv`.
 Tab delimited with metadata: path (with name), datetime modified, size.
 The remote path is not really case-sensitive. They try to make it case-preserve, but this apply only to the last part of the path. Before that it is random-case.
 For big dropbox remotes it can take a while to complete. After the first level folders are listed, I use 3 threads in a ThreadPool to get sub-folders recursively in parallel. It makes it much faster. Also the download of files is in parallel on multiple threads.  
