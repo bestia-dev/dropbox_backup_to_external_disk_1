@@ -8,6 +8,7 @@ edition = "2021"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/bestia-dev/dropbox_backup_to_external_disk/"
+# Allowed categories are listed here <https://crates.io/category_slugs>
 categories = ["programming"]
 keywords = ["dropbox"]
 publish = false
